@@ -1,0 +1,38 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:l="sap.ui.layout"
+    xmlns:f="sap.ui.layout.form"
+    xmlns:fb="sap.ui.comp.filterbar"
+    xmlns:core="sap.ui.core">
+    <Dialog title="{i18n>submitterInfo}" escapeHandler=".onSubmitterEscape">
+        <content>
+            <f:SimpleForm id="SimpleFormsubmittarname"
+                editable="true"
+                layout="ResponsiveGridLayout"
+                labelSpanXL="3"
+                labelSpanL="3"
+                labelSpanM="3"
+                labelSpanS="12"
+                adjustLabelSpan="false"
+                emptySpanXL="0"
+                emptySpanL="0"
+                emptySpanM="0"
+                emptySpanS="0"
+                columnsXL="1"
+                columnsL="1"
+                columnsM="1"
+                singleContainerFullSize="false">
+                <f:content>
+                    <Label text="{i18n>submitterName}" required="true" visible="true"/>
+                    <Input id="submitter_name1" value="{ViewModel>/SubmitterName}" visible="true" change="onSubmitterNameChange"/>
+
+                    <Label text="{i18n>submitterEmail}" required="true" visible="true"/>
+                    <Input id="submitter_email1" value="{ViewModel>/SubmitterEmail}" visible="true" type="Email" change="onEmailChange"/>
+                </f:content>
+            </f:SimpleForm>
+        </content>
+        <beginButton>
+            <Button text="{i18n>submit}" type="Emphasized" press="onSubmitterDetailSubmitPress" />
+        </beginButton>
+    </Dialog>
+</core:FragmentDefinition>

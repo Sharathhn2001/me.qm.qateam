@@ -1,0 +1,20 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<SelectDialog
+		noDataText="{i18n>noCountryFoundMessage}"
+		title="{i18n>countryOfSale}"
+		search="onCountryOfSaleSearch"
+		confirm="onCountryOfSaleClose"
+		cancel="onCountryOfSaleCancel"
+		multiSelect="true"
+		rememberSelections="false"
+		items="{
+			path: 'CountryF4>/results'
+		}">
+		<StandardListItem
+			title="{CountryF4>Land1}"
+			description="{CountryF4>Landx}"
+			type="Active" />
+	</SelectDialog>
+</core:FragmentDefinition>

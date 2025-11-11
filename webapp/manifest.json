@@ -1,0 +1,146 @@
+{
+  "_version": "1.65.0",
+  "sap.app": {
+    "id": "com.monsterenergy.qm.me.qm.qateam",
+    "type": "application",
+    "i18n": "i18n/i18n.properties",
+    "applicationVersion": {
+      "version": "0.0.1"
+    },
+    "title": "{{appTitle}}",
+    "description": "{{appDescription}}",
+    "resources": "resources.json",
+    "sourceTemplate": {
+      "id": "@sap/generator-fiori:basic",
+      "version": "1.16.5",
+      "toolsId": "66e570d9-5e51-4c0d-8c69-38664140447c"
+    },
+    "dataSources": {
+      "mainService": {
+        "uri": "/sap/opu/odata/sap/ZQM_BTP_INSP_DATA_UPLOAD_SRV/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "localUri": "localService/mainService/metadata.xml",
+          "odataVersion": "2.0"
+        }
+      }
+    },
+    "crossNavigation": {
+      "inbounds": {
+        "QATeam-RecordResult": {
+          "semanticObject": "QATeam",
+          "action": "RecordResult",
+          "title": "{{QATeam-RecordResult.flpTitle}}",
+          "icon": "sap-icon://add-document",
+          "signature": {
+            "parameters": {},
+            "additionalParameters": "allowed"
+          }
+        }
+      }
+    }
+  },
+  "sap.ui": {
+    "fullWidth": true,
+    "technology": "UI5",
+    "icons": {
+      "icon": "",
+      "favIcon": "",
+      "phone": "",
+      "phone@2": "",
+      "tablet": "",
+      "tablet@2": ""
+    },
+    "deviceTypes": {
+      "desktop": true,
+      "tablet": true,
+      "phone": true
+    }
+  },
+  "sap.ui5": {
+    "flexEnabled": false,
+    "dependencies": {
+      "minUI5Version": "1.133.0",
+      "libs": {
+        "sap.m": {},
+        "sap.ui.core": {}
+      }
+    },
+    "contentDensities": {
+      "compact": true,
+      "cozy": true
+    },
+    "models": {
+      "i18n": {
+        "type": "sap.ui.model.resource.ResourceModel",
+        "settings": {
+          "bundleName": "com.monsterenergy.qm.me.qm.qateam.i18n.i18n"
+        }
+      },
+      "": {
+        "dataSource": "mainService",
+        "preload": true,
+        "settings": {}
+      }
+    },
+    "resources": {
+      "css": [
+        {
+          "uri": "css/style.css"
+        }
+      ]
+    },
+    "routing": {
+      "config": {
+        "routerClass": "sap.m.routing.Router",
+        "controlAggregation": "pages",
+        "controlId": "app",
+        "transition": "slide",
+        "type": "View",
+        "viewType": "XML",
+        "path": "com.monsterenergy.qm.me.qm.qateam.view",
+        "async": true,
+        "viewPath": "com.monsterenergy.qm.me.qm.qateam.view"
+      },
+      "routes": [
+        {
+          "name": "RouteHomePage",
+          "pattern": ":?query:",
+          "target": [
+            "TargetHomePage"
+          ]
+        },
+        {
+          "name": "RouteCharacteristicOverview",
+          "pattern": "/insplotoverview/{Plant}/{Material}/{Batch}/{SubmitterName}/{SubmitterEmail}/{IsSubmitNew}/{IsQMUser}",
+          "target": [
+            "TargetCharacteristicOverview"
+          ]
+        }
+      ],
+      "targets": {
+        "TargetHomePage": {
+          "id": "HomePage",
+          "name": "HomePage"
+        },
+        "TargetCharacteristicOverview": {
+          "viewType": "XML",
+          "transition": "slide",
+          "clearControlAggregation": false,
+          "viewId": "CharacteristicOverview",
+          "viewName": "CharacteristicOverview"
+        }
+      }
+    },
+    "rootView": {
+      "viewName": "com.monsterenergy.qm.me.qm.qateam.view.App",
+      "type": "XML",
+      "id": "App"
+    }
+  },
+  "sap.cloud": {
+    "public": true,
+    "service": "commonsterenergyqmmeqmqateam"
+  }
+}

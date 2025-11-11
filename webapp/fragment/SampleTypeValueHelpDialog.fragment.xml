@@ -1,0 +1,20 @@
+<core:FragmentDefinition
+	xmlns="sap.m"
+	xmlns:core="sap.ui.core">
+	<SelectDialog
+		noDataText="{i18n>nosampTypeFoundMessage}"
+		title="{i18n>sampType}"
+		search="onSampleTypeSearch"
+		confirm="onSampleTypeClose"
+		cancel="onSampleTypeCancel"
+		multiSelect="false"
+		rememberSelections="false"
+		items="{
+			path: 'SampleTypeModel>/results'
+		}">
+		<StandardListItem
+			title="{SampleTypeModel>SampleType}"
+			description="{SampleTypeModel>SampleTypeDesc}"
+			type="Active" />
+	</SelectDialog>
+</core:FragmentDefinition>

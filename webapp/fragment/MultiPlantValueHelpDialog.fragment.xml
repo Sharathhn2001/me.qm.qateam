@@ -1,0 +1,19 @@
+<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+    <SelectDialog
+        id="plantDialog"
+        noDataText="{i18n>NoPlantFound}"
+        title="{i18n>plant}"
+        search="_handleValueHelpSearchPlant"
+        confirm="onPlantClose"
+        cancel="onPlantCancel"
+        multiSelect="false"
+        rememberSelections="false"
+        items="{
+            path: 'PlantModel>/results'
+        }">
+        <StandardListItem
+            title="{PlantModel>Werks}"
+            description="{PlantModel>Name1}"
+            type="Active" />
+    </SelectDialog>
+</core:FragmentDefinition>

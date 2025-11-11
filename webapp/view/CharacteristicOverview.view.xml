@@ -1,0 +1,532 @@
+<mvc:View
+    xmlns:landvisz="sap.landvisz"
+    controllerName="com.monsterenergy.qm.me.qm.qateam.controller.CharacteristicOverview"
+    height="100%"
+    xmlns="sap.m"
+    xmlns:mvc="sap.ui.core.mvc"
+    xmlns:uxap="sap.uxap"
+    xmlns:layout="sap.ui.layout"
+    xmlns:table="sap.ui.table"
+    xmlns:grid="sap.ui.layout.cssgrid"
+    xmlns:u="sap.ui.unified"
+    xmlns:core="sap.ui.core"
+    xmlns:mdc="sap.ui.mdc"
+    xmlns:mdct="sap.ui.mdc.table"
+    xmlns:vm="sap.ui.fl.variants"
+    xmlns:Table1="sap.ui.mdc.table.Table"
+    xmlns:upload="sap.m.upload"
+    xmlns:mdcat="sap.ui.mdc.actiontoolbar"
+    xmlns:f="sap.ui.layout.form"
+>
+    <uxap:ObjectPageLayout
+        id="objectPageLayout"
+        showTitleInHeaderContent="true"
+        showFooter="true"
+        showEditHeaderButton="true"
+        editHeaderButtonPress="handleEditBtnPress"
+        upperCaseAnchorBar="false"
+        busy="{ViewModel>/busy}"
+        busyIndicatorDelay="{ViewModel>/delay}"
+    >
+        <uxap:headerTitle>
+            <uxap:ObjectPageDynamicHeaderTitle
+                id="objectPageLayoutDynamicHeaderTitle"
+            >
+                <uxap:expandedHeading>
+                    <HBox id="hbox">
+                        <Title
+                            id="ExpandedTitle"
+                            text="{i18n>inspResults}"
+                            wrapping="true"
+                        />
+                    </HBox>
+                </uxap:expandedHeading>
+                <uxap:snappedHeading>
+                    <FlexBox
+                        id="flexbox1"
+                        fitContainer="true"
+                        alignItems="Center"
+                    >
+                        <Title
+                            id="SnappedTitle"
+                            text="{i18n>inspResults}"
+                            wrapping="true"
+                        />
+                    </FlexBox>
+                </uxap:snappedHeading>
+                <uxap:actions>
+                    <HBox>
+                        <SegmentedButton
+                            id="seg_button"
+                            selectionChange="onSegButtonSelectionChange"
+                        />
+                    </HBox>
+
+                    <Button
+                        text="{i18n>edit}"
+                        type="Emphasized"
+                        id="editbutton"
+                        visible="{= ${ViewModel>/isQMUser} === true || ${ViewModel>/isQMUser} === 'true' ? false : (${ViewModel>/rrEditable} ? (${ViewModel>/screenMode} === 'view' ? true : false) : false) }"
+                        press=".onEditPress"
+                    />
+                </uxap:actions>
+            </uxap:ObjectPageDynamicHeaderTitle>
+        </uxap:headerTitle>
+        <uxap:headerContent>
+            <grid:CSSGrid id="grid1">
+                <grid:customLayout>
+                    <grid:GridResponsiveLayout>
+                        <grid:layout>
+                            <grid:GridSettings
+                                gridTemplateColumns="50% auto auto"
+                                gridRowGap="1rem"
+                                gridColumnGap="1rem"
+                            />
+                        </grid:layout>
+                        <grid:layoutS>
+                            <grid:GridSettings
+                                gridTemplateColumns="repeat(auto-fit, 98%)"
+                                gridRowGap="2%"
+                                gridColumnGap="2%"
+                            />
+                        </grid:layoutS>
+                        <grid:layoutM>
+                            <grid:GridSettings
+                                gridTemplateColumns="50% auto auto"
+                                gridColumnGap="1rem"
+                            />
+                        </grid:layoutM>
+                        <grid:layoutL>
+                            <grid:GridSettings
+                                gridTemplateColumns="50% auto auto"
+                                gridColumnGap="1rem"
+                            />
+                        </grid:layoutL>
+                        <grid:layoutXL>
+                            <grid:GridSettings
+                                gridTemplateColumns="50% auto auto"
+                                gridColumnGap="1rem"
+                            />
+                        </grid:layoutXL>
+                    </grid:GridResponsiveLayout>
+                </grid:customLayout>
+                <grid:items>
+                    <VBox>
+                        <ObjectStatus
+                            id="objStatusPlant"
+                            title="{i18n>plant}"
+                            text="{InspectionDetailsModel>/Werk} - {InspectionDetailsModel>/Name1}"
+                            class="sapUiTinyMarginBottom"
+                        />
+                        <ObjectStatus
+                            id="objStatusMaterial"
+                            title="{i18n>material}"
+                            text="{InspectionDetailsModel>/Matnr} - {InspectionDetailsModel>/Maktx}"
+                            class="sapUiTinyMarginBottom"
+                        />
+                        <ObjectStatus
+                            id="objStatusBatch"
+                            title="{i18n>batch}"
+                            text="{InspectionDetailsModel>/Charg}"
+                            class="sapUiTinyMarginBottom"
+                        />
+                        <ObjectStatus
+                            id="objStatusStartDate"
+                            title="{i18n>manfDate}"
+                            text="{path:'InspectionDetailsModel>/Hsdat', formatter:'.formatter.dateFormatter'}"
+                            class="sapUiTinyMarginBottom"
+                        />
+                    </VBox>
+                    <VBox>
+                        <ObjectStatus
+                            id="objStatusformula"
+                            title="{i18n>formula}"
+                            text="{InspectionDetailsModel>/Zzhbcformula}"
+                            class="sapUiTinyMarginBottom"
+                        />
+                        <ObjectStatus
+                            id="objStatuscountry"
+                            title="{i18n>country}"
+                            text="{InspectionDetailsModel>/Atwrt}"
+                            class="sapUiTinyMarginBottom"
+                        />
+                        <ObjectStatus
+                            id="objStatusmarket"
+                            title="{i18n>market}"
+                            text="{InspectionDetailsModel>/Atwrt2}"
+                            class="sapUiTinyMarginBottom"
+                        />
+                    </VBox>
+                    <VBox>
+                        <!-- <ObjectStatus id="objStatusLiqBatchNo" title="{i18n>liqBatchNo}"
+                            text="{InspectionDetailsModel>/LiquidBatchNo}"
+                            class="sapUiTinyMarginBottom" /> -->
+                        <ObjectStatus
+                            id="objStatusUserStatus"
+                            title="{i18n>status}"
+                            visible="true"
+                            text="{InspectionDetailsModel>/Statusdesc}"
+                            class="sapUiTinyMarginBottom"
+                        />
+                    </VBox>
+                </grid:items>
+            </grid:CSSGrid>
+        </uxap:headerContent>
+        <uxap:sections>
+            <uxap:ObjectPageSection
+                titleUppercase="false"
+                id="generalSection"
+                visible="true"
+            >
+                <uxap:subSections>
+                    <uxap:ObjectPageSubSection id="generalSubSection">
+                        <uxap:blocks>
+                            <VBox id="generalVBox">
+                                <Table
+                                    id="charResultTable"
+                                    noDataText="{i18n>charTableNoDataText}"
+                                    mode="None"
+                                    sticky="HeaderToolbar,InfoToolbar,ColumnHeaders"
+                                >
+                                    <headerToolbar>
+                                        <OverflowToolbar
+                                            id="chartabletb"
+                                            visible="true"
+                                        >
+                                            <Title
+                                                text="{ViewModel>/InspectionPointDesc}"
+                                            />
+                                            <ToolbarSpacer />
+                                            <Button
+                                                id="addSamplebtn"
+                                                text="{i18n>selectSample}"
+                                                visible="{= ${ViewModel>/rrEditable} ? 
+                                             (${ViewModel>/screenMode} === 'edit' ? 
+                                            (${ViewModel>/ShowSelectSample} ? 
+                                             (${ViewModel>/CharEditable} === true) : false) : false) : false }"
+                                                type="Emphasized"
+                                                press="onAddSamplePress"
+                                            />
+                                            <Button
+                                                id="listSamplebtn"
+                                                text="{i18n>sampType}"
+                                                visible="{= ${ViewModel>/rrEditable} ? true : false}"
+                                                type="Emphasized"
+                                                press="onSampleListPress"
+                                            />
+                                        </OverflowToolbar>
+                                    </headerToolbar>
+                                    <columns>
+                                        <!--
+                                        Inspection Characteristic Text -->
+                                        <Column
+                                            id="resultColulmnField"
+                                            popinDisplay="WithoutHeader"
+                                            demandPopin="true"
+                                        >
+                                            <Label
+                                                id="resultColulmnFieldLabel"
+                                                text="{i18n>inspChar}"
+                                            />
+                                        </Column>
+                                        <Column
+                                            id="charDefectValueColulmnField"
+                                            demandPopin="true"
+                                            visible="false"
+                                            width="8rem"
+                                            minScreenWidth="Tablet"
+                                            popinDisplay="WithoutHeader"
+                                        >
+                                            <Label
+                                                id="charDefectColulmnFieldLabel"
+                                                text="{i18n>inspect}"
+                                            />
+                                        </Column>
+                                        <Column
+                                            id="ltdescValueColulmnField"
+                                            width="40%"
+                                            visible="{= ${ViewModel>/ShowRemarks} === true ? false : true}"
+                                        >
+                                            <Label
+                                                id="ltdescColulmnFieldLabel"
+                                                text="{i18n>inspRes}"
+                                            />
+                                        </Column>
+                                        <Column
+                                            id="stautsColulmnField"
+                                            demandPopin="true"
+                                            width="6rem"
+                                            popinDisplay="Inline"
+                                            visible="false"
+                                            minScreenWidth="Desktop"
+                                        >
+                                            <Label
+                                                id="stautsColulmnFieldLabel"
+                                                text="{i18n>validation}"
+                                            />
+                                        </Column>
+
+                                        <Column
+                                            id="shortTextColulmnField"
+                                            width="40%"
+                                            visible="{= ${ViewModel>/ShowRemarks} === true ? true : false}"
+                                        >
+                                            <Label
+                                                id="ashortTextColulmnFieldLabel"
+                                                text="{i18n>inspRes}"
+                                            />
+                                        </Column>
+                                    </columns>
+                                    <items />
+                                </Table>
+                            </VBox>
+                        </uxap:blocks>
+                    </uxap:ObjectPageSubSection>
+                </uxap:subSections>
+            </uxap:ObjectPageSection>
+            <uxap:ObjectPageSection
+                titleUppercase="false"
+                id="commentsSection"
+                title="{i18n>comments}"
+                visible="true"
+            >
+                <uxap:subSections>
+                    <uxap:ObjectPageSubSection id="commentsSubSection">
+                        <uxap:blocks>
+                            <VBox>
+                                <f:SimpleForm
+                                    id="formcomments"
+                                    editable="true"
+                                    layout="ResponsiveGridLayout"
+                                    labelSpanXL="3"
+                                    labelSpanL="3"
+                                    labelSpanM="3"
+                                    labelSpanS="12"
+                                    adjustLabelSpan="false"
+                                    emptySpanXL="0"
+                                    emptySpanL="0"
+                                    emptySpanM="0"
+                                    emptySpanS="0"
+                                    columnsXL="1"
+                                    columnsL="1"
+                                    columnsM="1"
+                                    singleContainerFullSize="false"
+                                >
+                                    <f:content>
+                                        <Label text="Comments Log" />
+                                        <TextArea
+                                            id="commentsta"
+                                            rows="10"
+                                            width="100%"
+                                            liveChange=".onCommentsLiveChange"
+                                            change="onMICCommentsChange"
+                                            editable="false"
+                                        />
+                                        <Label
+                                            id="commnetslbl"
+                                            text="Comments"
+                                        />
+                                        <TextArea
+                                            id="commentsedit"
+                                            rows="3"
+                                            width="100%"
+                                            liveChange=".onCommentsLiveChange"
+                                            change="onMICCommentsChange"
+                                            editable="{= ${ViewModel>/screenMode} === 'edit' ? true : false}"
+                                        />
+                                        <Label text="Status" />
+                                        <ComboBox
+                                            id="statusComboBox"
+                                            items="{
+    path: 'UserStatusData>/results'
+  }"
+                                            editable="{= ${ViewModel>/screenMode} === 'edit' }"
+                                            change="onStatusChange"
+                                        >
+                                            <core:Item
+                                                key="{UserStatusData>Status}"
+                                                text="{UserStatusData>Statusdesc}"
+                                            />
+                                        </ComboBox>
+                                    </f:content>
+                                </f:SimpleForm>
+                            </VBox>
+                        </uxap:blocks>
+                    </uxap:ObjectPageSubSection>
+                </uxap:subSections>
+            </uxap:ObjectPageSection>
+            <uxap:ObjectPageSection
+                titleUppercase="false"
+                id="attachmentSection"
+                title="{i18n>attachements}"
+                visible="true"
+            >
+                <uxap:subSections>
+                    <uxap:ObjectPageSubSection id="attachmentSubSection">
+                        <uxap:blocks>
+                            <Table
+                                id="table-uploadSet"
+                                sticky="ColumnHeaders,HeaderToolbar"
+                                width="auto"
+                                mode="MultiSelect"
+                                fixedLayout="false"
+                                inset="true"
+                                autoPopinMode="true"
+                                hiddenInPopin="None"
+                                items="{path: 'AttachementModel>/items', templateShareable: false}"
+                                selectionChange="onSelectionChange"
+                            >
+                                <headerToolbar>
+                                    <OverflowToolbar>
+                                        <Title id="attachmentTitle" />
+                                        <ToolbarSpacer />
+                                        <upload:ActionsPlaceholder
+                                            id="uploadButton"
+                                            placeholderFor="UploadButtonPlaceholder"
+                                        />
+                                        <Button
+                                            id="download"
+                                            enabled="false"
+                                            text="{i18n>download}"
+                                            press="onDownloadPress"
+                                            type="Transparent"
+                                            visible="true"
+                                        />
+                                        <Button
+                                            id="delete"
+                                            enabled="false"
+                                            text="{i18n>delete}"
+                                            press="onDeletePress"
+                                            type="Transparent"
+                                            visible="{= ${ViewModel>/screenMode} === 'edit' ? true : false}"
+                                        />
+                                    </OverflowToolbar>
+                                </headerToolbar>
+
+                                <dependents>
+                                    <plugins.UploadSetwithTable
+                                        multiple="true"
+                                        uploadEnabled="{= ${ViewModel>/screenMode} === 'edit' ? true : false}"
+                                        uploadButtonInvisible="{= ${ViewModel>/screenMode} === 'view' ? true : false}"
+                                        beforeUploadStarts="onBeforeUploadStarts"
+                                        itemRenamed="onDocumentRenamedSuccess"
+                                        uploadCompleted="onUploadCompleted"
+                                        onActivated="onPluginActivated"
+                                        cloudFilePickerEnabled="true"
+                                        itemValidationHandler=".onItemValidationHandler"
+                                        actions="uploadButton"
+                                    >
+                                        <rowConfiguration>
+                                            <upload.UploadItemConfiguration
+                                                fileNamePath="Filename"
+                                                mediaTypePath="Mimetype"
+                                                urlPath="url"
+                                                fileSizePath="fileSize"
+                                                isTrustedSourcePath="trustedSource"
+                                            />
+                                        </rowConfiguration>
+                                    </plugins.UploadSetwithTable>
+                                </dependents>
+
+                                <columns>
+                                    <Column
+                                        id="fileName"
+                                        importance="High"
+                                        width="96%"
+                                    >
+                                        <header>
+                                            <Label text="{i18n>fileName}" />
+                                        </header>
+                                    </Column>
+                                    <Column
+                                        id="actionButton"
+                                        importance="High"
+                                    />
+                                </columns>
+
+                                <items>
+                                    <ColumnListItem
+                                        highlight="{= ${AttachementModel>uploadState} === 'Complete' ? 'Indication05' : null }"
+                                    >
+                                        <cells>
+                                            <HBox>
+                                                <core:Icon
+                                                    src="{parts: ['AttachementModel>Mimetype', 'AttachementModel>Filename'], formatter: '.getIconSrc' }"
+                                                    visible="{= ${AttachementModel>imageUrl} === undefined || ${AttachementModel>imageUrl} === '' }"
+                                                    class="sapMUSTItemImage sapMUSTItemIcon"
+                                                />
+                                                <VBox
+                                                    class="sapUiTinyMarginTop sapUiSmallMarginBegin"
+                                                >
+                                                    <Link
+                                                        text="{AttachementModel>Filename}"
+                                                        wrapping="true"
+                                                        press="onAttahmentPress"
+                                                        class="sapUiTinyMarginBottom"
+                                                    />
+                                                    <HBox>
+                                                        <ObjectStatus
+                                                            title="{i18n>attachedBy}"
+                                                            text="{AttachementModel>Creator}"
+                                                            class="sapUiTinyMarginEnd"
+                                                        />
+                                                        <ObjectStatus
+                                                            title="{i18n>attachedOn}"
+                                                            text="{parts:['AttachementModel>ArDate', 'AttachementModel>Creatime'], formatter : '.formatter.dateTimeFormatter'}"
+                                                        />
+                                                    </HBox>
+                                                </VBox>
+                                            </HBox>
+                                            <HBox justifyContent="End">
+                                                <Button
+                                                    visible="{= ${ViewModel>/screenMode} === 'edit' ? true : false}"
+                                                    class="sapUiTinyMarginBegin"
+                                                    type="Transparent"
+                                                    icon="sap-icon://decline"
+                                                    press="onItemDeletePress"
+                                                />
+                                            </HBox>
+                                        </cells>
+                                    </ColumnListItem>
+                                </items>
+                            </Table>
+                        </uxap:blocks>
+                    </uxap:ObjectPageSubSection>
+                </uxap:subSections>
+            </uxap:ObjectPageSection>
+        </uxap:sections>
+        <uxap:footer>
+            <OverflowToolbar
+                visible="{= ${ViewModel>/screenMode} === 'edit' ? true : false}"
+            >
+                <ToolbarSpacer />
+                <Button
+                    text="{i18n>save}"
+                    type="Emphasized"
+                    press="onSavePress"
+                    enabled="{ViewModel>/IsDirty}"
+                />
+                <Button
+                    text="{i18n>saveCopy}"
+                    type="Emphasized"
+                    press="onSaveCopyPress"
+                    visible="{= ${ViewModel>/CharEditable} === true }"
+                    enabled="{ViewModel>/IsDirty}"
+                />
+                <Button
+                    text="{i18n>saveNext}"
+                    type="Emphasized"
+                    press="onSaveCopyPress"
+                    visible="{= ${ViewModel>/ShowSaveNext} === true ? (${ViewModel>/CharEditable} === true ? true : false) : false }"
+                    enabled="{ViewModel>/IsDirty}"
+                />
+                <Button
+                    text="{i18n>cancel}"
+                    type="Transparent"
+                    press="onCancelPress"
+                    enabled="true"
+                />
+            </OverflowToolbar>
+        </uxap:footer>
+    </uxap:ObjectPageLayout>
+</mvc:View>

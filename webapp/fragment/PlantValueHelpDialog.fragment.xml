@@ -1,0 +1,59 @@
+<core:FragmentDefinition
+    xmlns="sap.ui.comp.valuehelpdialog"
+    xmlns:m="sap.m"
+    xmlns:fb="sap.ui.comp.filterbar"
+    xmlns:core="sap.ui.core">
+    <ValueHelpDialog
+        title="{i18n>plant}"
+        ok=".onPlantValueHelpOkPress"
+        cancel=".onPlantValueHelpCancelPress"
+        afterClose=".onPlantValueHelpAfterClose"
+        supportRanges="false"
+        key="Werks"
+        descriptionKey="Werks"
+        tokenDisplayBehaviour="idOnly">
+        <filterBar>
+            <fb:FilterBar advancedMode="true" search=".onPlantFilterBarSearch">
+                <fb:filterGroupItems>
+                    <fb:FilterGroupItem
+                        groupName="__$INTERNAL$"
+                        name="Sort1"
+                        label="{i18n>searchTerm1}"
+                        visibleInFilterBar="true">
+                        <fb:control>
+                            <m:Input name="Sort1" change="onNameChangeInPlantVH"/>
+                        </fb:control>
+                    </fb:FilterGroupItem>
+                    <fb:FilterGroupItem
+                        groupName="__$INTERNAL$"
+                        name="Sort2"
+                        label="{i18n>searchTerm2}"
+                        visibleInFilterBar="true">
+                        <fb:control>
+                            <m:Input name="Sort2" change="onNameChangeInPlantVH"/>
+                        </fb:control>
+                    </fb:FilterGroupItem>
+
+                    <fb:FilterGroupItem
+                        groupName="__$INTERNAL$"
+                        name="City1"
+                        label="{i18n>city}"
+                        visibleInFilterBar="true">
+                        <fb:control>
+                            <m:Input name="City1" change="onCityChangeInPlantVH"/>
+                        </fb:control>
+                    </fb:FilterGroupItem>
+                    <fb:FilterGroupItem
+                        groupName="__$INTERNAL$"
+                        name="PostCode1"
+                        label="{i18n>postalCode}"
+                        visibleInFilterBar="true">
+                        <fb:control>
+                            <m:Input name="PostCode1" change="onPostalCodeChangeInPlantVH"/>
+                        </fb:control>
+                    </fb:FilterGroupItem>
+                </fb:filterGroupItems>
+            </fb:FilterBar>
+        </filterBar>
+    </ValueHelpDialog>
+</core:FragmentDefinition>
