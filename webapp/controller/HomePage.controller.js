@@ -1191,46 +1191,449 @@ sap.ui.define([
                 return;
             }
 
-            // Generate unique RequestId (max 10 characters)
-            // Using timestamp last 6 digits + random 4 chars = 10 chars total
-            var sTimestamp = String(new Date().getTime()).slice(-6);
-            var sRandom = Math.random().toString(36).substr(2, 4).toUpperCase();
-            var sRequestId = sTimestamp + sRandom;
-
-            // Prepare payload
-            var oPayload = {
-                RequestId: sRequestId,
-                ToBatchInputSet: aBatchInputSet
-            };
-
             // Call OData service - using download service model from manifest
             BusyIndicator.show();
             var oThis = this;
             var oDownloadModel = this.getOwnerComponent().getModel("downloadService");
 
-            oDownloadModel.create("/BatchRequestSet", oPayload, {
-                success: function (oData, oResponse) {
-                    BusyIndicator.hide();
-                    MessageToast.show("Export request submitted successfully. Request ID: " + sRequestId);
-                    // TODO: Handle the response for download requirement
-                    // The actual Excel file download will be implemented later
-                },
-                error: function (oError) {
-                    BusyIndicator.hide();
-                    var sErrorMessage = "Error exporting data to Excel.";
-                    if (oError && oError.responseText) {
-                        try {
-                            var oErrorData = JSON.parse(oError.responseText);
-                            if (oErrorData.error && oErrorData.error.message && oErrorData.error.message.value) {
-                                sErrorMessage = oErrorData.error.message.value;
+            // If single selection, use existing flow
+            if (aBatchInputSet.length === 1) {
+                // Generate unique RequestId (max 10 characters)
+                var sTimestamp = String(new Date().getTime()).slice(-6);
+                var sRandom = Math.random().toString(36).substr(2, 4).toUpperCase();
+                var sRequestId = sTimestamp + sRandom;
+
+                // Prepare payload
+                var oPayload = {
+                    RequestId: sRequestId,
+                    ToBatchInputSet: aBatchInputSet
+                };
+
+                oDownloadModel.create("/BatchRequestSet", oPayload, {
+                    success: function (oResponseData, oResponse) {
+                        BusyIndicator.hide();
+                        // Call Excel export function with the response data
+                        oThis.onExportExcel(oResponseData, null);
+                    },
+                    error: function (oError) {
+                        BusyIndicator.hide();
+                        var sErrorMessage = "Error exporting data to Excel.";
+                        if (oError && oError.responseText) {
+                            try {
+                                var oErrorData = JSON.parse(oError.responseText);
+                                if (oErrorData.error && oErrorData.error.message && oErrorData.error.message.value) {
+                                    sErrorMessage = oErrorData.error.message.value;
+                                }
+                            } catch (e) {
+                                // Use default error message
                             }
-                        } catch (e) {
-                            // Use default error message
+                        }
+                        MessageToast.show(sErrorMessage);
+                    }
+                });
+            } else {
+                // Multiple selections - create separate sheet for each Material/Batch
+                oThis.onExportExcel(null, aBatchInputSet);
+            }
+        },
+
+        /**
+         * Loads ExcelJS library dynamically if not already loaded
+         * @returns {Promise} Promise that resolves when ExcelJS is available
+         * @private
+         */
+        _loadExcelJSLibrary: function () {
+            return new Promise(function (resolve, reject) {
+                // Check if already loaded
+                if (typeof window !== "undefined" && window.ExcelJS && typeof window.ExcelJS.Workbook !== "undefined") {
+                    resolve(window.ExcelJS);
+                    return;
+                }
+               
+                var sCDNUrl = "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js";
+                var oScript = document.createElement("script");
+                oScript.src = sCDNUrl;
+                oScript.async = true;
+
+                oScript.onload = function () {
+                    // Wait a bit for the library to initialize
+                    setTimeout(function () {
+                        if (typeof window !== "undefined" && window.ExcelJS && typeof window.ExcelJS.Workbook !== "undefined") {
+                            resolve(window.ExcelJS);
+                        } else {
+                            reject(new Error("ExcelJS library loaded but Workbook is not available"));
+                        }
+                    }, 100);
+                };
+
+                oScript.onerror = function () {
+                    reject(new Error("Failed to load ExcelJS from CDN"));
+                };
+
+                document.head.appendChild(oScript);
+            });
+        },
+
+        /**
+         * Generates a sanitized and unique sheet name from Material and Batch.
+         * @param {String} sMaterial - Material number
+         * @param {String} sBatch - Batch number
+         * @param {Object} wb - ExcelJS Workbook instance
+         * @returns {String} Sanitized sheet name
+         * @private
+         */
+        _generateSheetName: function (sMaterial, sBatch, wb) {
+            // Excel sheet names cannot contain: * ? : \ / [ ]
+            // Also limited to 31 characters
+            var sSanitizedMaterial = (sMaterial || "Material").toString().replace(/[*?:\\\/\[\]]/g, "_");
+            var sSanitizedBatch = (sBatch || "Batch").toString().replace(/[*?:\\\/\[\]]/g, "_");
+            
+            var sSheetName = sSanitizedMaterial + "_" + sSanitizedBatch;
+            
+            // Excel sheet names are limited to 31 characters
+            if (sSheetName.length > 31) {
+                // Try to keep both Material and Batch, but truncate if needed
+                var iMaxMaterial = Math.min(sSanitizedMaterial.length, 15);
+                var iMaxBatch = Math.min(sSanitizedBatch.length, 15);
+                sSheetName = sSanitizedMaterial.substring(0, iMaxMaterial) + "_" + sSanitizedBatch.substring(0, iMaxBatch);
+                // If still too long, truncate further
+                if (sSheetName.length > 31) {
+                    sSheetName = sSheetName.substring(0, 31);
+                }
+            }
+            
+            // Ensure unique sheet name
+            var sOriginalSheetName = sSheetName;
+            var iSheetCounter = 1;
+            while (wb.getWorksheet(sSheetName)) {
+                var sBaseName = sOriginalSheetName.substring(0, Math.min(28, sOriginalSheetName.length));
+                sSheetName = sBaseName + "_" + iSheetCounter;
+                if (sSheetName.length > 31) {
+                    sSheetName = sSheetName.substring(0, 31);
+                }
+                iSheetCounter++;
+            }
+            
+            return sSheetName;
+        },
+
+        /**
+         * Creates a single Excel sheet from response data.
+         * @param {Object} wb - ExcelJS Workbook instance
+         * @param {String} sSheetName - Name for the sheet
+         * @param {Object} oResponseData - The response data from OData service
+         * @private
+         */
+        _createExcelSheet: async function (wb, sSheetName, oResponseData) {
+            // Extract data from OData response
+            var aData = [];
+            var sJsonResponse = null;
+            
+            // Check for JsonResponse property (which is a JSON string)
+            if (oResponseData.JsonResponse) {
+                sJsonResponse = oResponseData.JsonResponse;
+            } else if (oResponseData.jsonResponse) {
+                sJsonResponse = oResponseData.jsonResponse;
+            } else if (oResponseData.d && oResponseData.d.JsonResponse) {
+                sJsonResponse = oResponseData.d.JsonResponse;
+            } else if (oResponseData.d && oResponseData.d.jsonResponse) {
+                sJsonResponse = oResponseData.d.jsonResponse;
+            }
+            
+            // Parse the JSON string if found
+            if (sJsonResponse) {
+                try {
+                    if (typeof sJsonResponse === "string") {
+                        aData = JSON.parse(sJsonResponse);
+                    } else {
+                        aData = sJsonResponse;
+                    }
+                } catch (e) {
+                    console.error("JSON parse error:", e, "Response:", sJsonResponse);
+                    return;
+                }
+            } else {
+                // Fallback: check if response has results array or direct data
+                var oResponseResults = oResponseData.results || (oResponseData.d && oResponseData.d.results) || [];
+                
+                if (Array.isArray(oResponseResults) && oResponseResults.length > 0) {
+                    aData = oResponseResults;
+                } else if (oResponseData && Object.keys(oResponseData).length > 0) {
+                    aData = [oResponseData];
+                } else if (oResponseData.d && oResponseData.d.results) {
+                    aData = oResponseData.d.results;
+                } else {
+                    return;
+                }
+            }
+
+            if (!aData || aData.length === 0) {
+                return;
+            }
+
+            // Process each data item (assuming first item for now, can be extended for multiple)
+            var oData = aData[0];
+
+            // Create worksheet
+            const ws = wb.addWorksheet(sSheetName);
+
+            // Two empty rows to match style
+            ws.addRow([]);
+            ws.addRow([]);
+
+            // Header title row: "Header Details"
+            var oHeaderTitleRow = ws.addRow(["", "Header Details"]);
+            var iHeaderRowNum = oHeaderTitleRow.number; // should be 3
+            ws.mergeCells("B" + iHeaderRowNum + ":F" + iHeaderRowNum);
+
+            var oHeaderCell = ws.getCell("B" + iHeaderRowNum);
+            oHeaderCell.font = { bold: true };
+            oHeaderCell.alignment = { horizontal: "center", vertical: "middle" };
+            oHeaderCell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFFF00" }
+            };
+
+            // Header details block - map from response data
+            var sPOAndItem = oData["PO & Item"] || oData["PO & Item"] || "";
+            var sPO = oData.PO || oData.Po || "";
+            var sPOItem = oData["PO Item"] || oData.POItem || oData.PoItem || "";
+            
+            // If PO & Item is combined, try to split it, otherwise use separate fields
+            if (sPOAndItem && !sPO && !sPOItem) {
+                // Try to split "PO & Item" if it contains a separator
+                var aPOAndItem = sPOAndItem.split(/[&\-]/);
+                if (aPOAndItem.length >= 2) {
+                    sPO = aPOAndItem[0].trim();
+                    sPOItem = aPOAndItem[1].trim();
+                } else {
+                    sPO = sPOAndItem.trim();
+                }
+            }
+            
+            var sPlant = oData.Plant || oData.Werk || "";
+            var sMaterial = oData["Monster Material"] || oData.Material || oData.Matnr || "";
+            var sBatch = oData.Batch || oData.Charg || "";
+            var sManufactureDate = oData["Manufacture Date"] || oData.ManufactureDate || oData.Hsdat || "";
+            var sFormula = oData.Formula || oData.Zzhbcformula || "";
+            var sGlobalMarketRegion = oData["Global Market Region"] || oData.GlobalMarketRegion || "";
+            var sMarket = oData.Market || "";
+
+            ws.addRow(["", "PO", sPO, "", "PO Item", sPOItem]);
+            ws.addRow(["", "Plant", sPlant]);
+            ws.addRow(["", "Monster Material", sMaterial]);
+            ws.addRow(["", "Batch", sBatch]);
+            ws.addRow(["", "Manufacture Date", sManufactureDate]);
+            ws.addRow(["", "Formula", sFormula]);
+            ws.addRow(["", "Global Market Region", sGlobalMarketRegion]);
+            ws.addRow(["", "Market", sMarket]);
+
+            // Blank row between header and first operation block
+            ws.addRow([]);
+
+            // Loop all operations and create one block per operation
+            var aOperations = oData.Operations || oData.operations || [];
+            if (!aOperations.length) {
+                return;
+            }
+
+            aOperations.forEach(function (oOperation, iIndex) {
+                var sOperationText = oOperation["Operation text"] || oOperation.OperationText || oOperation.Operationtext || "";
+                var aInspectionPoints = oOperation["Inspection Points"] || oOperation.InspectionPoints || oOperation.inspectionPoints || [];
+
+                if (!aInspectionPoints.length) {
+                    // If this operation has no inspection points, skip it
+                    return;
+                }
+
+                // Add a gap between operation blocks, but not before the first one
+                if (iIndex > 0) {
+                    ws.addRow([]);
+                }
+
+                // Sample columns = each "Sample Type/Syrup Batch"
+                var aSamples = aInspectionPoints.map(function (ip) {
+                    return ip["Sample Type/Syrup Batch"] || ip.SampleTypeSyrupBatch || ip.SampleType || "";
+                });
+
+                // Row: Operation + repeated "Sample Type/Syrup Batch"
+                var aHeaderRow = ["", "Operation"];
+                aSamples.forEach(function () {
+                    aHeaderRow.push("Sample Type/Syrup Batch");
+                });
+                var oOpHeaderRow = ws.addRow(aHeaderRow);
+
+                // Style header row
+                oOpHeaderRow.font = { bold: true };
+                oOpHeaderRow.eachCell(function (cell, colNumber) {
+                    if (colNumber >= 2) {
+                        cell.alignment = { horizontal: "center" };
+                        cell.fill = {
+                            type: "pattern",
+                            pattern: "solid",
+                            fgColor: { argb: "FFFF00" }
+                        };
+                    }
+                });
+
+                // Row: Operation text + sample codes
+                var aSampleRow = ["", sOperationText];
+                aSamples.forEach(function (sSample) {
+                    aSampleRow.push(sSample);
+                });
+                ws.addRow(aSampleRow);
+
+                // Optional blank row before MIC rows for this operation
+                ws.addRow([]);
+
+                // Collect all unique MIC names for this operation dynamically
+                var oMicNameSet = new Set();
+                aInspectionPoints.forEach(function (ip) {
+                    var aMics = ip.MICs || ip.mics || ip.Mics || [];
+                    aMics.forEach(function (mic) {
+                        if (mic && (mic["MIC Name"] || mic.MICName || mic.MicName)) {
+                            oMicNameSet.add(mic["MIC Name"] || mic.MICName || mic.MicName);
+                        }
+                    });
+                });
+                var aMicNames = Array.from(oMicNameSet);
+
+                // For each MIC name create one row
+                aMicNames.forEach(function (sMicName) {
+                    var aRow = ["", sMicName];
+
+                    aInspectionPoints.forEach(function (ip) {
+                        var aMicList = ip.MICs || ip.mics || ip.Mics || [];
+                        var oFound = aMicList.find(function (m) {
+                            return (m["MIC Name"] || m.MICName || m.MicName) === sMicName;
+                        });
+                        aRow.push(oFound ? (oFound["MIC Value"] || oFound.MICValue || oFound.MicValue || "") : "");
+                    });
+
+                    ws.addRow(aRow);
+                });
+            });
+
+            // Auto column widths
+            ws.columns.forEach(function (col) {
+                var maxLength = 10;
+                col.eachCell({ includeEmpty: true }, function (cell) {
+                    var val = cell.value == null ? "" : cell.value.toString();
+                    if (val.length > maxLength) {
+                        maxLength = val.length;
+                    }
+                });
+                col.width = maxLength + 2;
+            });
+        },
+
+        /**
+         * Unified function to export inspection data to Excel file.
+         * Handles both single and multiple selections.
+         * @param {Object} oResponseData - The response data from OData service (for single selection)
+         * @param {Array} aBatchInputSet - Array of Material/Batch objects (for multiple selection)
+         * @public
+         */
+        onExportExcel: async function (oResponseData, aBatchInputSet) {
+            try {
+                // Load ExcelJS library dynamically
+                var ExcelJS = await this._loadExcelJSLibrary();
+                
+                if (!ExcelJS || typeof ExcelJS.Workbook === "undefined") {
+                    BusyIndicator.hide();
+                    MessageToast.show("Failed to load ExcelJS library.");
+                    return;
+                }
+
+                // Create workbook
+                const wb = new ExcelJS.Workbook();
+                var iProcessedCount = 0;
+                var sFileName = "InspectionResults.xlsx";
+                var sSuccessMessage = "Excel file downloaded successfully.";
+
+                if (aBatchInputSet && aBatchInputSet.length > 0) {
+                    // Multiple selection mode
+                    var oDownloadModel = this.getOwnerComponent().getModel("downloadService");
+
+                    // Process each Material/Batch combination
+                    for (var i = 0; i < aBatchInputSet.length; i++) {
+                        var oBatchInput = aBatchInputSet[i];
+                        
+                        // Generate unique RequestId for each request
+                        var sTimestamp = String(new Date().getTime() + i).slice(-6);
+                        var sRandom = Math.random().toString(36).substr(2, 4).toUpperCase();
+                        var sRequestId = sTimestamp + sRandom;
+
+                        // Prepare payload for single Material/Batch
+                        var oPayload = {
+                            RequestId: sRequestId,
+                            ToBatchInputSet: [oBatchInput]
+                        };
+
+                        // Call OData service for this Material/Batch
+                        try {
+                            var oResponseDataForBatch = await new Promise(function (resolve, reject) {
+                                oDownloadModel.create("/BatchRequestSet", oPayload, {
+                                    success: function (oData, oResponse) {
+                                        resolve(oData);
+                                    },
+                                    error: function (oError) {
+                                        reject(oError);
+                                    }
+                                });
+                            });
+
+                            // Generate sheet name from Material and Batch
+                            var sSheetName = this._generateSheetName(oBatchInput.Material, oBatchInput.Batch, wb);
+
+                            // Create sheet using the helper function
+                            await this._createExcelSheet(wb, sSheetName, oResponseDataForBatch);
+                            iProcessedCount++;
+
+                        } catch (oError) {
+                            console.error("Error processing Material/Batch:", oBatchInput, oError);
+                            // Continue with next item even if one fails
                         }
                     }
-                    MessageToast.show(sErrorMessage);
+
+                    if (iProcessedCount === 0) {
+                        BusyIndicator.hide();
+                        MessageToast.show("Failed to export any data.");
+                        return;
+                    }
+
+                    sSuccessMessage = "Excel file downloaded successfully with " + iProcessedCount + " sheet(s).";
+
+                } else if (oResponseData) {
+                    // Single selection mode
+                    // Create sheet using the helper function
+                    await this._createExcelSheet(wb, "Inspection Results", oResponseData);
+                    iProcessedCount = 1;
+                } else {
+                    BusyIndicator.hide();
+                    MessageToast.show("No data available to export.");
+                    return;
                 }
-            });
+
+                // Download the file
+                const buffer = await wb.xlsx.writeBuffer();
+                const blob = new Blob([buffer], { type: "application/octet-stream" });
+                const link = document.createElement("a");
+                link.href = URL.createObjectURL(blob);
+                link.download = sFileName;
+                link.click();
+
+                // Clean up
+                URL.revokeObjectURL(link.href);
+                BusyIndicator.hide();
+                MessageToast.show(sSuccessMessage);
+
+            } catch (oError) {
+                BusyIndicator.hide();
+                MessageToast.show("Error generating Excel file: " + (oError.message || "Unknown error"));
+                console.error("Export error:", oError);
+            }
         },
 
     });
