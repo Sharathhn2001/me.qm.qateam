@@ -15,37 +15,37 @@ sap.ui.define([
         formatter: Formatter,
         async onInit() {
             try {
-                const oPlantDetails = await this._getIasDetails();
+                // const oPlantDetails = await this._getIasDetails();
 
-                let rawEmail = oPlantDetails.email;
-                if (Array.isArray(rawEmail)) {
-                    this._userEmail = rawEmail.find(email => email) || "";
-                } else {
-                    this._userEmail = rawEmail || "";
-                }
+                // let rawEmail = oPlantDetails.email;
+                // if (Array.isArray(rawEmail)) {
+                //     this._userEmail = rawEmail.find(email => email) || "";
+                // } else {
+                //     this._userEmail = rawEmail || "";
+                // }
 
-                this._isQMUser = String(oPlantDetails.isQMUser).toLowerCase() === "true";
+                // this._isQMUser = String(oPlantDetails.isQMUser).toLowerCase() === "true";
 
-                this.sPlant = "";
+                // this.sPlant = "";
+                // this.sPlantName = "";
+
+                this.sPlant = "3011";
                 this.sPlantName = "";
 
-                //this.sPlant = "3011";
-                //this.sPlantName = "";
+                // if (!this._isQMUser) {
+                //     this.sPlant = oPlantDetails.Plant;
+                //     this.sPlantName = oPlantDetails.PlantName;
 
-                if (!this._isQMUser) {
-                    this.sPlant = oPlantDetails.Plant;
-                    this.sPlantName = oPlantDetails.PlantName;
-
-                    const oPlantInput = this.byId("plantInputname");
-                    if (oPlantInput) {
-                        oPlantInput.setValue(this.sPlant);
-                    }
-                } else {
-                    this.waitForCondition(
-                        () => this._userEmail.trim() !== "",
-                        () => this.PlantF4()
-                    );
-                }
+                //     const oPlantInput = this.byId("plantInputname");
+                //     if (oPlantInput) {
+                //         oPlantInput.setValue(this.sPlant);
+                //     }
+                // } else {
+                //     this.waitForCondition(
+                //         () => this._userEmail.trim() !== "",
+                //         () => this.PlantF4()
+                //     );
+                // }
 
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
@@ -1154,6 +1154,83 @@ sap.ui.define([
                 IsQMUser: encodeURIComponent(this._isQMUser === true ? "true" : "false")
             }
             this.getRouter().navTo("RouteCharacteristicOverview", oObj);
+        },
+
+        /**
+         * Event handler for Export to Excel button press.
+         * Gets selected table items and calls the OData service to export data.
+         * @public
+         */
+        onExportToExcelPress: function () {
+            var oTable = this.getView().byId("table");
+            var aSelectedItems = oTable.getSelectedItems();
+
+            if (!aSelectedItems || aSelectedItems.length === 0) {
+                MessageToast.show("Please select at least one record to export.");
+                return;
+            }
+
+            // Extract Material and Batch from selected items
+            var aBatchInputSet = [];
+            for (var i = 0; i < aSelectedItems.length; i++) {
+                var oSelectedItem = aSelectedItems[i];
+                var oContext = oSelectedItem.getBindingContext();
+                if (oContext) {
+                    var oData = oContext.getObject();
+                    if (oData.Matnr && oData.Charg) {
+                        aBatchInputSet.push({
+                            Material: oData.Matnr,
+                            Batch: oData.Charg
+                        });
+                    }
+                }
+            }
+
+            if (aBatchInputSet.length === 0) {
+                MessageToast.show("Selected records do not contain valid Material and Batch information.");
+                return;
+            }
+
+            // Generate unique RequestId (max 10 characters)
+            // Using timestamp last 6 digits + random 4 chars = 10 chars total
+            var sTimestamp = String(new Date().getTime()).slice(-6);
+            var sRandom = Math.random().toString(36).substr(2, 4).toUpperCase();
+            var sRequestId = sTimestamp + sRandom;
+
+            // Prepare payload
+            var oPayload = {
+                RequestId: sRequestId,
+                ToBatchInputSet: aBatchInputSet
+            };
+
+            // Call OData service - using download service model from manifest
+            BusyIndicator.show();
+            var oThis = this;
+            var oDownloadModel = this.getOwnerComponent().getModel("downloadService");
+
+            oDownloadModel.create("/BatchRequestSet", oPayload, {
+                success: function (oData, oResponse) {
+                    BusyIndicator.hide();
+                    MessageToast.show("Export request submitted successfully. Request ID: " + sRequestId);
+                    // TODO: Handle the response for download requirement
+                    // The actual Excel file download will be implemented later
+                },
+                error: function (oError) {
+                    BusyIndicator.hide();
+                    var sErrorMessage = "Error exporting data to Excel.";
+                    if (oError && oError.responseText) {
+                        try {
+                            var oErrorData = JSON.parse(oError.responseText);
+                            if (oErrorData.error && oErrorData.error.message && oErrorData.error.message.value) {
+                                sErrorMessage = oErrorData.error.message.value;
+                            }
+                        } catch (e) {
+                            // Use default error message
+                        }
+                    }
+                    MessageToast.show(sErrorMessage);
+                }
+            });
         },
 
     });

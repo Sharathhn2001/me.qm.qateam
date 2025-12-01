@@ -24,6 +24,14 @@
           "localUri": "localService/mainService/metadata.xml",
           "odataVersion": "2.0"
         }
+      },
+      "downloadService": {
+        "uri": "/sap/opu/odata/sap/ZQM_BTP_INSP_DATA_DOWNLOAD_SRV/",
+        "type": "OData",
+        "settings": {
+          "annotations": [],
+          "odataVersion": "2.0"
+        }
       }
     },
     "crossNavigation": {
@@ -81,6 +89,11 @@
       "": {
         "dataSource": "mainService",
         "preload": true,
+        "settings": {}
+      },
+      "downloadService": {
+        "dataSource": "downloadService",
+        "preload": false,
         "settings": {}
       }
     },

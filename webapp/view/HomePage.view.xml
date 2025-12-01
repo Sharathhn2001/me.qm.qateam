@@ -188,7 +188,7 @@
         <f:content>
             <Table
                 id="table"
-                mode="SingleSelectMaster"
+                mode="MultiSelect"
                 noDataText="{ViewModel>/tableNoDataText}"
                 inset="false"
                 popinLayout="GridLarge"
@@ -208,6 +208,14 @@
                             level="H3"
                         />
                         <ToolbarSpacer id="tableToolbarSpacer" />
+                        <Button
+                            id="exportToExcelButton"
+                            text="Export to Excel"
+                            visible="true"
+                            press=".onExportToExcelPress"
+                            type="Default"
+                            icon="sap-icon://excel-attachment"
+                        />
                         <Button
                             id="createButton"
                             text="{i18n>submitnew}"
