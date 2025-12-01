@@ -210,10 +210,10 @@
                         <ToolbarSpacer id="tableToolbarSpacer" />
                         <Button
                             id="exportToExcelButton"
-                            text="Export to Excel"
+                            text="Download Report"
                             visible="true"
                             press=".onExportToExcelPress"
-                            type="Default"
+                            type="Emphasized"
                             icon="sap-icon://excel-attachment"
                         />
                         <Button
