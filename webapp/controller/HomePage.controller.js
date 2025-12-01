@@ -1135,7 +1135,9 @@ sap.ui.define([
 
         onItemPress: async function (oEvent) {
             var oViewModelData = this.getView().getModel("ViewModel").getData();
-            var oSelectedContext = oEvent.getSource().getSelectedItem().getBindingContext();
+            // In MultiSelect mode, get the pressed item directly from the event
+            var oPressedItem = oEvent.getParameter("listItem") || oEvent.getSource();
+            var oSelectedContext = oPressedItem.getBindingContext();
             var oSelcetedObject = oSelectedContext.getObject();
 
             var sSubmitterName = this._isQMUser ? "none" : oViewModelData.SubmitterName || "none";
