@@ -1397,22 +1397,6 @@ sap.ui.define([
                 fgColor: { argb: "FFFF00" }
             };
 
-            // Header details block - map from response data
-            var sPOAndItem = oData["PO & Item"] || oData["PO & Item"] || "";
-            var sPO = oData.PO || oData.Po || "";
-            var sPOItem = oData["PO Item"] || oData.POItem || oData.PoItem || "";
-            
-            // If PO & Item is combined, try to split it, otherwise use separate fields
-            if (sPOAndItem && !sPO && !sPOItem) {
-                // Try to split "PO & Item" if it contains a separator
-                var aPOAndItem = sPOAndItem.split(/[&\-]/);
-                if (aPOAndItem.length >= 2) {
-                    sPO = aPOAndItem[0].trim();
-                    sPOItem = aPOAndItem[1].trim();
-                } else {
-                    sPO = sPOAndItem.trim();
-                }
-            }
             
             var sPlant = oData.Plant || oData.Werk || "";
             var sMaterial = oData["Monster Material"] || oData.Material || oData.Matnr || "";
@@ -1422,7 +1406,6 @@ sap.ui.define([
             var sGlobalMarketRegion = oData["Global Market Region"] || oData.GlobalMarketRegion || "";
             var sMarket = oData.Market || "";
 
-            ws.addRow(["", "PO", sPO, "", "PO Item", sPOItem]);
             ws.addRow(["", "Plant", sPlant]);
             ws.addRow(["", "Monster Material", sMaterial]);
             ws.addRow(["", "Batch", sBatch]);
