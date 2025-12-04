@@ -1199,19 +1199,16 @@ sap.ui.define([
                 return;
             }
 
-            // Call OData service - using download service model from manifest
             BusyIndicator.show();
             var oThis = this;
             var oDownloadModel = this.getOwnerComponent().getModel("downloadService");
 
-            // If single selection, use existing flow
             if (aBatchInputSet.length === 1) {
-                // Generate unique RequestId (max 10 characters)
+                // Generate unique RequestId 
                 var sTimestamp = String(new Date().getTime()).slice(-6);
                 var sRandom = Math.random().toString(36).substr(2, 4).toUpperCase();
                 var sRequestId = sTimestamp + sRandom;
 
-                // Prepare payload
                 var oPayload = {
                     RequestId: sRequestId,
                     ToBatchInputSet: aBatchInputSet
@@ -1220,7 +1217,6 @@ sap.ui.define([
                 oDownloadModel.create("/BatchRequestSet", oPayload, {
                     success: function (oResponseData, oResponse) {
                         BusyIndicator.hide();
-                        // Call Excel export function with the response data
                         oThis.onExportExcel(oResponseData, null);
                     },
                     error: function (oError) {
@@ -1232,15 +1228,13 @@ sap.ui.define([
                                 if (oErrorData.error && oErrorData.error.message && oErrorData.error.message.value) {
                                     sErrorMessage = oErrorData.error.message.value;
                                 }
-                            } catch (e) {
-                                // Use default error message
+                            } catch (e) {      
                             }
                         }
                         MessageToast.show(sErrorMessage);
                     }
                 });
             } else {
-                // Multiple selections - create separate sheet for each Material/Batch
                 oThis.onExportExcel(null, aBatchInputSet);
             }
         },
@@ -1291,20 +1285,17 @@ sap.ui.define([
          * @private
          */
         _generateSheetName: function (sMaterial, sBatch, wb) {
-            // Excel sheet names cannot contain: * ? : \ / [ ]
-            // Also limited to 31 characters
+           
             var sSanitizedMaterial = (sMaterial || "Material").toString().replace(/[*?:\\\/\[\]]/g, "_");
             var sSanitizedBatch = (sBatch || "Batch").toString().replace(/[*?:\\\/\[\]]/g, "_");
             
             var sSheetName = sSanitizedMaterial + "_" + sSanitizedBatch;
             
-            // Excel sheet names are limited to 31 characters
+           
             if (sSheetName.length > 31) {
-                // Try to keep both Material and Batch, but truncate if needed
                 var iMaxMaterial = Math.min(sSanitizedMaterial.length, 15);
                 var iMaxBatch = Math.min(sSanitizedBatch.length, 15);
                 sSheetName = sSanitizedMaterial.substring(0, iMaxMaterial) + "_" + sSanitizedBatch.substring(0, iMaxBatch);
-                // If still too long, truncate further
                 if (sSheetName.length > 31) {
                     sSheetName = sSheetName.substring(0, 31);
                 }
@@ -1379,7 +1370,7 @@ sap.ui.define([
                 return;
             }
 
-            // Process each data item (assuming first item for now, can be extended for multiple)
+            // Process each data item 
             var oData = aData[0];
 
             // Create worksheet
@@ -1475,7 +1466,6 @@ sap.ui.define([
                 });
                 ws.addRow(aSampleRow);
 
-                // Optional blank row before MIC rows for this operation
                 ws.addRow([]);
 
                 // Collect all unique MIC names for this operation dynamically
