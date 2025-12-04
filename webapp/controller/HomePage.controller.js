@@ -1392,7 +1392,7 @@ sap.ui.define([
             // Header title row: "Header Details"
             var oHeaderTitleRow = ws.addRow(["", "Header Details"]);
             var iHeaderRowNum = oHeaderTitleRow.number; // should be 3
-            ws.mergeCells("B" + iHeaderRowNum + ":F" + iHeaderRowNum);
+            ws.mergeCells("B" + iHeaderRowNum + ":D" + iHeaderRowNum);
 
             var oHeaderCell = ws.getCell("B" + iHeaderRowNum);
             oHeaderCell.font = { bold: true };
