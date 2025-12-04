@@ -1172,6 +1172,12 @@ sap.ui.define([
                 return;
             }
 
+              // Limit maximum selections to 25 for performance
+            if (aSelectedItems.length > 25) {
+                MessageToast.show("Maximum 25 records can be exported at a time. Please select fewer records.");
+                return;
+            }
+
             // Extract Material and Batch from selected items
             var aBatchInputSet = [];
             for (var i = 0; i < aSelectedItems.length; i++) {
