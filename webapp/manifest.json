@@ -126,7 +126,7 @@
         },
         {
           "name": "RouteCharacteristicOverview",
-          "pattern": "/insplotoverview/{Plant}/{Material}/{Batch}/{SubmitterName}/{SubmitterEmail}/{IsSubmitNew}/{IsQMUser}",
+          "pattern": "/insplotoverview/{Plant}/{Material}/{Batch}/{IsSubmitNew}/{Ebeln}/{Ebelp}/{Formula}/{IsQMUser}",
           "target": [
             "TargetCharacteristicOverview"
           ]

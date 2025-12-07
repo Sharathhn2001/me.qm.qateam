@@ -85,7 +85,19 @@ _getIasDetails: function () {
             contentType: 'application/json',
             success: function (data) {
                 const oView = this.getView();
+/*
+                const email = data.email || "";
+                let namePart = email.split("@")[0];
 
+                if (namePart.includes(".")) {
+                    namePart = namePart
+                        .split(".")
+                        .map(s => s.charAt(0).toUpperCase() + s.slice(1))
+                        .join(" ");
+                }
+
+                this.sSubmitterName = namePart;
+        */        
                 const groupList = Array.isArray(data.Groups)
                     ? data.Groups
                     : typeof data.Groups === "string"

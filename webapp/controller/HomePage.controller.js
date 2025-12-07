@@ -15,6 +15,7 @@ sap.ui.define([
         formatter: Formatter,
         async onInit() {
             try {
+                
                 const oPlantDetails = await this._getIasDetails();
 
                 let rawEmail = oPlantDetails.email;
@@ -29,8 +30,8 @@ sap.ui.define([
                 this.sPlant = "";
                 this.sPlantName = "";
 
-                // this.sPlant = "3011";
-                // this.sPlantName = "";
+          //     this.sPlant = "3011";
+            //   this.sPlantName = "";
 
                 if (!this._isQMUser) {
                     this.sPlant = oPlantDetails.Plant;
@@ -103,7 +104,9 @@ sap.ui.define([
                     this.getMaterialF4();
                     this.getBatchF4([]);
                     this.getFormulaF4();
-                    this.getSubmitterInfo();
+                    this.getPurchaseOrderF4();
+                    this.getSampleTypeF4();
+                    this.getSyrupBatchF4();
                 }
 
             } catch (oError) {
@@ -336,25 +339,31 @@ sap.ui.define([
          * @returns {sap.ui.model.Filter[]} aTableFilters Array of Filters
          * @private
          */
-        _createFiltersForHeaderTable: function () {
+         _createFiltersForHeaderTable: function () {
             var aTableFilters = [];
             var oViewModel = this.getModel("ViewModel");
             //var oPlantMInput = this.getView().byId("plantMIput");
+            var oPurchaseOrderMI = this.byId("PurchaseOrderInput");
+            var oSampleTypeMI = this.byId("sampleTypeMInput");
+            var oSyrupBatchInput = this.byId("idsyrupbatch");
             var oMaterialMInput = this.getView().byId("materialMInput");
             var oBatchMInput = this.getView().byId("batchMInput");
             var oFormulaMInput = this.getView().byId("formulaMInput");
             var oDateRange = this.getView().byId("dateRangeSelection");
-            var oStatusSelect = this.getView().byId("statusCombo");
-            var sSelectedKey = oStatusSelect.getSelectedKey();
+           
+            // var sSelectedKey = oStatusSelect.getSelectedKey();
+          var oStatusCombo = this.byId("statusCombo");
             //var oMsgStrip = this.getView().byId("msgstrip");
 
             var dStartDate = oDateRange.getDateValue();
             var dEndDate = oDateRange.getSecondDateValue();
             //var aPlantTokens = oPlantMInput.getTokens();
+            var aPurchaseOrderTokens = oPurchaseOrderMI.getTokens();
+            var aSampleTypeTokens = oSampleTypeMI.getTokens();
             var aMaterialTokens = oMaterialMInput.getTokens();
             var aBatchTokens = oBatchMInput.getTokens();
             var aFormulaTokens = oFormulaMInput.getTokens();
-
+            var sStatusKey = oStatusCombo.getSelectedKey();
             //var aPlantFilters = [];
             var aMaterialFilters = [];
             var aBatchFilters = [];
@@ -373,6 +382,65 @@ sap.ui.define([
                     and: true
                 }));
             }
+        if (aPurchaseOrderTokens.length > 0) {
+    let aPOFilters = [];
+
+    aPurchaseOrderTokens.forEach(function (oToken) {
+        if (oToken.getKey()) {
+
+            const sEbeln = oToken.getKey();
+
+            const sEbelp = oToken.getCustomData()[0]?.getValue() || "";
+
+            aPOFilters.push(new sap.ui.model.Filter({
+                filters: [
+                    new sap.ui.model.Filter("Ebeln", sap.ui.model.FilterOperator.EQ, sEbeln),
+                    new sap.ui.model.Filter("Ebelp", sap.ui.model.FilterOperator.EQ, sEbelp)
+                ],
+                and: true
+            }));
+        }
+    });
+
+    if (aPOFilters.length > 0) {
+        aTableFilters.push(new sap.ui.model.Filter({ filters: aPOFilters, and: false }));
+    }
+}
+
+           
+            if (aSampleTypeTokens.length > 0) {
+                let aSampleFilters = [];
+
+                aSampleTypeTokens.forEach(function (oToken) {
+                    if (oToken.getKey()) {
+                        aSampleFilters.push(
+                            new sap.ui.model.Filter("Userc2", sap.ui.model.FilterOperator.EQ, oToken.getKey())
+                        );
+                    }
+                });
+
+                if (aSampleFilters.length > 0) {
+                    aTableFilters.push(new sap.ui.model.Filter({ filters: aSampleFilters, and: false }));
+                }
+            }
+          
+         var aSyrupBatchTokens = this.byId("syrupBatchMInput").getTokens();
+
+if (aSyrupBatchTokens.length > 0) {
+    let aSyrupFilters = [];
+
+    aSyrupBatchTokens.forEach(function (oToken) {
+        if (oToken.getKey()) {
+            aSyrupFilters.push(
+                new sap.ui.model.Filter("Userc1", sap.ui.model.FilterOperator.EQ, oToken.getKey())
+            );
+        }
+    });
+
+    if (aSyrupFilters.length > 0) {
+        aTableFilters.push(new sap.ui.model.Filter({ filters: aSyrupFilters, and: false }));
+    }
+}
 
             if (aMaterialTokens.length > 0) {
                 for (var i = 0; i < aMaterialTokens.length; i++) {
@@ -410,9 +478,12 @@ sap.ui.define([
                 }
             }
 
-            if (sSelectedKey) {
-                aTableFilters.push(new Filter({ path: "Status", operator: FilterOperator.EQ, value1: sSelectedKey }));
+            if (sStatusKey) {
+                aTableFilters.push(
+                    new sap.ui.model.Filter("Vbewertung", sap.ui.model.FilterOperator.EQ, sStatusKey)
+                );
             }
+
 
             return aTableFilters;
 
@@ -917,246 +988,600 @@ sap.ui.define([
         onFormulaCancel: function (oEvent) {
             oEvent.getSource().getBinding("items").filter([]);
         },
-        onSubmitNewPress: async function () {
-            var oViewModelData = this.getView().getModel("ViewModel").getData();
-            BusyIndicator.show();
+       
+    SyrupBatchValueHelp: function (oEvent) {
+    this.getSyrupBatchF4();
+
+    this._oSyrupBatchSourceIp = oEvent.getSource();
+
+    if (!this._oSyrupBatchValueHelpDialog) {
+        this.loadFragment({
+            name: "com.monsterenergy.qm.me.qm.qateam.fragment.SyrupBatchValueHelpDialog"
+        }).then(function (oDialog) {
+            this._oSyrupBatchValueHelpDialog = oDialog;
+            this._oSyrupBatchValueHelpDialog.open();
+        }.bind(this));
+    } else {
+        this._oSyrupBatchValueHelpDialog.open();
+    }
+},
+getSyrupBatchF4: function () {
+    var oView = this.getView();
+    var oModel = oView.getModel("SyrupBatchModel");
+    var aFilters = [];
+
+    aFilters.push(new sap.ui.model.Filter("Werk", sap.ui.model.FilterOperator.EQ, this.sPlant));
+
+    var oSampleInput = this.byId("sampleTypeMInput");
+    var aTokens = oSampleInput ? oSampleInput.getTokens() : [];
+
+    if (aTokens.length === 1) {
+        aFilters.push(new sap.ui.model.Filter("Userc1", sap.ui.model.FilterOperator.EQ, aTokens[0].getKey()));
+    } else if (aTokens.length > 1) {
+        var aOrFilters = aTokens.map(function (t) {
+            return new sap.ui.model.Filter("Userc1", sap.ui.model.FilterOperator.EQ, t.getKey());
+        });
+
+        aFilters.push(new sap.ui.model.Filter({
+            filters: aOrFilters,
+            and: false
+        }));
+    }
+
+    this.readDataFromODataModel("/SyrupBatchNoSet", aFilters)
+        .then(function (oData) {
+
+            if (oModel) {
+                oModel.setData(oData);
+            } else {
+                var oNewModel = new sap.ui.model.json.JSONModel(oData);
+                oNewModel.setSizeLimit(100000);
+                oView.setModel(oNewModel, "SyrupBatchModel");
+            }
+
+        }.bind(this))
+        .catch(function (err) {
+            var oError = JSON.parse(err.responseText || "{}");
+            var sMsg = oError.error?.message?.value || "Unknown Error";
+            sap.m.MessageBox.error(sMsg, { title: "Error" });
+        });
+},
+
+
+onSyrupBatchSearch: function (oEvent) {
+    let sValue = oEvent.getParameter("value");
+    let oBinding = oEvent.getSource().getBinding("items");
+
+    oBinding.filter([
+        new sap.ui.model.Filter({
+            path: "Userc1",
+            operator: sap.ui.model.FilterOperator.Contains,
+            value1: sValue
+        })
+    ]);
+},
+
+onSyrupBatchClose: function (oEvent) {
+    const oSelectedItem = oEvent.getParameter("selectedItem");
+    const oInput = this._oSyrupBatchSourceIp;
+
+    if (!oSelectedItem || !oInput) return;
+
+    const ctx = oSelectedItem.getBindingContext("SyrupBatchModel");
+
+    oInput.addToken(new sap.m.Token({
+        key: ctx.getProperty("Userc1"),
+        text: ctx.getProperty("Userc1")
+    }));
+},
+
+
+onSyrupBatchVHCancel: function () {
+    this._oSyrupBatchValueHelpDialog.close();
+},
+
+     getSampleTypeF4: async function () {
+    const oModel = this.getView().getModel("SampleTypeF4Model");
+    let oData = {};
+
+    try {
+       
+        oData = await this.readDataFromODataModel("/SampleType_F4Set", []);
+    } catch (Error) {
+        const oError = JSON.parse(Error.responseText);
+        sap.m.MessageBox.error(oError.error.message.value, { title: "Error" });
+        return;
+    }
+
+    if (oModel) {
+        oModel.setData(oData);
+    } else {
+        const oNewModel = new sap.ui.model.json.JSONModel(oData);
+        oNewModel.setSizeLimit(100000);
+        this.getView().setModel(oNewModel, "SampleTypeModel");
+    }
+},
+
+onSampleTypeValueHelp: async function (oEvent) {
+    this.getSampleTypeF4();
+    this._oSampleTypeSourceIp = oEvent.getSource();
+
+    try {
+        if (!this._oSampleTypeValueHelpDialog) {
+            this._oSampleTypeValueHelpDialog = await this.loadFragment({
+                name: "com.monsterenergy.qm.me.qm.qateam.fragment.SampleTypeValueHelpDialog"
+            });
+        }
+    } catch (error) {
+        return;
+    }
+
+    this._oSampleTypeValueHelpDialog.open();
+},
+
+onSampleTypeClose: function (oEvent) {
+    const aContexts = oEvent.getParameter("selectedContexts");
+    const oInput = this._oSampleTypeSourceIp;
+
+    if (!aContexts?.length || !oInput) return;
+
+    aContexts.forEach(ctx => {
+        const oObj = ctx.getObject();
+
+        oInput.addToken(
+            new sap.m.Token({
+                key: oObj.SampleType,
+                text: oObj.SampleTypeDesc
+            })
+        );
+    });
+
+    oEvent.getSource().getBinding("items").filter([]);
+},
+
+onSampleTypeSearch: function (oEvent) {
+    const sQuery = oEvent.getParameter("value");
+    const oBinding = oEvent.getSource().getBinding("items");
+
+    const oFilter = new Filter({
+        filters: [
+            new Filter({ path: "SampleType", operator: FilterOperator.Contains, value1: sQuery }),
+            new Filter({ path: "SampleTypeDesc", operator: FilterOperator.Contains, value1: sQuery })
+        ],
+        and: false
+    });
+
+    oBinding.filter(sQuery ? [oFilter] : []);
+},
+
+ getPurchaseOrderF4: async function () {
+            var oPurchaseOrderF4Model = this.getView().getModel("PurchaseOrderF4Model");
+            var oPurchaseOrderF4 = {};
+            try {
+                oPurchaseOrderF4 = await this.readDataFromODataModel("/PO_F4Set",
+                    [
+                        new Filter({ path: "Werks", operator: FilterOperator.EQ, value1: this.sPlant }),
+                       // new Filter({ path: "Distinct", operator: FilterOperator.EQ, value1: "X" })
+                    ]);
+
+            } catch (Error) {
+                var oError = JSON.parse(Error.responseText);
+                var sMessage = oError.error.message.value;
+                sap.m.MessageBox.error(sMessage, {
+                    title: "Error"
+                });
+            }
+
+            if (oPurchaseOrderF4Model) {
+                oPurchaseOrderF4Model.setData(oPurchaseOrderF4);
+            } else {
+                oPurchaseOrderF4Model = new JSONModel(oPurchaseOrderF4);
+                oPurchaseOrderF4Model.setSizeLimit(100000);
+                this.getView().setModel(oPurchaseOrderF4Model, "PurchaseOrderF4Model");
+            }
+        },
+          onPurchaseOrderValueHelp: async function (oEvent) {
+            this. getPurchaseOrderF4();
+            this._oPurchaseOrderSourceIp = oEvent.getSource();
 
             try {
-                if (!this._oSubmitNewDialog) {
-                    this._oSubmitNewDialog = await this.loadFragment({
-                        name: "com.monsterenergy.qm.me.qm.qateam.fragment.SubmitNewDialog"
+                if (!this._oPurchaseOrderValueHelpDialog) {
+                    this._oPurchaseOrderValueHelpDialog = await this.loadFragment({
+                        name: "com.monsterenergy.qm.me.qm.qateam.fragment.POF4"
                     });
-                    this._oSubmitNewDialog.setModel(new JSONModel({}), "SubmitNewModel");
                 }
             } catch (error) {
                 return;
             }
+            /*  if (this.oPurchaseOrderSourceIp instanceof sap.m.MultiInput) {
+                  this._oPurchaseOrderValueHelpDialog.setMultiSelect(true);
+              } else {
+                  this._oPurchaseOrderValueHelpDialog.setMultiSelect(false);
+              }
+  */
+            this._oPurchaseOrderValueHelpDialog.open();
+        },
+    onPurchaseOrderClose: function (oEvent) {
+    var aContexts = oEvent.getParameter("selectedContexts");
+    var oInput = this._oPurchaseOrderSourceIp;
 
-            this.getView().byId("create_batch").setEditable(false);
-            this.getView().byId("create_material").setValueState("None");
-            this.getView().byId("create_batch").setValueState("None");
-            this.getView().byId("submitter_name").setValueState("None");
-            this.getView().byId("submitter_email").setValueState("None");
+    if (aContexts?.length) {
+        aContexts.forEach(ctx => {
+            var oObj = ctx.getObject();
+            oInput.addToken(new sap.m.Token({
+                key: oObj.Ebeln,
+                text: oObj.Ebeln + " - " + oObj.Ebelp,
+                customData: [
+                    new sap.ui.core.CustomData({ key: "Ebelp", value: oObj.Ebelp })
+                ]
+            }));
+        });
+    }
 
-            this._oSubmitNewDialog.getModel("SubmitNewModel").setData({
-                Matnr: "",
-                Werk: this.sPlant,
-                Charg: "",
-                Userc2: "",
-                Zzhbcformula: "",
-                Atwrt: "",
-                Hsdat: "",
-                SubmitterName: oViewModelData.SubmitterName,
-                SubmitterEmail: oViewModelData.SubmitterEmail,
+    this.onFilterGroupItemChange(oEvent);
+    oEvent.getSource().getBinding("items").filter([]);
+},
+
+
+    onPurchaseOrderChange: function (oEvent) {
+    const oInput = oEvent.getSource();
+    let sValue = oInput.getValue().trim();
+    if (!sValue) return;
+
+    sValue = sValue.replace(/\/|-|\s+/g, " ").trim();
+    const parts = sValue.split(" ");
+    if (parts.length < 2) return;
+
+    const sEbeln = parts[0];
+    const sEbelp = parts[1];
+
+    const oToken = new sap.m.Token({
+        key: sEbeln,
+        text: sEbeln + " / " + sEbelp,
+        customData: [
+            new sap.ui.core.CustomData({ key: "Ebelp", value: sEbelp })
+        ]
+    });
+
+    oInput.addToken(oToken);
+    oInput.setValue("");
+},
+
+
+           onPurchaseOrderSearch: function (oEvent) {
+            var sSearchQuery = oEvent.getParameter("value");
+            var oBinding = oEvent.getSource().getBinding("items");
+            var oFilter = new Filter({
+                filters: [
+                    new Filter({ path: "Ebeln", operator: FilterOperator.Contains, value1: sSearchQuery }),
+                    new Filter({ path: "Ebelp", operator: FilterOperator.Contains, value1: sSearchQuery }),
+                ],
+                and: false
             });
-            this._oSubmitNewDialog.open();
-            BusyIndicator.hide();
-        },
-        /*getBatchForFilterArea: function () {
-            var aTokens = this._oMaterialMultiInput.getTokens();
-            var oBatchModel = this.getView().getModel("BatchF4Model");
-            var sMaterial = [];
-            if (aTokens.length === 0) {
-                if (oBatchModel) {
-                    oBatchModel.setData({ results: [] });
-                }
-                return;
-            }
-            aTokens.forEach(oToken => sMaterial.push(oToken.getKey()));
-            this.getBatchF4(sMaterial);
-        },*/
-        onSubmitPress: async function () {
-            var oSubmitNewModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
-            var oCreateObject = oSubmitNewModel.getData();
-            var oMaterialIp = this.getView().byId("create_material");
-            var oBatchIp = this.getView().byId("create_batch");
-            var oSubmitterNameIp = this.getView().byId("submitter_name");
-            var oSubmitterEmailIp = this.getView().byId("submitter_email");
-            var bIsValid = true;
 
-            if (!oCreateObject.Matnr) {
-                oMaterialIp.setValueState("Error");
-                oMaterialIp.setValueStateText(this.getResourceBundle().getText("enterMaterial"));
-                bIsValid = false;
-            }
-
-            if (!oCreateObject.Charg) {
-                oBatchIp.setValueState("Error");
-                oBatchIp.setValueStateText(this.getResourceBundle().getText("enterBatch"));
-                bIsValid = false;
-            }
-
-            if (!bIsValid) {
-                MessageToast.show(this.getResourceBundle().getText("fillMandatory"));
-                return;
-            }
-            BusyIndicator.show();
-            var oInspectionDetails = await this._getInspectionDetails();
-            if (oInspectionDetails.results.length > 0) {
-                this.getBatchF4();
-                //this.getBatchForFilterArea();
-                this._navToInspChars(oCreateObject.Werk, oCreateObject.Matnr, oCreateObject.Charg,
-                    oCreateObject.SubmitterName, oCreateObject.SubmitterEmail, true);
-                this._oSubmitNewDialog.close();
+            if (sSearchQuery) {
+                oBinding.filter([oFilter]);
             } else {
-                MessageToast.show(this.getResourceBundle().getText("inspDetNotFound"));
-            }
-            BusyIndicator.hide();
-        },
-        onCancelPress: function () {
-            this.getBatchF4();
-            this._oSubmitNewDialog.getModel("SubmitNewModel").setData({});
-            this._oSubmitNewDialog.close();
-        },
-        onMaterialValueChange: async function (oEvent) {
-            var oSource = oEvent.getSource();
-            var sValue = oSource.getValue();
-            var oBatchIp = this.getView().byId("create_batch");
-            var oMaterialF4Model = this.getView().getModel("MaterialF4Model");
-
-            oBatchIp.setValue("");
-            oBatchIp.setEditable(false);
-            this._setSubmitDialogDefaultvalues();
-
-            if (!sValue) {
-                oSource.setValueState("Error");
-                oSource.setValueStateText(this.getResourceBundle().getText("enterMaterial"));
-                return;
-            }
-
-            var oFound = oMaterialF4Model.getProperty("/results").find((oResult) => sValue === oResult.Matnr);
-            if (!oFound) {
-                oSource.setValue("");
-                oSource.setValueState("Error");
-                oSource.setValueStateText(this.getResourceBundle().getText("invalidMaterial"));
-                return;
-            } else {
-                oSource.setValueState("None");
-            }
-
-            oBatchIp.setEditable(true);
-
-            this.getBatchF4([sValue]);
-        },
-        onBatchValueChange: async function (oEvent) {
-            var oSource = oEvent.getSource();
-            var sValue = oSource.getValue();
-            var oBatchF4Model = this.getView().getModel("BatchF4Model");
-
-            this._setSubmitDialogDefaultvalues();
-
-            if (!sValue) {
-                oSource.setValueState("Error");
-                oSource.setValueStateText(this.getResourceBundle().getText("enterBatch"));
-                return;
-            }
-
-            var oFound = oBatchF4Model.getProperty("/results").find((oResult) => sValue === oResult.Charg);
-            if (!oFound) {
-                oSource.setValue("");
-                oSource.setValueState("Error");
-                oSource.setValueStateText(this.getResourceBundle().getText("invalidBatch"));
-                return;
-            } else {
-                oSource.setValueState("None");
-            }
-
-            //this._getInspectionDetails();
-        },
-        onSubmitterNameChange: function (oEvent) {
-            var oSource = oEvent.getSource();
-            var sName = oSource.getValue();
-
-            if (!sName) {
-                oSource.setValueState("Error");
-                oSource.setValueStateText(this.getResourceBundle().getText("enterSubName"));
-            } else {
-                oSource.setValueState("None");
+                oBinding.filter([]);
             }
         },
-        onEmailChange: function (oEvent) {
-            var oSource = oEvent.getSource();
-            var sMail = oSource.getValue();
-            var regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+onPurchaseOrderValueHelpRequested: function (oEvent) {
+    this._oPOSourceIp = oEvent.getSource();
+    const oView = this.getView();
+    if (!this._oPOFragment) {
+        this._oPOFragment = sap.ui.xmlfragment(
+            oView.getId(),
+            "com.monsterenergy.qm.me.qm.qateam.fragment.PurchaseOrderValueHelpDialog",
+            this
+        );
+        oView.addDependent(this._oPOFragment);
+    }
+    this.loadPOList();
+    const oBinding = this._oPOFragment.getBinding("items");
+    if (oBinding) oBinding.filter([]);
+    this._oPOFragment.open();
+},
 
-            if (!regex.test(sMail)) {
-                oSource.setValue("");
-                oSource.setValueState("Error");
-                oSource.setValueStateText(this.getResourceBundle().getText("invalidEmail"));
-            } else {
-                oSource.setValueState("None");
+loadPOList: function () {
+    const oModel = this.getView().getModel();
+    const oView = this.getView();
+    let oPOModel = oView.getModel("POModel");
+    if (!oPOModel) {
+        oPOModel = new sap.ui.model.json.JSONModel();
+        oPOModel.setSizeLimit(50000);
+        oView.setModel(oPOModel, "POModel");
+    }
+    const aFilters = [new sap.ui.model.Filter("Werks", sap.ui.model.FilterOperator.EQ, this.sPlant)];
+    oModel.read("/PO_F4Set", {
+        filters: aFilters,
+        success: function (oData) { oPOModel.setData(oData); },
+        error: function () { oPOModel.setData({ results: [] }); }
+    });
+},
+onPOSearch: function (oEvent) {
+    var sSearchQuery = oEvent.getParameter("value");
+    var oBinding = oEvent.getSource().getBinding("items");
+
+    var oFilter = new sap.ui.model.Filter({
+        filters: [
+            new sap.ui.model.Filter({ path: "Ebeln", operator: sap.ui.model.FilterOperator.Contains, value1: sSearchQuery }),
+            new sap.ui.model.Filter({ path: "Ebelp", operator: sap.ui.model.FilterOperator.Contains, value1: sSearchQuery }),
+            new sap.ui.model.Filter({ path: "Matnr", operator: sap.ui.model.FilterOperator.Contains, value1: sSearchQuery }),
+            new sap.ui.model.Filter({ path: "Charg", operator: sap.ui.model.FilterOperator.Contains, value1: sSearchQuery }),
+            new sap.ui.model.Filter({ path: "Werks", operator: sap.ui.model.FilterOperator.Contains, value1: sSearchQuery })
+        ],
+        and: false
+    });
+
+    if (sSearchQuery) {
+        oBinding.filter([oFilter]);
+    } else {
+        oBinding.filter([]);
+    }
+},
+
+onPOSelect: function (oEvent) {
+    const aContexts = oEvent.getParameter("selectedContexts");
+    if (!aContexts?.length) return;
+    const oSelected = aContexts[0].getObject();
+    const oSubmitModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
+    this.sSelectedPO = oSelected.Ebeln;
+    this.sSelectedPOItem = oSelected.Ebelp;
+    oSubmitModel.setProperty("/Ebeln", oSelected.Ebeln);
+    oSubmitModel.setProperty("/Ebelp", oSelected.Ebelp);
+    oSubmitModel.setProperty("/Matnr", oSelected.Matnr);
+     this.getFormulaF4();
+    oSubmitModel.setProperty("/Charg", oSelected.Charg);
+    oEvent.getSource().getBinding("items").filter([]);
+},
+onPurchaseOrderChange: function (oEvent) {
+    const sValue = oEvent.getSource().getValue().trim();
+    const oModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
+    const oPOModel = this.getView().getModel("POModel");
+    if (!oPOModel) {
+        MessageToast.show("PO list not loaded");
+        return;
+    }
+
+    const aPOList = oPOModel.getProperty("/results") || [];
+
+    if (!sValue) {
+        oModel.setProperty("/Ebeln", "");
+        oModel.setProperty("/Ebelp", "");
+        oModel.setProperty("/Matnr", "");
+        oModel.setProperty("/Charg", "");
+        oModel.setProperty("/Zzhbcformula", "");
+        return;
+    }
+
+    const oFound = aPOList.find(po => po.Ebeln === sValue);
+
+    if (oFound) {
+        oModel.setProperty("/Ebeln", oFound.Ebeln);
+        oModel.setProperty("/Ebelp", oFound.Ebelp || "");
+        oModel.setProperty("/Matnr", oFound.Matnr || "");
+        oModel.setProperty("/Charg", oFound.Charg || "");
+
+        this.getFormulaF4();
+    
+    } else {
+        oModel.setProperty("/Ebeln", "");
+        oModel.setProperty("/Ebelp", "");
+        oModel.setProperty("/Matnr", "");
+        oModel.setProperty("/Charg", "");
+        oModel.setProperty("/Zzhbcformula", "");
+
+        MessageToast.show("Invalid Purchase Order");
+    }
+},
+getFormulaF4: async function () {
+    try {
+        const sEbeln    = this.sSelectedPO;
+        const sEbelp    = this.sSelectedPOItem;
+        const sMaterial = this.byId("create_material").getValue();
+        const sBatch    = this.byId("create_batch").getValue();
+        const sPlant    = this.sPlant;
+
+        if (!sEbeln || !sEbelp || !sMaterial || !sPlant) return;
+
+        const aFilters = [
+            new Filter("Ebeln",  FilterOperator.EQ, sEbeln),
+            new Filter("Ebelp",  FilterOperator.EQ, sEbelp),
+            new Filter("Matnr",  FilterOperator.EQ, sMaterial),
+            new Filter("Werk",   FilterOperator.EQ, sPlant)
+        ];
+
+        if (sBatch) {
+            aFilters.push(new Filter("Charg", FilterOperator.EQ, sBatch));
+        }
+
+        const oResponse = await this.readDataFromODataModel("/HBCFORMULASet", aFilters);
+        const aResults = oResponse?.results || [];
+
+        let oFormulaModel = this.getView().getModel("FormulaModel");
+        if (!oFormulaModel) {
+            oFormulaModel = new sap.ui.model.json.JSONModel();
+        }
+
+        oFormulaModel.setData({ results: aResults });
+        this.getView().setModel(oFormulaModel, "FormulaModel");
+
+        const oCB = this.byId("idFormulaCB");
+        oCB.setSelectedKey(""); 
+
+        if (aResults.length === 1) {
+            const oSingle = aResults[0];
+
+            oCB.setSelectedKey(oSingle.Zzhbcformula);  
+            this._setFormulaDetails(oSingle);           
+
+            const oSubmitModel = this.getView().getModel("SubmitNewModel");
+            if (oSubmitModel) {
+                oSubmitModel.setProperty("/Zzhbcformula", oSingle.Zzhbcformula);
             }
-        },
-        _setSubmitDialogDefaultvalues: function () {
-            var oSumbitModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
-            oSumbitModel.setProperty("/Zzhbcformula", "");
-            oSumbitModel.setProperty("/Atwrt", "");
-            oSumbitModel.setProperty("/Hsdat", "");
-        },
-        _getInspectionDetails: async function () {
-            var oSumbitModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
-            var oData = oSumbitModel.getData();
-            var aFilters = [new Filter({ path: "Werk", operator: FilterOperator.EQ, value1: oData.Werk }),
-            new Filter({ path: "Matnr", operator: FilterOperator.EQ, value1: oData.Matnr }),
-            new Filter({ path: "Charg", operator: FilterOperator.EQ, value1: oData.Charg })];
-            var oInspDetails = { results: [] };
+        }
+
+    } catch (err) {
+        
+    }
+},
+
+_setFormulaDetails: function (oFormulaData) {
+    if (!oFormulaData) return;
+
+    var oSubmitModel = this.getView().getModel("SubmitNewModel");
+
+    oSubmitModel.setProperty("/PLNAL", oFormulaData.PLNAL || "");
+    oSubmitModel.setProperty("/PLNNR", oFormulaData.PLNNR || "");
+    oSubmitModel.setProperty("/PLNTY", oFormulaData.PLNTY || "");
+    oSubmitModel.setProperty("/Werk", oFormulaData.Werk || "");
+    oSubmitModel.setProperty("/ZAEHL", oFormulaData.ZAEHL || "");
+    oSubmitModel.setProperty("/ZKRIZ", oFormulaData.ZKRIZ || "");
+    oSubmitModel.setProperty("/Zzhbcformula", oFormulaData.Zzhbcformula || "");
+},
+
+onFormulaChange: function (oEvent) {
+    const oCB = oEvent.getSource();
+    const sKey = oCB.getSelectedKey();
+    const oSubmitModel = this.getView().getModel("SubmitNewModel");
+
+    if (!sKey) {
+        oSubmitModel.setProperty("/Zzhbcformula", "");
+        return;
+    }
+
+    const oFormula = oCB.getSelectedItem().getBindingContext("FormulaModel").getObject();
+
+    oSubmitModel.setProperty("/Zzhbcformula", oFormula.Zzhbcformula);
+    this._setFormulaDetails(oFormula);
+},
 
 
-            try {
-                oInspDetails = await this.readDataFromODataModel("/InspectionDetailsSet", aFilters);
-            } catch (error) { }
+onSubmitNewPress: function () {
+    const oView = this.getView();
+    if (!this._oSubmitNewDialog) {
+        this._oSubmitNewDialog = sap.ui.xmlfragment(
+            oView.getId(),
+            "com.monsterenergy.qm.me.qm.qateam.fragment.SubmitNewDialog",
+            this
+        );
+        oView.addDependent(this._oSubmitNewDialog);
+    }
+    let oSubmitModel = this.getView().getModel("SubmitNewModel");
+    if (!oSubmitModel) {
+        oSubmitModel = new sap.ui.model.json.JSONModel({});
+        this.getView().setModel(oSubmitModel, "SubmitNewModel");
+    }
+    oSubmitModel.setData({ Ebeln: "", Ebelp: "", Matnr: "", Charg: "", Zzhbcformula: "" });
+    this._oSubmitNewDialog.open();
+},
+onCancelPress: function () {
+    if (this._oSubmitNewDialog) {
+        this._oSubmitNewDialog.close();
+    }
+},
+onSubmitPress: async function () {
+    const oModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
+    const oData = oModel.getData();
 
-            if (oInspDetails && oInspDetails.results.length > 0) {
-                oSumbitModel.setProperty("/Zzhbcformula", oInspDetails.results[0].Zzhbcformula);
-                oSumbitModel.setProperty("/Atwrt", oInspDetails.results[0].Atwrt);
-                oSumbitModel.setProperty("/Hsdat", oInspDetails.results[0].Hsdat);
-            }
-            return new Promise(resolve => resolve(oInspDetails));
-        },
-        /*
-        onItemPress: async function (oEvent) {
-            var oViewModelData = this.getView().getModel("ViewModel").getData();
-            var oSelectedContext = oEvent.getSource().getSelectedItem().getBindingContext();
-            var oSelcetedObject = oSelectedContext.getObject();
-            this._navToInspChars(oSelcetedObject.Werk, oSelcetedObject.Matnr, oSelcetedObject.Charg, oViewModelData.SubmitterName, oViewModelData.SubmitterEmail, false);
-        },
-        _navToInspChars: function (sPlant, sMaterial, sBatch, sSubmitterName, sSubmitterEmail, bIsSubmitNew) {
-            var oObj = {
-                Plant: window.encodeURIComponent(sPlant),
-                Material: window.encodeURIComponent(sMaterial),
-                Batch: window.encodeURIComponent(sBatch),
-                SubmitterName: window.encodeURIComponent(sSubmitterName),
-                SubmitterEmail: window.encodeURIComponent(sSubmitterEmail),
-                IsSubmitNew: window.encodeURIComponent(bIsSubmitNew),
-            }
-            this.getRouter().navTo("RouteCharacteristicOverview", oObj);
-        },
-        */
+    if (!oData.Ebeln || !oData.Ebelp || !oData.Matnr) {
+        MessageToast.show("Please select a valid PO with Item, Material");
+        return;
+    }
 
-        onItemPress: async function (oEvent) {
-            var oViewModelData = this.getView().getModel("ViewModel").getData();
-            // In MultiSelect mode, get the pressed item directly from the event
-            var oPressedItem = oEvent.getParameter("listItem") || oEvent.getSource();
-            var oSelectedContext = oPressedItem.getBindingContext();
-            var oSelcetedObject = oSelectedContext.getObject();
+    BusyIndicator.show();
 
-            var sSubmitterName = this._isQMUser ? "none" : oViewModelData.SubmitterName || "none";
-            var sSubmitterEmail = this._isQMUser ? "none" : oViewModelData.SubmitterEmail || "none";
+    const oInspectionResult = await this._getInspectionDetails();
 
-            this._navToInspChars(oSelcetedObject.Werk, oSelcetedObject.Matnr, oSelcetedObject.Charg, sSubmitterName, sSubmitterEmail, false);
-        },
-        _navToInspChars: function (sPlant, sMaterial, sBatch, sSubmitterName, sSubmitterEmail, bIsSubmitNew) {
-            var oObj = {
-                Plant: window.encodeURIComponent(sPlant),
-                Material: window.encodeURIComponent(sMaterial),
-                Batch: window.encodeURIComponent(sBatch),
-                SubmitterName: window.encodeURIComponent(sSubmitterName),
-                SubmitterEmail: window.encodeURIComponent(sSubmitterEmail),
-                IsSubmitNew: window.encodeURIComponent(bIsSubmitNew),
-                IsQMUser: encodeURIComponent(this._isQMUser === true ? "true" : "false")
-            }
-            this.getRouter().navTo("RouteCharacteristicOverview", oObj);
-        },
+    if (oInspectionResult) {
+        const sFormula = this.sSelectedFormula || oData.Zzhbcformula || "";
+        this.getFormulaF4();
+        this._navToInspChars(
+            oData.Werk,
+            oData.Matnr,
+            oData.Charg,
+            true,
+            oData.Ebeln,
+            oData.Ebelp,
+            sFormula
+        );
+        this._oSubmitNewDialog.close();
+    } else {
+        MessageToast.show("Inspection Details Not Found");
+    }
+
+    BusyIndicator.hide();
+},
+
+_getInspectionDetails: async function () {
+    const oModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
+    const oData = oModel.getData();
+
+    const aFilters = [
+        new Filter("Werk", FilterOperator.EQ, this.sPlant)
+    ];
+
+    if (oData.Ebeln) aFilters.push(new Filter("Ebeln", FilterOperator.EQ, oData.Ebeln));
+    if (oData.Ebelp) aFilters.push(new Filter("Ebelp", FilterOperator.EQ, oData.Ebelp));
+    if (oData.Matnr) aFilters.push(new Filter("Matnr", FilterOperator.EQ, oData.Matnr));
+    if (oData.Charg) aFilters.push(new Filter("Charg", FilterOperator.EQ, oData.Charg));
+    if (oData.Zzhbcformula) aFilters.push(new Filter("Zzhbcformula", FilterOperator.EQ, oData.Zzhbcformula));
+
+    let oResponse = { results: [] };
+
+    try {
+        oResponse = await this.readDataFromODataModel("/InspectionDetailsSet", aFilters);
+    } catch (e) {}
+
+    if (oResponse.results.length > 0) {
+        const r = oResponse.results[0];
+        oModel.setProperty("/Zzhbcformula", r.Zzhbcformula);
+        oModel.setProperty("/Atwrt", r.Atwrt);
+        oModel.setProperty("/Hsdat", r.Hsdat);
+        return r;
+    }
+
+    return null;
+},
+
+onItemPress: function (oEvent) {
+    const oPressedItem = oEvent.getParameter("listItem") || oEvent.getSource();
+    const oSelObj = oPressedItem.getBindingContext().getObject();
+
+    this._navToInspChars(
+        oSelObj.Werk,
+        oSelObj.Matnr,
+        oSelObj.Charg,
+        false,
+        oSelObj.Ebeln,
+        oSelObj.Ebelp,
+        oSelObj.Zzhbcformula
+    );
+},
+
+_navToInspChars: function (sPlant, sMaterial, sBatch, bIsSubmitNew, sEbeln, sEbelp, sFormula) {
+    const plant = sPlant || this.sPlant;
+
+    if (!plant) {
+        MessageBox.error("Plant is missing. Cannot navigate.");
+        return;
+    }
+
+    let finalFormula = (sFormula && sFormula.trim()) || "NA";
+
+    const oParams = {
+        Plant: encodeURIComponent(plant),
+        Material: encodeURIComponent(sMaterial || ""),
+        Batch: encodeURIComponent(sBatch || ""),
+        IsSubmitNew: encodeURIComponent(bIsSubmitNew),
+        Ebeln: encodeURIComponent(sEbeln || ""),
+        Ebelp: encodeURIComponent(sEbelp || ""),
+        Formula: encodeURIComponent(finalFormula),
+        IsQMUser: encodeURIComponent(this._isQMUser ? "true" : "false")
+    };
+
+    this.getRouter().navTo("RouteCharacteristicOverview", oParams);
+},
 
         /**
          * Event handler for Export to Excel button press.
@@ -1615,6 +2040,400 @@ sap.ui.define([
                 MessageToast.show("Error generating Excel file: " + (oError.message || "Unknown error"));
                 console.error("Export error:", oError);
             }
+        },
+          // Fetch template data, generate formatted Excel, and download
+        onDownloadTemplate: function () {
+            const oModel = this.getView().getModel();
+            const oBusy = new sap.m.BusyDialog();
+            oBusy.open();
+
+            oModel.read("/UploadTemplateSet", {
+                success: (oData) => {
+                    try {
+                        const sJson = oData.results?.[0]?.JSON;
+                        if (!sJson) {
+                            sap.m.MessageToast.show("No template data found.");
+                            return;
+                        }
+
+                        const aRows = JSON.parse(sJson);
+                        if (!Array.isArray(aRows) || !aRows.length) {
+                            sap.m.MessageBox.error("Invalid data.");
+                            return;
+                        }
+
+                        sap.ui.require(["sap/ui/thirdparty/jquery"], ($) => {
+                            $.getScript("https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js", async () => {
+
+                                const workbook = new ExcelJS.Workbook();
+                                const sheet = workbook.addWorksheet("MassUpload_Template");
+
+                                const headers = Object.keys(aRows[0]);
+                                sheet.addRow(headers);
+
+                                aRows.forEach(row =>
+                                    sheet.addRow(headers.map(h => row[h] || ""))
+                                );
+
+                                sheet.getRow(1).eachCell(cell => cell.font = { bold: true });
+                                sheet.columns.forEach(col => col.width = 25);
+
+                                const row1 = sheet.getRow(1);
+                                const row2 = sheet.getRow(2);
+
+                                const colors = {
+                                    HDR: "FFFFF9C4",
+                                    IP: "FFFFF9C4",
+                                    "0010": "FFBBDEFB",
+                                    "0020": "FFC8E6C9",
+                                    "0030": "FFFFE0B2",
+                                    "0040": "FFF8BBD0"
+                                };
+
+                                headers.forEach((_, i) => {
+                                    const col = i + 1;
+                                    const v1 = String(row1.getCell(col).value || "").trim();
+                                    const v2 = String(row2.getCell(col).value || "").trim();
+
+                                    let fillColor = null;
+
+                                    if (/HDR|Header/i.test(v1) || /HDR|Header/i.test(v2)) fillColor = colors.HDR;
+                                    else if (/IP/i.test(v1) || /IP/i.test(v2)) fillColor = colors.IP;
+                                    else if (/0010|Items List/i.test(v1) || /0010|Items List/i.test(v2)) fillColor = colors["0010"];
+                                    else if (/0020|Syrup Inspection/i.test(v1) || /0020|Syrup Inspection/i.test(v2)) fillColor = colors["0020"];
+                                    else if (/0030|Final Product Inspection/i.test(v1) || /0030|Final Product Inspection/i.test(v2)) fillColor = colors["0030"];
+                                    else if (/0040|Micros Results/i.test(v1) || /0040|Micros Results/i.test(v2)) fillColor = colors["0040"];
+
+                                    if (fillColor) {
+                                        sheet.getColumn(col).eachCell({ includeEmpty: true }, (cell) => {
+                                            cell.fill = {
+                                                type: "pattern",
+                                                pattern: "solid",
+                                                fgColor: { argb: fillColor }
+                                            };
+                                        });
+                                    }
+                                });
+
+                                const buffer = await workbook.xlsx.writeBuffer();
+                                const blob = new Blob([buffer], {
+                                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                                });
+
+                                const link = document.createElement("a");
+                                link.href = URL.createObjectURL(blob);
+                                link.download = "MassUpload_Template.xlsx";
+                                link.click();
+
+                            });
+                        });
+
+                    } catch (e) {
+                        console.error(e);
+                        sap.m.MessageBox.error("Excel generation failed.");
+                    } finally {
+                        oBusy.close();
+                    }
+                },
+                error: () => {
+                    sap.m.MessageBox.error("Failed to fetch data.");
+                    oBusy.close();
+                }
+            });
+        },
+
+/*
+        onDownloadTemplate: function () {
+            const oModel = this.getView().getModel();
+            const oBusy = new sap.m.BusyDialog();
+            oBusy.open();
+
+            oModel.read("/UploadTemplateSet", {
+                success: (oData) => {
+                    try {
+                        const aResults = oData.results || [];
+
+                        if (!aResults.length || !aResults[0].JSON) {
+                            sap.m.MessageToast.show("No template data found.");
+                            oBusy.close();
+                            return;
+                        }
+
+                        const aRows = JSON.parse(aResults[0].JSON);
+
+                        if (!Array.isArray(aRows) || !aRows.length) {
+                            sap.m.MessageBox.error("Invalid Excel data.");
+                            oBusy.close();
+                            return;
+                        }
+
+                        const aColumns = Object.keys(aRows[0]).map((sKey) => ({
+                            label: sKey,
+                            property: sKey,
+                            width: 25
+                        }));
+
+                        const oSettings = {
+                            workbook: {
+                                columns: aColumns,
+                                context: {
+                                    sheetName: "MassUpload_Template"
+                                }
+                            },
+                            dataSource: aRows,
+                            fileName: "MassUpload_Template.xlsx"
+                        };
+
+                        const oSheet = new sap.ui.export.Spreadsheet(oSettings);
+
+                        oSheet.build()
+                            .then(() => {
+                                oSheet.destroy();
+                                oBusy.close();
+                            })
+                            .catch((err) => {
+                                console.error(err);
+                                sap.m.MessageBox.error("Excel generation failed.");
+                                oBusy.close();
+                            });
+
+                    } catch (e) {
+                        console.error(e);
+                        sap.m.MessageBox.error("Error while creating Excel.");
+                        oBusy.close();
+                    }
+                },
+                error: (err) => {
+                    console.error(err);
+                    sap.m.MessageBox.error("Failed to fetch data.");
+                    oBusy.close();
+                }
+            });
+        },
+        */
+
+        MAX_TOTAL_ROWS: 50,
+        MAX_FILE_SIZE_MB: 5,
+        _oUploadDialog: null,
+        _selectedFile: null,
+        _fileBuffer: null,
+        _jsonPayload: null,
+        _selectedOperations: [],
+
+        onOpenUploadDialog: function () {
+            var oView = this.getView();
+
+            if (!this._oUploadDialog) {
+                sap.ui.core.Fragment.load({
+                    id: oView.getId(),
+                    name: "com.monsterenergy.qm.me.qm.qateam.fragment.Massupload",
+                    controller: this
+                }).then(function (oDialog) {
+                    this._oUploadDialog = oDialog;
+                    oView.addDependent(oDialog);
+
+                    this.getOperation();
+                    this._oUploadDialog.open();
+                }.bind(this));
+            } else {
+                this.getOperation();
+                this._oUploadDialog.open();
+            }
+        },
+
+
+        getOperation: async function () {
+            var oVBox = this.byId("operationCheckBoxVBox");
+            if (!oVBox) {
+                return;
+            }
+
+            oVBox.removeAllItems();
+
+            var aOperations = [];
+
+            try {
+                var oData = await this.readDataFromODataModel(
+                    "/PlantBasedOperSet",
+                    [
+                        new sap.ui.model.Filter(
+                            "Plant",
+                            sap.ui.model.FilterOperator.EQ,
+                            this.sPlant
+                        )
+                    ]
+                );
+
+                aOperations = oData && oData.results ? oData.results : [];
+
+            } catch (err) {
+                aOperations = [];
+            }
+
+            var aDefaultOps = ["0010", "0020", "0030"];
+
+            aOperations.forEach(function (oOp) {
+                var bSelected = aDefaultOps.indexOf(oOp.Inspoper) !== -1;
+
+                oVBox.addItem(
+                    new sap.m.CheckBox({
+                        text: oOp.Inspoper + " - " + oOp.TxtOper,
+                        selected: bSelected
+                    })
+                );
+            });
+        },
+
+        onFileChange: function (oEvent) {
+            const oFile = oEvent.getParameter("files")?.[0];
+            this._resetFileState();
+
+            if (!oFile) {
+                MessageBox.error("No file selected.");
+                return;
+            }
+
+            const sizeMB = oFile.size / (1024 * 1024);
+            this.byId("fileSizeText")?.setText(`File Size: ${sizeMB.toFixed(2)} MB`);
+
+            if (sizeMB > this.MAX_FILE_SIZE_MB) {
+                MessageBox.error(`File exceeds ${this.MAX_FILE_SIZE_MB} MB limit.`);
+                return;
+            }
+
+            this._selectedFile = oFile;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this._fileBuffer = e.target.result;
+            };
+            reader.onerror = () => {
+                MessageBox.error("Failed to read file.");
+                this._resetFileState();
+            };
+            reader.readAsArrayBuffer(oFile);
+        },
+
+        onMassUpload: function () {
+            try {
+                if (!this._selectedFile || !this._fileBuffer) {
+                    MessageBox.error("Select a valid Excel file.");
+                    return;
+                }
+
+                const wb = XLSX.read(this._fileBuffer, { type: "array" });
+                const sheet = wb.Sheets[wb.SheetNames[0]];
+                const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+
+                const dataRowsCount = data.length > 4 ? data.length - 4 : 0;
+
+                if (dataRowsCount > this.MAX_TOTAL_ROWS) {
+                    MessageBox.error(
+                        `Maximum allowed data rows is ${this.MAX_TOTAL_ROWS}. Your file has ${dataRowsCount} rows (excluding first 4).`
+                    );
+                    return;
+                }
+
+                this._buildPayloadFromExcel();
+                this._sendPayloadToBackend();
+            } catch (e) {
+                MessageBox.error("Processing failed: " + e.message);
+                console.error(e);
+            }
+        },
+
+        // Payload Builder
+        _buildPayloadFromExcel: function () {
+            if (!this._selectedFile || !this._fileBuffer) {
+                throw new Error("No Excel file selected.");
+            }
+
+            const wb = XLSX.read(this._fileBuffer, { type: "array" });
+            const sheet = wb.Sheets[wb.SheetNames[0]];
+            const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
+
+            if (!data.length || data.length < 2) {
+                throw new Error("Excel file must have at least two rows (headers + description).");
+            }
+
+            const firstRow = data[0].map(h => String(h).trim());
+            const secondRow = data[1].map(h => String(h).trim());
+            const rows = data.slice(2);
+
+            const selectedOperations = this._oUploadDialog
+                .getContent()[0]
+                .getItems()[1]
+                .getItems()
+                .filter(cb => cb.getSelected())
+                .map(cb => cb.getText());
+
+            if (!selectedOperations.length) {
+                throw new Error("No operations selected.");
+            }
+
+            const selectedValues = selectedOperations.flatMap(op => op.split(" - ").map(p => p.trim()));
+
+            const selectedCols = firstRow.map((h1, idx) => {
+                const h2 = secondRow[idx] || "";
+                if (h1.startsWith("HDR|") || h1.startsWith("IP|")) return h1;
+                if (selectedValues.includes(h1) || selectedValues.includes(h2)) return h1;
+                return null;
+            }).filter(c => c !== null);
+
+            if (!selectedCols.length) {
+                throw new Error("No columns match selected operations.");
+            }
+
+            const items = rows
+                .filter(row => row.some(v => v !== ""))
+                .map(row => {
+                    const obj = {};
+                    firstRow.forEach((h, idx) => {
+                        if (selectedCols.includes(h)) {
+                            obj[h] = String(row[idx] || "").trim();
+                        }
+                    });
+                    return obj;
+                });
+
+            this._jsonPayload = {
+                EntityName: "Z_TMP_MASS_UPLOAD",
+                TotalRecords: items.length,
+                Items: items
+            };
+
+            console.log("Filtered Payload:", JSON.stringify(this._jsonPayload, null, 2));
+        },
+
+        _sendPayloadToBackend: function () {
+
+
+            $.ajax({
+                url: "/sap/opu/odata/sap/Z_TMP_MASS_UPLOAD_SRV/EntitySet",
+                method: "POST",
+                data: JSON.stringify(this._jsonPayload),
+                contentType: "application/json",
+                success: (res) => {
+                    MessageBox.success("Mass upload successful.");
+                    this._resetFileState();
+                },
+                error: (err) => {
+                    MessageBox.error("Mass upload failed.");
+                    console.error(err);
+                }
+            });
+        },
+
+        _resetFileState: function () {
+            this._selectedFile = null;
+            this._fileBuffer = null;
+            this._jsonPayload = null;
+            this.byId("fileInput")?.setValue("");
+            this.byId("fileSizeText")?.setText("");
+        },
+
+        onCloseDialog: function () {
+            this.byId("uploadDialog")?.close();
         },
 
     });

@@ -63,6 +63,10 @@ sap.ui.define(
         // Model used to manipulate control states. The chosen values make sure,
         // detail page shows busy indication immediately so there is no break in
         // between the busy indication for loading the view's meta data
+         this._getIasDetails().then(() => {
+        console.log("IAS user loaded:", this.sSubmitterName);
+    });
+
         var oViewModel = new JSONModel({
           busy: false,
           delay: 0,
@@ -168,10 +172,13 @@ sap.ui.define(
         var oAttachmentModel = oAttachmentTable.getModel("AttachementModel");
 
         this.sPlant = window.decodeURIComponent(oArguments.Plant);
+        this.sEbeln = window.decodeURIComponent(oArguments.Ebeln);
+        this.sEbelp = window.decodeURIComponent(oArguments.Ebelp);
         this.sMaterial = window.decodeURIComponent(oArguments.Material);
         this.sBatch = window.decodeURIComponent(oArguments.Batch);
-        this.sSubmitterName = window.decodeURIComponent(oArguments.SubmitterName);
-        this.sSubmitterEmail = window.decodeURIComponent(oArguments.SubmitterEmail);
+        this.sFormula = window.decodeURIComponent(oArguments.Formula);
+       // this.sSubmitterName = window.decodeURIComponent(oArguments.SubmitterName);
+        //this.sSubmitterEmail = window.decodeURIComponent(oArguments.SubmitterEmail);
         this.bIsSubmitNew = window.decodeURIComponent(oArguments.IsSubmitNew);
         const isQMUserString = decodeURIComponent(oArguments.IsQMUser || "");
         const isQMUser = isQMUserString.toLowerCase() === "true";
@@ -261,7 +268,10 @@ sap.ui.define(
 
       _getInspectionDetails: async function () {
         var aFilters = [new Filter({ path: "Werk", operator: FilterOperator.EQ, value1: this.sPlant }),
+        new Filter({ path: "Ebeln", operator: FilterOperator.EQ, value1: this.sEbeln }),
+        new Filter({ path: "Ebelp", operator: FilterOperator.EQ, value1: this.sEbelp}),
         new Filter({ path: "Matnr", operator: FilterOperator.EQ, value1: this.sMaterial }),
+        new Filter({ path: "Zzhbcformula", operator: FilterOperator.EQ, value1: this.sFormula }),
         new Filter({ path: "Charg", operator: FilterOperator.EQ, value1: this.sBatch })];
         var oInspDetails = { results: [] };
 
@@ -684,7 +694,7 @@ sap.ui.define(
                
               if (oCharDetails && oCharDetails.CharDescr.toLowerCase().includes("date") === true) {
                 oColumn7 = new DatePicker({
-                  value: /*"{Longtext}" */"{Remark}", displayFormat: "dd/MM/yyyy", valueFormat: "dd/MM/yyyy",
+                  value: /*"{Longtext}" */"{Remark}", displayFormat: "MM.dd.yyyy", valueFormat: "MM.dd.yyyy",
                   editable: "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true ? true : false : false}", change: function (oEvent) {
                     var oContext = oEvent.getSource().getBindingContext();
                     var oSelectedObj = oContext.getObject();

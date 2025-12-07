@@ -1,82 +1,85 @@
 <core:FragmentDefinition
     xmlns="sap.m"
-    xmlns:l="sap.ui.layout"
     xmlns:f="sap.ui.layout.form"
-    xmlns:fb="sap.ui.comp.filterbar"
     xmlns:core="sap.ui.core">
+
     <Dialog title="{i18n>submitnew}">
         <content>
-            <f:SimpleForm id="SimpleFormsubmitnew"
+
+            <f:SimpleForm
+                id="SimpleFormsubmitnew"
                 editable="true"
                 layout="ResponsiveGridLayout"
                 labelSpanXL="3"
                 labelSpanL="3"
                 labelSpanM="3"
                 labelSpanS="12"
-                adjustLabelSpan="false"
-                emptySpanXL="0"
-                emptySpanL="0"
-                emptySpanM="0"
-                emptySpanS="0"
                 columnsXL="1"
                 columnsL="1"
-                columnsM="1"
-                singleContainerFullSize="false">
+                columnsM="1">
+
                 <f:content>
+
+                    <Label text="{i18n>Purchase Order}" />
+                 <Input
+    id="create_purchaseOrder"
+    value="{SubmitNewModel>/Ebeln}"
+    showValueHelp="true"
+    valueHelpRequest=".onPurchaseOrderValueHelpRequested"
+    change="onPurchaseOrderChange"
+    showSuggestion="true"
+    placeholder="Select Purchase Order"
+    suggestionItems="{ path: 'POModel>/results' }">
+
+    <core:ListItem
+        key="{POModel>Ebeln}"
+        text="{POModel>Ebeln}"
+        additionalText="{POModel>Ebelp}" />
+</Input>
+
                     <Label text="{i18n>material}" required="true" />
-                    <Input id="create_material" value="{SubmitNewModel>/Matnr}"
-                        showValueHelp="true" valueHelpRequest=".onMaterialValueHelpRequested"
-                        change="onMaterialValueChange"
-                        showSuggestion="true"
-                        suggestionItems="{ path:'MaterialF4Model>/results', sorter: { path: 'Matnr' } }">
-                        <core:ListItem
-                            key="{MaterialF4Model>Matnr}"
-                            text="{MaterialF4Model>Matnr}"
-                            additionalText="{MaterialF4Model>Maktx}" />
-                    </Input>
+                    <Input
+                        id="create_material"
+                        value="{SubmitNewModel>/Matnr}"
+                        editable="true"
+                        />
 
                     <Label text="{i18n>batch}" required="true" />
-                    <Input id="create_batch" value="{SubmitNewModel>/Charg}"
-                        change="onBatchValueChange" editable="false"
-                        showValueHelp="true"
-                        showSuggestion="true"
-                        valueHelpRequest=".onBatchValueHelpRequested"
-                        suggestionItems="{
-				                            path: 'BatchF4Model>/results',
-				                            sorter: { path: 'Charg' }
-			                            }">
-                        <core:ListItem key="{BatchF4Model>Charg}"
-                            text="{BatchF4Model>Charg}" />
-                    </Input>
-                    <Label text="{i18n>submitterName}" required="true" visible="false"/>
-                    <Input id="submitter_name" value="{SubmitNewModel>/SubmitterName}" visible="false" change="onSubmitterNameChange"/>
+                    <Input
+                        id="create_batch"
+                        value="{SubmitNewModel>/Charg}"
+                        editable="true"
+                        placeholder="Please Enter Batch"/>
 
-                    <Label text="{i18n>submitterEmail}" required="true" visible="false"/>
-                    <Input id="submitter_email" value="{SubmitNewModel>/SubmitterEmail}" visible="false" type="Email" change="onEmailChange"/>
+<Label text="{i18n>formula}" />
 
-                    <Label text="{i18n>SyrupBatchNumber}" required="true" visible="false"/>
-                    <Input id="liq_bat_no" value="{SubmitNewModel>/Userc2}" visible="false"/>
+<ComboBox
+    id="idFormulaCB"
+    selectedKey="{SubmitNewModel>/Zzhbcformula}"
+    placeholder="Select Formula"
+    items="{FormulaModel>/results}"
+    change=".onFormulaChange">
 
-                    <Label text="{i18n>formula}" visible="false" />
-                    <Input id="formula_ip" value="{SubmitNewModel>/Zzhbcformula}" visible="false"
-                        editable="false" />
+  <core:ListItem
+   key="{FormulaModel>Zzhbcformula}"
+   text="{FormulaModel>Zzhbcformula}" />
+</ComboBox>
 
-                    <Label text="{i18n>country}" visible="false" />
-                    <Input id="country_ip" value="{SubmitNewModel>/Atwrt}" visible="false"
-                        editable="false" />
 
-                    <Label text="{i18n>manfDate}" visible="false" />
-                    <Input id="manf_date_dp" visible="false"
-                        value="{path:'SubmitNewModel>/Hsdat', formatter:'.formatter.dateFormatter'}"
-                        editable="false" />
+
                 </f:content>
+
             </f:SimpleForm>
+
         </content>
+
         <beginButton>
             <Button text="{i18n>submit}" type="Emphasized" press="onSubmitPress" />
         </beginButton>
+
         <endButton>
             <Button text="{i18n>cancel}" press="onCancelPress" />
         </endButton>
+
     </Dialog>
 </core:FragmentDefinition>
