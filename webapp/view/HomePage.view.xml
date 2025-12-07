@@ -293,10 +293,12 @@
                          <Button
     text="Mass Upload"
     icon="sap-icon://upload"
+    type="Emphasized"
     press=".onOpenUploadDialog"/>
     <Button
     text="Download Excel Template"
     icon="sap-icon://excel-attachment"
+    type="Emphasized"
     press=".onDownloadTemplate"/>
 
                         <Button

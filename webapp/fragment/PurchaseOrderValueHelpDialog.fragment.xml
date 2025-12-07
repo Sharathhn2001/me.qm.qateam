@@ -2,7 +2,7 @@
     <TableSelectDialog
         id="valueHelpDialogPO"
         title="Select Purchase Order"
-        search="onPOSearch"
+        liveChange="onPOSearch"
         confirm="onPOSelect"
         cancel="onPOCancel"
         noDataText="No Purchase Orders Found"

@@ -20,7 +20,7 @@
 
                 <f:content>
 
-                    <Label text="{i18n>Purchase Order}" />
+                    <Label text="{i18n>Purchase Order}" required="true"/>
                  <Input
     id="create_purchaseOrder"
     value="{SubmitNewModel>/Ebeln}"
@@ -36,7 +36,6 @@
         text="{POModel>Ebeln}"
         additionalText="{POModel>Ebelp}" />
 </Input>
-
                     <Label text="{i18n>material}" required="true" />
                     <Input
                         id="create_material"
@@ -45,27 +44,25 @@
                         />
 
                     <Label text="{i18n>batch}" required="true" />
-                    <Input
-                        id="create_batch"
-                        value="{SubmitNewModel>/Charg}"
-                        editable="true"
-                        placeholder="Please Enter Batch"/>
+                   <Input
+    id="create_batch"
+    value="{SubmitNewModel>/Charg}"
+    editable="true"
+    liveChange=".onBatchChange"
+    placeholder="Please Enter Batch"/>
 
-<Label text="{i18n>formula}" />
 
+<Label text="{i18n>formula}" required="true"/>
 <ComboBox
     id="idFormulaCB"
     selectedKey="{SubmitNewModel>/Zzhbcformula}"
     placeholder="Select Formula"
     items="{FormulaModel>/results}"
     change=".onFormulaChange">
-
-  <core:ListItem
-   key="{FormulaModel>Zzhbcformula}"
-   text="{FormulaModel>Zzhbcformula}" />
+    <core:ListItem
+        key="{FormulaModel>Zzhbcformula}"
+        text="{FormulaModel>Zzhbcformula}" />
 </ComboBox>
-
-
 
                 </f:content>
 

@@ -63,9 +63,9 @@ sap.ui.define(
         // Model used to manipulate control states. The chosen values make sure,
         // detail page shows busy indication immediately so there is no break in
         // between the busy indication for loading the view's meta data
-         this._getIasDetails().then(() => {
-        console.log("IAS user loaded:", this.sSubmitterName);
-    });
+        this._getIasDetails().then(() => {
+          console.log("IAS user loaded:", this.sSubmitterName);
+        });
 
         var oViewModel = new JSONModel({
           busy: false,
@@ -74,7 +74,16 @@ sap.ui.define(
           isQMUser: false,
           rrEditable: true,
           CharEditable: true,
-          InspPointFlag: "A"
+          InspPointFlag: "A",
+
+          Plant: "",
+          Ebeln: "",
+          Ebelp: "",
+          Material: "",
+          Batch: "",
+          Formula: "",
+          IsSubmitNew: "",
+          // IsQMUser: false
         });
         oViewModel.setSizeLimit(100000);
         this.getRouter().getRoute("RouteCharacteristicOverview").attachPatternMatched(this._onObjectMatched, this);
@@ -126,46 +135,46 @@ sap.ui.define(
         * @param {sap.ui.base.Event} oEvent pattern match event in route 'object'
         * @private
         */
-       /*
-      _onObjectMatched: async function (oEvent) {
-        var oArguments = oEvent.getParameter("arguments");
-        var oAttachmentTable = this.getView().byId("table-uploadSet");
-        var oAttachmentModel = oAttachmentTable.getModel("AttachementModel");
+      /*
+     _onObjectMatched: async function (oEvent) {
+       var oArguments = oEvent.getParameter("arguments");
+       var oAttachmentTable = this.getView().byId("table-uploadSet");
+       var oAttachmentModel = oAttachmentTable.getModel("AttachementModel");
 
-        this.sPlant = window.decodeURIComponent(oArguments.Plant);
-        this.sMaterial = window.decodeURIComponent(oArguments.Material);
-        this.sBatch = window.decodeURIComponent(oArguments.Batch);
-        this.sSubmitterName = window.decodeURIComponent(oArguments.SubmitterName);
-        this.sSubmitterEmail = window.decodeURIComponent(oArguments.SubmitterEmail);
-        this.bIsSubmitNew = window.decodeURIComponent(oArguments.IsSubmitNew);
+       this.sPlant = window.decodeURIComponent(oArguments.Plant);
+       this.sMaterial = window.decodeURIComponent(oArguments.Material);
+       this.sBatch = window.decodeURIComponent(oArguments.Batch);
+       this.sSubmitterName = window.decodeURIComponent(oArguments.SubmitterName);
+       this.sSubmitterEmail = window.decodeURIComponent(oArguments.SubmitterEmail);
+       this.bIsSubmitNew = window.decodeURIComponent(oArguments.IsSubmitNew);
 
-        if (this.bIsSubmitNew === "true") {
-          this.getModel("ViewModel").setProperty("/screenMode", "edit");
-        } else {
-          this.getModel("ViewModel").setProperty("/screenMode", "view");
-        }
+       if (this.bIsSubmitNew === "true") {
+         this.getModel("ViewModel").setProperty("/screenMode", "edit");
+       } else {
+         this.getModel("ViewModel").setProperty("/screenMode", "view");
+       }
 
-        this.getModel("ViewModel").setProperty("/ShowSelectSample", true);
-        this.getModel("ViewModel").setProperty("/ShowSaveNext", true);
-        this.getModel("ViewModel").setProperty("/ShowRemarks", true);
+       this.getModel("ViewModel").setProperty("/ShowSelectSample", true);
+       this.getModel("ViewModel").setProperty("/ShowSaveNext", true);
+       this.getModel("ViewModel").setProperty("/ShowRemarks", true);
 
-        this.getView().byId("seg_button").removeAllItems();
+       this.getView().byId("seg_button").removeAllItems();
 
-        this.getModel("ViewModel").setProperty("/InspectionPointDesc", "");
+       this.getModel("ViewModel").setProperty("/InspectionPointDesc", "");
 
-        this._setEmptyDataToResultsTable();
+       this._setEmptyDataToResultsTable();
 
-        this.setDirtyState(false);
+       this.setDirtyState(false);
 
-        await this._getInspectionDetails();
+       await this._getInspectionDetails();
 
 
-        if (oAttachmentModel) {
-          oAttachmentModel.setData({});
-          this.deselectAllItems();
-        }
-      },
-      */
+       if (oAttachmentModel) {
+         oAttachmentModel.setData({});
+         this.deselectAllItems();
+       }
+     },
+     */
       _onObjectMatched: async function (oEvent) {
         var oArguments = oEvent.getParameter("arguments");
         var oAttachmentTable = this.getView().byId("table-uploadSet");
@@ -177,14 +186,26 @@ sap.ui.define(
         this.sMaterial = window.decodeURIComponent(oArguments.Material);
         this.sBatch = window.decodeURIComponent(oArguments.Batch);
         this.sFormula = window.decodeURIComponent(oArguments.Formula);
-       // this.sSubmitterName = window.decodeURIComponent(oArguments.SubmitterName);
+        // this.sSubmitterName = window.decodeURIComponent(oArguments.SubmitterName);
         //this.sSubmitterEmail = window.decodeURIComponent(oArguments.SubmitterEmail);
         this.bIsSubmitNew = window.decodeURIComponent(oArguments.IsSubmitNew);
         const isQMUserString = decodeURIComponent(oArguments.IsQMUser || "");
         const isQMUser = isQMUserString.toLowerCase() === "true";
         this.getModel("ViewModel").setProperty("/isQMUser", isQMUser);
-        
-    
+
+        const oData = {
+          Plant: this.sPlant,
+          Ebeln: this.sEbeln,
+          Ebelp: this.sEbelp,
+          Material: this.sMaterial,
+          Batch: this.sBatch,
+          Formula: this.sFormula,
+          IsSubmitNew: this.bIsSubmitNew,
+          //IsQMUser: isQMUser
+        };
+        const ViewModel = this.getModel("ViewModel");
+        ViewModel.setData(oData);
+
 
         if (this.bIsSubmitNew === "true") {
           this.getModel("ViewModel").setProperty("/screenMode", "edit");
@@ -269,7 +290,7 @@ sap.ui.define(
       _getInspectionDetails: async function () {
         var aFilters = [new Filter({ path: "Werk", operator: FilterOperator.EQ, value1: this.sPlant }),
         new Filter({ path: "Ebeln", operator: FilterOperator.EQ, value1: this.sEbeln }),
-        new Filter({ path: "Ebelp", operator: FilterOperator.EQ, value1: this.sEbelp}),
+        new Filter({ path: "Ebelp", operator: FilterOperator.EQ, value1: this.sEbelp }),
         new Filter({ path: "Matnr", operator: FilterOperator.EQ, value1: this.sMaterial }),
         new Filter({ path: "Zzhbcformula", operator: FilterOperator.EQ, value1: this.sFormula }),
         new Filter({ path: "Charg", operator: FilterOperator.EQ, value1: this.sBatch })];
@@ -637,9 +658,9 @@ sap.ui.define(
             var iIndex = aValidOpearations.findIndex(oValidOper => oValidOper.Inspoper === oThis.sOperation);
             if (iIndex === 0) {
               oColumn7 = new Input({
-                editable: "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true ? true : false : false}", value: "{Remark}", maxLength:40, change: function (oEvent) {
-                 
-              //  editable: "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true ? true : false : false}", /*value: "{Longtext}" */value: "{Remark}", maxLength:"40", change: function (oEvent) {
+                editable: "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true ? true : false : false}", value: "{Remark}", maxLength: 40, change: function (oEvent) {
+
+                  //  editable: "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true ? true : false : false}", /*value: "{Longtext}" */value: "{Remark}", maxLength:"40", change: function (oEvent) {
                   var oSource = oEvent.getSource();
                   var oContext = oEvent.getSource().getBindingContext();
                   var oSelectedObj = oContext.getObject();
@@ -648,7 +669,7 @@ sap.ui.define(
 
                   oThis.setDirtyState(true);
                   oSelectedObj.IsModified = true;
-                 // oSelectedObj.Remark = oSelectedObj.Longtext.length > 40 ? oSelectedObj.Longtext.substr(0, 39) : oSelectedObj.Longtext;
+                  // oSelectedObj.Remark = oSelectedObj.Longtext.length > 40 ? oSelectedObj.Longtext.substr(0, 39) : oSelectedObj.Longtext;
 
                   if (oSource.getType() === "Email") {
                     if (!regex.test(sValue)) {
@@ -665,7 +686,7 @@ sap.ui.define(
                   }
                 }
               });
-              if (oCharDetails.MstrChar === "SUB_NAME" && /* !oCharac.Longtext */!oCharac.Remark && oThis.sSubmitterName) {
+              if (oCharDetails.MstrChar === "SUB_NAME" && /* !oCharac.Longtext */ !oCharac.Remark && oThis.sSubmitterName) {
                 oCharModel.setProperty(context.getPath() + "/Remark", oThis.sSubmitterName);
                 //oCharModel.setProperty(context.getPath() + "/Longtext", oThis.sSubmitterName);
                 oCharac.IsModified = true;
@@ -691,7 +712,7 @@ sap.ui.define(
                 //oThis.setDirtyState(true);
               }
                 */
-               
+
               if (oCharDetails && oCharDetails.CharDescr.toLowerCase().includes("date") === true) {
                 oColumn7 = new DatePicker({
                   value: /*"{Longtext}" */"{Remark}", displayFormat: "MM.dd.yyyy", valueFormat: "MM.dd.yyyy",
@@ -702,7 +723,7 @@ sap.ui.define(
                     oThis.setDirtyState(true);
                     oSelectedObj.IsModified = true;
 
-                   // oSelectedObj.Remark = oSelectedObj.Longtext.length > 40 ? oSelectedObj.Longtext.substr(0, 39) : oSelectedObj.Longtext;
+                    // oSelectedObj.Remark = oSelectedObj.Longtext.length > 40 ? oSelectedObj.Longtext.substr(0, 39) : oSelectedObj.Longtext;
 
                   }
                 });
@@ -712,12 +733,12 @@ sap.ui.define(
             } else {
               oColumn7 = new TextArea({
                 editable: "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true ? true : false : false}",
-                value: /*"{Longtext}" */"{Remark}", maxLength:40, width: "100%", height: "100%", growing: false, change: function (oEvent) {
+                value: /*"{Longtext}" */"{Remark}", maxLength: 40, width: "100%", height: "100%", growing: false, change: function (oEvent) {
                   oThis.setDirtyState(true);
                   var oContext = oEvent.getSource().getBindingContext();
                   var oSelectedObj = oContext.getObject();
                   oSelectedObj.IsModified = true;
-                 //oSelectedObj.Remark = oSelectedObj.Longtext.length > 40 ? oSelectedObj.Longtext.substr(0, 39) : oSelectedObj.Longtext;
+                  //oSelectedObj.Remark = oSelectedObj.Longtext.length > 40 ? oSelectedObj.Longtext.substr(0, 39) : oSelectedObj.Longtext;
 
 
                 }
@@ -1468,7 +1489,7 @@ sap.ui.define(
               oCharReq.Inspchar === oCharac.Inspchar);
           })
 
-          if (oInspLotSampleResult && oInspLotSampleResult.Obligatory === "X" && /*!oCharac.Longtext*/!oCharac.Remark) {
+          if (oInspLotSampleResult && oInspLotSampleResult.Obligatory === "X" && /*!oCharac.Longtext*/ !oCharac.Remark) {
             oItem.getCells()[4].setValueState("Error");
             oItem.getCells()[4].setValueStateText(oThis.getResourceBundle().getText("enterValue"));
             bIsValid = false;
@@ -1726,8 +1747,8 @@ sap.ui.define(
             });
             if (iIndex === 0) {
               if (oCharac.MstrChar !== "COMMENTS") {
-               /* if (oCharac.Longtext) */
-               if (oCharac.Remark){
+                /* if (oCharac.Longtext) */
+                if (oCharac.Remark) {
                   var oCopyChar = Object.assign({}, oCharac);
                   delete oCopyChar.IsModified;
                   oInspPointCopy.InspLotSampleResultsSet.push(oCopyChar);
@@ -2383,231 +2404,231 @@ sap.ui.define(
 
         this.InspPointCreateDialog.open();
       },
-/*
-
-      _getInspectionPointsValueHelpDialog: async function (aFieldSeq) {
-        var oThis = this;
-
-        var aInspPointSet = await this.readDataFromODataModel("/InspPointsSet", [
-          new sap.ui.model.Filter({ path: "Insplot", operator: sap.ui.model.FilterOperator.EQ, value1: this.sInspLot }),
-          new sap.ui.model.Filter({ path: "Inspoper", operator: sap.ui.model.FilterOperator.EQ, value1: this.sOperation }),
-          new sap.ui.model.Filter({ path: "Flag", operator: sap.ui.model.FilterOperator.EQ, value1: "A" })
-        ]);
-
-        if (!aInspPointSet || !Array.isArray(aInspPointSet.results) || aInspPointSet.results.length === 0) {
-          sap.m.MessageToast.show("No inspection points found.");
-          return;
-        }
-
-        aInspPointSet.results.forEach(r => { if (r) r._editable = false; });
-
-        var aSampleType = [];
-        try {
-          var aSampleTypeData = await this.readDataFromODataModel("/SampleType_F4Set");
-          if (aSampleTypeData && aSampleTypeData.results) {
-            aSampleType = aSampleTypeData.results.map(item => ({ SampleType: item.SampleType }));
-          }
-        } catch (err) {
-          sap.m.MessageToast.show("Failed to load Sample Types");
-        }
-
-        var oInspectionPointModel = new sap.ui.model.json.JSONModel({
-          InsPoints: aInspPointSet.results,
-          SampleTypes: aSampleType
-        });
-        this.getView().setModel(oInspectionPointModel, "InspectionPointModel");
-
-        if (!this._oInspPointDialog) {
-          this._oInspPointDialog = new sap.m.Dialog({
-            title: this.getResourceBundle().getText("sampType"),
-            contentWidth: "70%",
-            contentHeight: "60%",
-            resizable: true,
-            draggable: true,
-            content: [
-              new sap.m.Table("inspPointTable", {
-                mode: "SingleSelectMaster",
-                columns: aFieldSeq.map(col => new sap.m.Column({ header: new sap.m.Label({ text: col.label }) }))
-                  .concat([new sap.m.Column({ header: new sap.m.Label({ text: "Action" }) })]),
-                itemPress: function (oEvent) {
-                  var oContext = oEvent.getParameter("listItem").getBindingContext("InspectionPointModel");
-                  if (!oContext) return;
-                  var oSelectedInspPoint = oContext.getObject();
-
-                  if (oThis.sInspPoint === oSelectedInspPoint.Insppoint) return;
-
-                  if (oThis.getModel("ViewModel").getProperty("/IsDirty")) {
-                    sap.m.MessageBox.show(oThis.getResourceBundle().getText("unSavedDataLostMsg"), {
-                      icon: sap.m.MessageBox.Icon.QUESTION,
-                      title: oThis.getResourceBundle().getText("discardChanges"),
-                      actions: [
-                        oThis.getResourceBundle().getText("discardChanges"),
-                        oThis.getResourceBundle().getText("cancel")
-                      ],
-                      initialFocus: oThis.getResourceBundle().getText("cancel"),
-                      onClose: function (sAction) {
-                        if (sAction === oThis.getResourceBundle().getText("discardChanges")) {
+      /*
+      
+            _getInspectionPointsValueHelpDialog: async function (aFieldSeq) {
+              var oThis = this;
+      
+              var aInspPointSet = await this.readDataFromODataModel("/InspPointsSet", [
+                new sap.ui.model.Filter({ path: "Insplot", operator: sap.ui.model.FilterOperator.EQ, value1: this.sInspLot }),
+                new sap.ui.model.Filter({ path: "Inspoper", operator: sap.ui.model.FilterOperator.EQ, value1: this.sOperation }),
+                new sap.ui.model.Filter({ path: "Flag", operator: sap.ui.model.FilterOperator.EQ, value1: "A" })
+              ]);
+      
+              if (!aInspPointSet || !Array.isArray(aInspPointSet.results) || aInspPointSet.results.length === 0) {
+                sap.m.MessageToast.show("No inspection points found.");
+                return;
+              }
+      
+              aInspPointSet.results.forEach(r => { if (r) r._editable = false; });
+      
+              var aSampleType = [];
+              try {
+                var aSampleTypeData = await this.readDataFromODataModel("/SampleType_F4Set");
+                if (aSampleTypeData && aSampleTypeData.results) {
+                  aSampleType = aSampleTypeData.results.map(item => ({ SampleType: item.SampleType }));
+                }
+              } catch (err) {
+                sap.m.MessageToast.show("Failed to load Sample Types");
+              }
+      
+              var oInspectionPointModel = new sap.ui.model.json.JSONModel({
+                InsPoints: aInspPointSet.results,
+                SampleTypes: aSampleType
+              });
+              this.getView().setModel(oInspectionPointModel, "InspectionPointModel");
+      
+              if (!this._oInspPointDialog) {
+                this._oInspPointDialog = new sap.m.Dialog({
+                  title: this.getResourceBundle().getText("sampType"),
+                  contentWidth: "70%",
+                  contentHeight: "60%",
+                  resizable: true,
+                  draggable: true,
+                  content: [
+                    new sap.m.Table("inspPointTable", {
+                      mode: "SingleSelectMaster",
+                      columns: aFieldSeq.map(col => new sap.m.Column({ header: new sap.m.Label({ text: col.label }) }))
+                        .concat([new sap.m.Column({ header: new sap.m.Label({ text: "Action" }) })]),
+                      itemPress: function (oEvent) {
+                        var oContext = oEvent.getParameter("listItem").getBindingContext("InspectionPointModel");
+                        if (!oContext) return;
+                        var oSelectedInspPoint = oContext.getObject();
+      
+                        if (oThis.sInspPoint === oSelectedInspPoint.Insppoint) return;
+      
+                        if (oThis.getModel("ViewModel").getProperty("/IsDirty")) {
+                          sap.m.MessageBox.show(oThis.getResourceBundle().getText("unSavedDataLostMsg"), {
+                            icon: sap.m.MessageBox.Icon.QUESTION,
+                            title: oThis.getResourceBundle().getText("discardChanges"),
+                            actions: [
+                              oThis.getResourceBundle().getText("discardChanges"),
+                              oThis.getResourceBundle().getText("cancel")
+                            ],
+                            initialFocus: oThis.getResourceBundle().getText("cancel"),
+                            onClose: function (sAction) {
+                              if (sAction === oThis.getResourceBundle().getText("discardChanges")) {
+                                doSwitch(oSelectedInspPoint);
+                              }
+                            }
+                          });
+                        } else {
                           doSwitch(oSelectedInspPoint);
                         }
+      
+                        function doSwitch(oSelectedInspPoint) {
+                          oThis.sInspPoint = oSelectedInspPoint.Insppoint;
+                          oThis.getView().byId("commentsedit").setValue("");
+                          oThis.setDirtyState(false);
+      
+                          if (oThis.aFieldSeq && oThis.aFieldSeq.length > 0) {
+                            oThis._formatInspPointDesc(oSelectedInspPoint);
+                          } else {
+                            oThis.getModel("ViewModel").setProperty("/InspectionPointDesc", "");
+                          }
+      
+                          if (oThis.InspPointAddFrom === "save&copy") {
+                            oThis._validateAndCopyToNext();
+                            oThis.InspPointAddFrom = "";
+                          } else {
+                            oThis._fetchCharData();
+                          }
+      
+                          oThis._setAttachmentModel();
+      
+                          var oModel = oThis.getView().getModel("InspectionPointModel");
+                          if (oModel) oModel.refresh();
+      
+                          oThis._oInspPointDialog.close();
+                        }
                       }
-                    });
-                  } else {
-                    doSwitch(oSelectedInspPoint);
+                    })
+                  ],
+                  endButton: new sap.m.Button({
+                    text: "Close",
+                    press: function () { oThis._oInspPointDialog.close(); }
+                  }),
+                  afterClose: function () {
+                    oThis._oInspPointDialog.destroy();
+                    oThis._oInspPointDialog = null;
                   }
-
-                  function doSwitch(oSelectedInspPoint) {
-                    oThis.sInspPoint = oSelectedInspPoint.Insppoint;
-                    oThis.getView().byId("commentsedit").setValue("");
-                    oThis.setDirtyState(false);
-
-                    if (oThis.aFieldSeq && oThis.aFieldSeq.length > 0) {
-                      oThis._formatInspPointDesc(oSelectedInspPoint);
-                    } else {
-                      oThis.getModel("ViewModel").setProperty("/InspectionPointDesc", "");
-                    }
-
-                    if (oThis.InspPointAddFrom === "save&copy") {
-                      oThis._validateAndCopyToNext();
-                      oThis.InspPointAddFrom = "";
-                    } else {
-                      oThis._fetchCharData();
-                    }
-
-                    oThis._setAttachmentModel();
-
-                    var oModel = oThis.getView().getModel("InspectionPointModel");
-                    if (oModel) oModel.refresh();
-
-                    oThis._oInspPointDialog.close();
-                  }
-                }
-              })
-            ],
-            endButton: new sap.m.Button({
-              text: "Close",
-              press: function () { oThis._oInspPointDialog.close(); }
-            }),
-            afterClose: function () {
-              oThis._oInspPointDialog.destroy();
-              oThis._oInspPointDialog = null;
-            }
-          });
-
-          var oTable = sap.ui.getCore().byId("inspPointTable");
-          oTable.bindItems({
-            path: "InspectionPointModel>/InsPoints",
-            template: new sap.m.ColumnListItem({
-              type: "Active",
-              cells: aFieldSeq.map(function (column) {
-                if (column.key === "Userc2") {
-                  return new sap.m.ComboBox({
-                    value: "{InspectionPointModel>" + column.key + "}",
-                    editable: "{InspectionPointModel>_editable}",
-                    filterSuggests: true,
-                    showSecondaryValues: false,
-                    valueHelpOnly: false,
-                    items: {
-                      path: "InspectionPointModel>/SampleTypes",
-                      template: new sap.ui.core.Item({
-                        key: "{InspectionPointModel>SampleType}",
-                        text: "{InspectionPointModel>SampleType}"
-                      })
-                    },
-                    liveChange: function (oEvt) {
-                      var sValue = oEvt.getParameter("value");
-                      var oContext = oEvt.getSource().getBindingContext("InspectionPointModel");
-                      if (oContext && oContext.getObject()) {
-                        oContext.getObject()[column.key] = sValue;
-                      }
-                    }
-                  });
-                } else if (column.key === "Userc1") {
-                  return new sap.m.Input({
-                    value: "{InspectionPointModel>" + column.key + "}",
-                    editable: "{InspectionPointModel>_editable}",
-                    liveChange: function (oEvt) {
-                      var sValue = oEvt.getParameter("value");
-                      var oContext = oEvt.getSource().getBindingContext("InspectionPointModel");
-                      if (oContext && oContext.getObject()) {
-                        oContext.getObject()[column.key] = sValue;
-                      }
-                    }
-                  });
-                } else {
-
-                  return new sap.m.Text({ text: "{InspectionPointModel>" + column.key + "}" });
-                }
-              }).concat([
-
-                new sap.m.Button({
-                  icon: "{= ${InspectionPointModel>_editable} ? 'sap-icon://save' : 'sap-icon://edit' }",
-                  type: "Transparent",
-                  press: async function (oEvent) {
-                    var oRow = oEvent.getSource().getParent();
-                    var oContext = oRow.getBindingContext("InspectionPointModel");
-                    if (!oContext) return;
-                    var oRowData = oContext.getObject();
-
-                    var aAllRows = oThis.getView().getModel("InspectionPointModel").getProperty("/InsPoints");
-
-                    var bDuplicate = aAllRows.some(function (row) {
-                      if (row.Insppoint === oRowData.Insppoint) return false;
-                      return row.Userc1 === oRowData.Userc1 && row.Userc2 === oRowData.Userc2;
-                    });
-
-                    if (bDuplicate) {
-                      sap.m.MessageBox.warning("This combination of Sample Type and Syrup Batch Number already exists. Please enter new.");
-                      return;
-                    }
-
-                    aAllRows.forEach(r => { if (r !== oRowData) r._editable = false; });
-                    oContext.getModel().refresh();
-
-                    if (!oRowData._editable) {
-
-                      oRowData._editable = true;
-                      oRow.getCells().forEach(cell => {
-                        if (cell.isA("sap.m.Input") || cell.isA("sap.m.ComboBox")) cell.setEditable(true);
-                      });
-                    } else {
-
-                      try {
-                        var sPath = "/InspPointsSet(Insplot='" + oRowData.Insplot +
-                          "',Inspoper='" + oRowData.Inspoper +
-                          "',Insppoint='" + oRowData.Insppoint + "')";
-                        var oPayload = {
-                          Userc1: oRowData.Userc1,
-                          Userc2: oRowData.Userc2,
-                          Flag: "A",
-                          Insplot: oRowData.Insplot,
-                          Inspoper: oRowData.Inspoper,
-                          Insppoint: oRowData.Insppoint
-                        };
-                        await oThis.updateInspectionPoint(sPath, oPayload);
-
-                        oRowData._editable = false;
-                        oRow.getCells().forEach(cell => {
-                          if (cell.isA("sap.m.Input") || cell.isA("sap.m.ComboBox")) cell.setEditable(false);
+                });
+      
+                var oTable = sap.ui.getCore().byId("inspPointTable");
+                oTable.bindItems({
+                  path: "InspectionPointModel>/InsPoints",
+                  template: new sap.m.ColumnListItem({
+                    type: "Active",
+                    cells: aFieldSeq.map(function (column) {
+                      if (column.key === "Userc2") {
+                        return new sap.m.ComboBox({
+                          value: "{InspectionPointModel>" + column.key + "}",
+                          editable: "{InspectionPointModel>_editable}",
+                          filterSuggests: true,
+                          showSecondaryValues: false,
+                          valueHelpOnly: false,
+                          items: {
+                            path: "InspectionPointModel>/SampleTypes",
+                            template: new sap.ui.core.Item({
+                              key: "{InspectionPointModel>SampleType}",
+                              text: "{InspectionPointModel>SampleType}"
+                            })
+                          },
+                          liveChange: function (oEvt) {
+                            var sValue = oEvt.getParameter("value");
+                            var oContext = oEvt.getSource().getBindingContext("InspectionPointModel");
+                            if (oContext && oContext.getObject()) {
+                              oContext.getObject()[column.key] = sValue;
+                            }
+                          }
                         });
-                        sap.m.MessageToast.show("Inspection Point updated successfully");
-                      } catch (e) {
-                        sap.m.MessageBox.error("Failed to update: " + e.message);
+                      } else if (column.key === "Userc1") {
+                        return new sap.m.Input({
+                          value: "{InspectionPointModel>" + column.key + "}",
+                          editable: "{InspectionPointModel>_editable}",
+                          liveChange: function (oEvt) {
+                            var sValue = oEvt.getParameter("value");
+                            var oContext = oEvt.getSource().getBindingContext("InspectionPointModel");
+                            if (oContext && oContext.getObject()) {
+                              oContext.getObject()[column.key] = sValue;
+                            }
+                          }
+                        });
+                      } else {
+      
+                        return new sap.m.Text({ text: "{InspectionPointModel>" + column.key + "}" });
                       }
-                    }
-
-                    oContext.getModel().refresh();
-                  }
-                })
-              ])
-            })
-          });
-
-          this.getView().addDependent(this._oInspPointDialog);
-        }
-
-        this._oInspPointDialog.open();
-      },
-*/
+                    }).concat([
+      
+                      new sap.m.Button({
+                        icon: "{= ${InspectionPointModel>_editable} ? 'sap-icon://save' : 'sap-icon://edit' }",
+                        type: "Transparent",
+                        press: async function (oEvent) {
+                          var oRow = oEvent.getSource().getParent();
+                          var oContext = oRow.getBindingContext("InspectionPointModel");
+                          if (!oContext) return;
+                          var oRowData = oContext.getObject();
+      
+                          var aAllRows = oThis.getView().getModel("InspectionPointModel").getProperty("/InsPoints");
+      
+                          var bDuplicate = aAllRows.some(function (row) {
+                            if (row.Insppoint === oRowData.Insppoint) return false;
+                            return row.Userc1 === oRowData.Userc1 && row.Userc2 === oRowData.Userc2;
+                          });
+      
+                          if (bDuplicate) {
+                            sap.m.MessageBox.warning("This combination of Sample Type and Syrup Batch Number already exists. Please enter new.");
+                            return;
+                          }
+      
+                          aAllRows.forEach(r => { if (r !== oRowData) r._editable = false; });
+                          oContext.getModel().refresh();
+      
+                          if (!oRowData._editable) {
+      
+                            oRowData._editable = true;
+                            oRow.getCells().forEach(cell => {
+                              if (cell.isA("sap.m.Input") || cell.isA("sap.m.ComboBox")) cell.setEditable(true);
+                            });
+                          } else {
+      
+                            try {
+                              var sPath = "/InspPointsSet(Insplot='" + oRowData.Insplot +
+                                "',Inspoper='" + oRowData.Inspoper +
+                                "',Insppoint='" + oRowData.Insppoint + "')";
+                              var oPayload = {
+                                Userc1: oRowData.Userc1,
+                                Userc2: oRowData.Userc2,
+                                Flag: "A",
+                                Insplot: oRowData.Insplot,
+                                Inspoper: oRowData.Inspoper,
+                                Insppoint: oRowData.Insppoint
+                              };
+                              await oThis.updateInspectionPoint(sPath, oPayload);
+      
+                              oRowData._editable = false;
+                              oRow.getCells().forEach(cell => {
+                                if (cell.isA("sap.m.Input") || cell.isA("sap.m.ComboBox")) cell.setEditable(false);
+                              });
+                              sap.m.MessageToast.show("Inspection Point updated successfully");
+                            } catch (e) {
+                              sap.m.MessageBox.error("Failed to update: " + e.message);
+                            }
+                          }
+      
+                          oContext.getModel().refresh();
+                        }
+                      })
+                    ])
+                  })
+                });
+      
+                this.getView().addDependent(this._oInspPointDialog);
+              }
+      
+              this._oInspPointDialog.open();
+            },
+      */
       //INC0077965 - Edit Inspection Point - Sharath
       _getInspectionPointsValueHelpDialog: async function (aFieldSeq) {
         var oThis = this;
@@ -2837,7 +2858,7 @@ sap.ui.define(
         });
       },
 
-      
+
       _onCreateInspPointPress: function () {
         var oThis = this;
         var oModel = this.InspPointCreateDialog.getModel("InspectionPointModel");
