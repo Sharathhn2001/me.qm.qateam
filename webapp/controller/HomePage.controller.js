@@ -2098,9 +2098,20 @@ sap.ui.define([
                             var oDataItem = aAllData[i];
                             if (!oDataItem) continue;
 
-                            // Extract Material and Batch from the data to generate sheet name
-                            var sMaterial = oDataItem["Monster Material"] || oDataItem.Material || oDataItem.Matnr || "";
-                            var sBatch = oDataItem.Batch || oDataItem.Charg || "";
+                            var sMaterial = oDataItem.Matnr || oDataItem.Material || "";
+                            
+                            if (!sMaterial && oDataItem["Monster Material"]) {
+                                var sMonsterMaterial = oDataItem["Monster Material"].toString();
+                                var iDashIndex = sMonsterMaterial.indexOf(" - ");
+                                if (iDashIndex > 0) {
+                                    sMaterial = sMonsterMaterial.substring(0, iDashIndex).trim();
+                                } else {
+                                    sMaterial = sMonsterMaterial.trim();
+                                }
+                            }
+                            
+                            var sBatch = oDataItem.Charg || oDataItem.Batch || "";
+                            
                             
                             // If we can't find Material/Batch in data, use from input set
                             if (!sMaterial || !sBatch) {
