@@ -15,37 +15,37 @@ sap.ui.define([
         formatter: Formatter,
         async onInit() {
             try {
-                const oPlantDetails = await this._getIasDetails();
+                // const oPlantDetails = await this._getIasDetails();
 
-                let rawEmail = oPlantDetails.email;
-                if (Array.isArray(rawEmail)) {
-                    this._userEmail = rawEmail.find(email => email) || "";
-                } else {
-                    this._userEmail = rawEmail || "";
-                }
+                // let rawEmail = oPlantDetails.email;
+                // if (Array.isArray(rawEmail)) {
+                //     this._userEmail = rawEmail.find(email => email) || "";
+                // } else {
+                //     this._userEmail = rawEmail || "";
+                // }
 
-                this._isQMUser = String(oPlantDetails.isQMUser).toLowerCase() === "true";
+                // this._isQMUser = String(oPlantDetails.isQMUser).toLowerCase() === "true";
 
-                this.sPlant = "";
-                this.sPlantName = "";
+                // this.sPlant = "";
+                // this.sPlantName = "";
 
-                //   this.sPlant = "3011";
-                //  this.sPlantName = "";
+                  this.sPlant = "3011";
+                 this.sPlantName = "";
 
-                if (!this._isQMUser) {
-                    this.sPlant = oPlantDetails.Plant;
-                    this.sPlantName = oPlantDetails.PlantName;
+                // if (!this._isQMUser) {
+                //     this.sPlant = oPlantDetails.Plant;
+                //     this.sPlantName = oPlantDetails.PlantName;
 
-                    const oPlantInput = this.byId("plantInputname");
-                    if (oPlantInput) {
-                        oPlantInput.setValue(this.sPlant);
-                    }
-                } else {
-                    this.waitForCondition(
-                        () => this._userEmail.trim() !== "",
-                        () => this.PlantF4()
-                    );
-                }
+                //     const oPlantInput = this.byId("plantInputname");
+                //     if (oPlantInput) {
+                //         oPlantInput.setValue(this.sPlant);
+                //     }
+                // } else {
+                //     this.waitForCondition(
+                //         () => this._userEmail.trim() !== "",
+                //         () => this.PlantF4()
+                //     );
+                // }
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
                     tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
@@ -1735,35 +1735,34 @@ sap.ui.define([
          * @returns {Promise} Promise that resolves when ExcelJS is available
          * @private
          */
-        _loadExcelJSLibrary: function () {
-            return new Promise(function (resolve, reject) {
+         _loadExcelJSLibrary: function () {
+            return new Promise((resolve, reject) => {
                 // Check if already loaded
                 if (typeof window !== "undefined" && window.ExcelJS && typeof window.ExcelJS.Workbook !== "undefined") {
                     resolve(window.ExcelJS);
                     return;
                 }
 
-                var sCDNUrl = "https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js";
-                var oScript = document.createElement("script");
-                oScript.src = sCDNUrl;
-                oScript.async = true;
-
-                oScript.onload = function () {
-                    // Wait a bit for the library to initialize
-                    setTimeout(function () {
-                        if (typeof window !== "undefined" && window.ExcelJS && typeof window.ExcelJS.Workbook !== "undefined") {
-                            resolve(window.ExcelJS);
-                        } else {
-                            reject(new Error("ExcelJS library loaded but Workbook is not available"));
-                        }
-                    }, 100);
-                };
-
-                oScript.onerror = function () {
-                    reject(new Error("Failed to load ExcelJS from CDN"));
-                };
-
-                document.head.appendChild(oScript);
+                // Use jQuery's getScript method (same as friend's approach) for better CSP compatibility
+                sap.ui.require(["sap/ui/thirdparty/jquery"], ($) => {
+                    const sCDNUrl = "https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js";
+                    
+                    $.getScript(sCDNUrl)
+                        .done(() => {
+                            // Wait a bit for the library to initialize
+                            setTimeout(() => {
+                                if (typeof window !== "undefined" && window.ExcelJS && typeof window.ExcelJS.Workbook !== "undefined") {
+                                    resolve(window.ExcelJS);
+                                } else {
+                                    reject(new Error("ExcelJS library loaded but Workbook is not available"));
+                                }
+                            }, 100);
+                        })
+                        .fail((jqxhr, settings, exception) => {
+                            console.error("ExcelJS load error:", exception);
+                            reject(new Error("Failed to load ExcelJS from CDN: " + (exception || "Unknown error")));
+                        });
+                });
             });
         },
 
@@ -1885,7 +1884,7 @@ sap.ui.define([
                 fgColor: { argb: "FFFF00" }
             };
 
-
+            var sPOItem = oData["PO & Item"] || oData["POItem"] || oData["PO_Item"] || oData.POItem || "";
             var sPlant = oData.Plant || oData.Werk || "";
             var sMaterial = oData["Monster Material"] || oData.Material || oData.Matnr || "";
             var sBatch = oData.Batch || oData.Charg || "";
@@ -1894,6 +1893,7 @@ sap.ui.define([
             var sGlobalMarketRegion = oData["Global Market Region"] || oData.GlobalMarketRegion || "";
             var sMarket = oData.Market || "";
 
+            ws.addRow(["", "PO & Item", sPOItem]);
             ws.addRow(["", "Plant", sPlant]);
             ws.addRow(["", "Monster Material", sMaterial]);
             ws.addRow(["", "Batch", sBatch]);
@@ -2025,57 +2025,130 @@ sap.ui.define([
                 var sSuccessMessage = "Excel file downloaded successfully.";
 
                 if (aBatchInputSet && aBatchInputSet.length > 0) {
-                    // Multiple selection mode
+                    // Multiple selection mode - send all items in a single request
                     var oDownloadModel = this.getOwnerComponent().getModel("downloadService");
 
-                    // Process each Material/Batch combination
-                    for (var i = 0; i < aBatchInputSet.length; i++) {
-                        var oBatchInput = aBatchInputSet[i];
+                    // Generate unique RequestId for the single request
+                    var sTimestamp = String(new Date().getTime()).slice(-6);
+                    var sRandom = Math.random().toString(36).substr(2, 4).toUpperCase();
+                    var sRequestId = sTimestamp + sRandom;
 
-                        // Generate unique RequestId for each request
-                        var sTimestamp = String(new Date().getTime() + i).slice(-6);
-                        var sRandom = Math.random().toString(36).substr(2, 4).toUpperCase();
-                        var sRequestId = sTimestamp + sRandom;
+                    // Prepare payload with all Material/Batch combinations
+                    var oPayload = {
+                        RequestId: sRequestId,
+                        ToBatchInputSet: aBatchInputSet
+                    };
 
-                        // Prepare payload for single Material/Batch
-                        var oPayload = {
-                            RequestId: sRequestId,
-                            ToBatchInputSet: [oBatchInput]
-                        };
-
-                        // Call OData service for this Material/Batch
-                        try {
-                            var oResponseDataForBatch = await new Promise(function (resolve, reject) {
-                                oDownloadModel.create("/BatchRequestSet", oPayload, {
-                                    success: function (oData, oResponse) {
-                                        resolve(oData);
-                                    },
-                                    error: function (oError) {
-                                        reject(oError);
-                                    }
-                                });
+                    try {
+                        // Single API call for all Material/Batch combinations
+                        var oResponseData = await new Promise(function (resolve, reject) {
+                            oDownloadModel.create("/BatchRequestSet", oPayload, {
+                                success: function (oData, oResponse) {
+                                    resolve(oData);
+                                },
+                                error: function (oError) {
+                                    reject(oError);
+                                }
                             });
+                        });
+
+                        // Extract and parse response data
+                        var sJsonResponse = null;
+                        if (oResponseData.JsonResponse) {
+                            sJsonResponse = oResponseData.JsonResponse;
+                        } else if (oResponseData.jsonResponse) {
+                            sJsonResponse = oResponseData.jsonResponse;
+                        } else if (oResponseData.d && oResponseData.d.JsonResponse) {
+                            sJsonResponse = oResponseData.d.JsonResponse;
+                        } else if (oResponseData.d && oResponseData.d.jsonResponse) {
+                            sJsonResponse = oResponseData.d.jsonResponse;
+                        }
+
+                        var aAllData = [];
+                        if (sJsonResponse) {
+                            try {
+                                if (typeof sJsonResponse === "string") {
+                                    aAllData = JSON.parse(sJsonResponse);
+                                } else {
+                                    aAllData = sJsonResponse;
+                                }
+                            } catch (e) {
+                                console.error("JSON parse error:", e);
+                                BusyIndicator.hide();
+                                MessageToast.show("Failed to parse response data.");
+                                return;
+                            }
+                        } else {
+                            // Fallback: check if response has results array
+                            var oResponseResults = oResponseData.results || (oResponseData.d && oResponseData.d.results) || [];
+                            if (Array.isArray(oResponseResults) && oResponseResults.length > 0) {
+                                aAllData = oResponseResults;
+                            } else if (oResponseData && Object.keys(oResponseData).length > 0) {
+                                aAllData = [oResponseData];
+                            }
+                        }
+
+                        // Ensure aAllData is an array
+                        if (!Array.isArray(aAllData)) {
+                            aAllData = [aAllData];
+                        }
+
+                        // Process each Material/Batch combination from the response
+                        for (var i = 0; i < aAllData.length; i++) {
+                            var oDataItem = aAllData[i];
+                            if (!oDataItem) continue;
+
+                            // Extract Material and Batch from the data to generate sheet name
+                            var sMaterial = oDataItem["Monster Material"] || oDataItem.Material || oDataItem.Matnr || "";
+                            var sBatch = oDataItem.Batch || oDataItem.Charg || "";
+                            
+                            // If we can't find Material/Batch in data, use from input set
+                            if (!sMaterial || !sBatch) {
+                                var oBatchInput = aBatchInputSet[i];
+                                if (oBatchInput) {
+                                    sMaterial = oBatchInput.Material || sMaterial;
+                                    sBatch = oBatchInput.Batch || sBatch;
+                                }
+                            }
 
                             // Generate sheet name from Material and Batch
-                            var sSheetName = this._generateSheetName(oBatchInput.Material, oBatchInput.Batch, wb);
+                            var sSheetName = this._generateSheetName(sMaterial, sBatch, wb);
 
                             // Create sheet using the helper function
-                            await this._createExcelSheet(wb, sSheetName, oResponseDataForBatch);
+                            // Wrap the data item in a response-like structure
+                            var oResponseForSheet = {
+                                JsonResponse: JSON.stringify([oDataItem])
+                            };
+                            
+                            await this._createExcelSheet(wb, sSheetName, oResponseForSheet);
                             iProcessedCount++;
-
-                        } catch (oError) {
-                            console.error("Error processing Material/Batch:", oBatchInput, oError);
-                            // Continue with next item even if one fails
                         }
-                    }
 
-                    if (iProcessedCount === 0) {
+                        if (iProcessedCount === 0) {
+                            BusyIndicator.hide();
+                            MessageToast.show("Failed to export any data.");
+                            return;
+                        }
+
+                        sSuccessMessage = "Excel file downloaded successfully with " + iProcessedCount + " sheet(s).";
+
+                    } catch (oError) {
                         BusyIndicator.hide();
-                        MessageToast.show("Failed to export any data.");
+                        var sErrorMessage = "Error exporting data to Excel.";
+                        if (oError && oError.responseText) {
+                            try {
+                                var oErrorData = JSON.parse(oError.responseText);
+                                if (oErrorData.error && oErrorData.error.message && oErrorData.error.message.value) {
+                                    sErrorMessage = oErrorData.error.message.value;
+                                }
+                            } catch (e) {
+                                // Ignore parse errors
+                            }
+                        }
+                        MessageToast.show(sErrorMessage);
+                        console.error("Export error:", oError);
                         return;
                     }
-
-                    sSuccessMessage = "Excel file downloaded successfully with " + iProcessedCount + " sheet(s).";
 
                 } else if (oResponseData) {
                     // Single selection mode
@@ -2128,9 +2201,9 @@ sap.ui.define([
                             return;
                         }
 
-                        sap.ui.require(["sap/ui/thirdparty/jquery"], ($) => {
-                            $.getScript("https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js", async () => {
-
+                        // Use the shared ExcelJS loading function for consistency
+                        this._loadExcelJSLibrary().then(async (ExcelJS) => {
+                            try {
                                 const workbook = new ExcelJS.Workbook();
                                 const sheet = workbook.addWorksheet("MassUpload_Template");
 
@@ -2190,14 +2263,20 @@ sap.ui.define([
                                 link.href = URL.createObjectURL(blob);
                                 link.download = "MassUpload_Template.xlsx";
                                 link.click();
-
-                            });
+                                oBusy.close();
+                            } catch (e) {
+                                console.error("Export error:", e);
+                                sap.m.MessageBox.error("Excel generation failed: " + (e.message || "Unknown error"));
+                                oBusy.close();
+                            }
+                        }).catch((error) => {
+                            console.error("ExcelJS load error:", error);
+                            sap.m.MessageBox.error("Failed to load ExcelJS library: " + (error.message || "Unknown error"));
+                            oBusy.close();
                         });
-
                     } catch (e) {
-                        console.error(e);
-                        sap.m.MessageBox.error("Excel generation failed.");
-                    } finally {
+                        console.error("Template download error:", e);
+                        sap.m.MessageBox.error("Template download failed: " + (e.message || "Unknown error"));
                         oBusy.close();
                     }
                 },
