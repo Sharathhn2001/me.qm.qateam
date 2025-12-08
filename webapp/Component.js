@@ -26,13 +26,7 @@ sap.ui.define([
             // enable routing
             this.getRouter().initialize();
 
-            jQuery.getScript("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js")
-                .done(function () {
-                    Log.info("XLSX library loaded");
-                })
-                .fail(function () {
-                    Log.error("Failed to load XLSX library");
-                });
+            jQuery.getScript("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js");
         
         }
     });
