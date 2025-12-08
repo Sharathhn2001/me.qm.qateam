@@ -85,19 +85,10 @@ _getIasDetails: function () {
             contentType: 'application/json',
             success: function (data) {
                 const oView = this.getView();
-/*
-                const email = data.email || "";
-                let namePart = email.split("@")[0];
+                const firstName = data.firstname || "";
+                const lastName = data.lastname || "";
+                const email = Array.isArray(data.email) ? data.email[0] : data.email;
 
-                if (namePart.includes(".")) {
-                    namePart = namePart
-                        .split(".")
-                        .map(s => s.charAt(0).toUpperCase() + s.slice(1))
-                        .join(" ");
-                }
-
-                this.sSubmitterName = namePart;
-        */        
                 const groupList = Array.isArray(data.Groups)
                     ? data.Groups
                     : typeof data.Groups === "string"
@@ -120,7 +111,10 @@ _getIasDetails: function () {
                         isQMUser: true,
                         Plant: null,
                         PlantName: null,
-                        email: data.email
+                        email: data.email,
+                         email: email,
+                        firstName: firstName,
+                        lastName: lastName
                     });
                     return;
                 }
@@ -142,7 +136,10 @@ _getIasDetails: function () {
                         isQMUser: false,
                         Plant: PlantCode,
                         PlantName: PlantName,
-                        email: data.email
+                        email: data.email,
+                        email: email,
+                        firstName: firstName,
+                        lastName: lastName
                     });
                 } else {
                     reject();

@@ -15,7 +15,9 @@ sap.ui.define([
         formatter: Formatter,
         async onInit() {
             try {
+                
                 const oPlantDetails = await this._getIasDetails();
+                this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
 
                 let rawEmail = oPlantDetails.email;
                 if (Array.isArray(rawEmail)) {
@@ -29,8 +31,8 @@ sap.ui.define([
                 this.sPlant = "";
                 this.sPlantName = "";
 
-                //   this.sPlant = "3011";
-                //  this.sPlantName = "";
+                  // this.sPlant = "3011";
+                  //this.sPlantName = "";
 
                 if (!this._isQMUser) {
                     this.sPlant = oPlantDetails.Plant;
@@ -45,7 +47,8 @@ sap.ui.define([
                         () => this._userEmail.trim() !== "",
                         () => this.PlantF4()
                     );
-                }
+             }
+
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
                     tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
@@ -819,15 +822,14 @@ sap.ui.define([
         * Opens Material Valuehelp Dialog
         * @public
         */
-        onBatchValueHelpRequested: async function (oEvent) {
+         onBatchValueHelpRequested: async function (oEvent) {
             var aMaterials = [];
-            this._oMaterialSourceIp.getTokens().forEach(oToken => {
-                aMaterials.push(oToken.getKey());
-            });
+           
 
-            if (aMaterials.length === 0) {
-                MessageToast.show("Please select Material first");
-                return;
+            if (this._oMaterialSourceIp) {
+                this._oMaterialSourceIp.getTokens().forEach(oToken => {
+                    aMaterials.push(oToken.getKey());
+                });
             }
 
             await this.getBatchF4(aMaterials);
@@ -853,6 +855,7 @@ sap.ui.define([
 
             this._oBatchValueHelpDialog.open();
         },
+
 
         onBatchSearch: function (oEvent) {
             var sSearchQuery = oEvent.getParameter("value");
@@ -2457,114 +2460,157 @@ sap.ui.define([
             reader.readAsArrayBuffer(oFile);
         },
 
-        onMassUpload: function () {
+       onMassUpload: function () {
             try {
                 if (!this._selectedFile || !this._fileBuffer) {
-                    MessageBox.error("Select a valid Excel file.");
-                    return;
+                    return MessageBox.error("Please select a valid Excel file.");
                 }
 
                 const wb = XLSX.read(this._fileBuffer, { type: "array" });
                 const sheet = wb.Sheets[wb.SheetNames[0]];
                 const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
 
-                const dataRowsCount = data.length > 4 ? data.length - 4 : 0;
+                const dataRows = Math.max(data.length - 4, 0);
 
-                if (dataRowsCount > this.MAX_TOTAL_ROWS) {
-                    MessageBox.error(
-                        `Maximum allowed data rows is ${this.MAX_TOTAL_ROWS}. Your file has ${dataRowsCount} rows (excluding first 4).`
+                if (dataRows > this.MAX_TOTAL_ROWS) {
+                    return MessageBox.error(
+                        `Maximum allowed rows: ${this.MAX_TOTAL_ROWS}. Your file contains ${dataRows}.`
                     );
-                    return;
                 }
 
                 this._buildPayloadFromExcel();
                 this._sendPayloadToBackend();
+
             } catch (e) {
-                MessageBox.error("Processing failed: " + e.message);
                 console.error(e);
+                MessageBox.error("Processing failed: " + e.message);
             }
         },
 
-        // Payload Builder
         _buildPayloadFromExcel: function () {
-            if (!this._selectedFile || !this._fileBuffer) {
-                throw new Error("No Excel file selected.");
-            }
 
             const wb = XLSX.read(this._fileBuffer, { type: "array" });
             const sheet = wb.Sheets[wb.SheetNames[0]];
             const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
 
-            if (!data.length || data.length < 2) {
-                throw new Error("Excel file must have at least two rows (headers + description).");
+            if (data.length < 2) {
+                throw new Error("Excel file must contain at least header and description rows.");
             }
 
-            const firstRow = data[0].map(h => String(h).trim());
-            const secondRow = data[1].map(h => String(h).trim());
+            const headers = data[0].map(h => String(h).trim());
+            const desc = data[1].map(h => String(h).trim());
             const rows = data.slice(2);
 
-            const selectedOperations = this._oUploadDialog
+            const selectedOps = this._oUploadDialog
                 .getContent()[0]
                 .getItems()[1]
                 .getItems()
                 .filter(cb => cb.getSelected())
                 .map(cb => cb.getText());
 
-            if (!selectedOperations.length) {
-                throw new Error("No operations selected.");
+            if (!selectedOps.length) {
+                throw new Error("At least one operation must be selected.");
             }
 
-            const selectedValues = selectedOperations.flatMap(op => op.split(" - ").map(p => p.trim()));
+            const selectedValues = selectedOps.flatMap(op =>
+                op.split(" - ").map(x => x.trim())
+            );
 
-            const selectedCols = firstRow.map((h1, idx) => {
-                const h2 = secondRow[idx] || "";
-                if (h1.startsWith("HDR|") || h1.startsWith("IP|")) return h1;
-                if (selectedValues.includes(h1) || selectedValues.includes(h2)) return h1;
-                return null;
-            }).filter(c => c !== null);
-
-            if (!selectedCols.length) {
-                throw new Error("No columns match selected operations.");
-            }
+            const selectedCols = headers.filter((h, i) =>
+                h.startsWith("HDR|") ||
+                h.startsWith("IP|") ||
+                selectedValues.includes(h) ||
+                selectedValues.includes(desc[i])
+            );
 
             const items = rows
-                .filter(row => row.some(v => v !== ""))
+                .filter(r => r.some(cell => cell !== ""))
                 .map(row => {
                     const obj = {};
-                    firstRow.forEach((h, idx) => {
+                    headers.forEach((h, i) => {
                         if (selectedCols.includes(h)) {
-                            obj[h] = String(row[idx] || "").trim();
+                            obj[h] = String(row[i] || "").trim();
                         }
                     });
                     return obj;
                 });
 
             this._jsonPayload = {
-                EntityName: "Z_TMP_MASS_UPLOAD",
-                TotalRecords: items.length,
-                Items: items
+                Werk: this.sPlant,
+                Name: this.name || "",
+                Email: this._userEmail || "",
+                JSON: JSON.stringify({
+                    TotalRecords: items.length,
+                    Items: items
+                })
             };
 
-            console.log("Filtered Payload:", JSON.stringify(this._jsonPayload, null, 2));
+            console.log("Final Upload Payload → ", this._jsonPayload);
         },
-
         _sendPayloadToBackend: function () {
 
+            const appId = this.getOwnerComponent().getManifestEntry("sap.app").id;
+            const basePath =
+                sap.ui.require.toUrl(appId.replaceAll(".", "/")) +
+                "/sap/opu/odata/sap/ZQM_BTP_INSP_DATA_UPLOAD_SRV/";
+
+            BusyIndicator.show(0);
 
             $.ajax({
-                url: "/sap/opu/odata/sap/Z_TMP_MASS_UPLOAD_SRV/EntitySet",
-                method: "POST",
-                data: JSON.stringify(this._jsonPayload),
-                contentType: "application/json",
-                success: (res) => {
-                    MessageBox.success("Mass upload successful.");
-                    this._resetFileState();
+                url: basePath + "UploadTemplateSet",
+                method: "GET",
+                headers: { "X-CSRF-Token": "Fetch" },
+
+                success: (data, text, xhr) => {
+                    const token = xhr.getResponseHeader("X-CSRF-Token") || "";
+                    if (!token) {
+                        BusyIndicator.hide();
+                        return MessageBox.error("Failed to fetch CSRF token.");
+                    }
+                    this._postUploadPayload(basePath, token);
                 },
-                error: (err) => {
-                    MessageBox.error("Mass upload failed.");
-                    console.error(err);
+
+                error: () => {
+                    BusyIndicator.hide();
+                    MessageBox.error("Unable to fetch CSRF token from backend.");
                 }
             });
+        },
+        _postUploadPayload: function (basePath, token) {
+            $.ajax({
+                url: basePath + "UploadTemplateSet",
+                method: "POST",
+                contentType: "application/json",
+                headers: { "X-CSRF-Token": token },
+                data: JSON.stringify(this._jsonPayload),
+
+                success: () => {
+                    BusyIndicator.hide();
+                    MessageBox.success("Mass Upload Successful.");
+                    this._resetFileState();
+                },
+
+                error: (err) => {
+                    BusyIndicator.hide();
+                    MessageBox.error(this._extractODataError(err));
+                }
+            });
+        },
+        _extractODataError: function (err) {
+            try {
+                const body = err?.responseText || "";
+
+                if (body.startsWith("<")) {
+                    const xml = $.parseXML(body);
+                    return $(xml).find("message").text() || "Unknown backend error.";
+                }
+
+                const json = JSON.parse(body);
+                return json.error?.message?.value || "Unknown backend error.";
+
+            } catch (e) {
+                return "Processing failed. Unable to read backend error.";
+            }
         },
 
         _resetFileState: function () {

@@ -112,6 +112,8 @@ sap.ui.define(
         }))
 
         this.fetchStatus();
+    
+   
         // this._getInspectionDetails();
       },
 
@@ -230,6 +232,7 @@ sap.ui.define(
         this.setDirtyState(false);
 
         await this._getInspectionDetails();
+        await this._getIasDetails();
 
 
         if (oAttachmentModel) {
@@ -244,6 +247,47 @@ sap.ui.define(
           InspCharResults: [],
         });
       },
+
+_getIasDetails: function () {
+    const appId = this.getOwnerComponent().getManifestEntry("/sap.app/id");
+    const appPath = appId.replaceAll(".", "/");
+    const appModulePath = jQuery.sap.getModulePath(appPath);
+    const url = appModulePath + "/user-api/attributes";
+
+    return new Promise((resolve, reject) => {
+        $.ajax({
+            url: url,
+            type: 'GET',
+            contentType: 'application/json',
+            success: function (data) {
+                const oView = this.getView();
+
+                this.sFirstName = data.firstname || "";
+                this.sLastName = data.lastname || "";
+                this.sFullName = `${this.sFirstName} ${this.sLastName}`.trim();
+
+                if (Array.isArray(data.email)) {
+                    this.sEmail = data.email[0] || "";
+                } else if (typeof data.email === "string") {
+                    this.sEmail = data.email;
+                } else {
+                    this.sEmail = "";
+                }
+
+                resolve({
+                    firstName: this.sFirstName,
+                    lastName: this.sLastName,
+                    fullName: this.sFullName,
+                    email: this.sEmail
+                });
+
+            }.bind(this),
+            error: function (err) {
+                reject(err);
+            }
+        });
+    });
+},
 
       fetchStatus: async function () {
         BusyIndicator.show();
@@ -662,9 +706,9 @@ sap.ui.define(
             var iIndex = aValidOpearations.findIndex(oValidOper => oValidOper.Inspoper === oThis.sOperation);
             if (iIndex === 0) {
               oColumn7 = new Input({
-                editable: "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true ? true : false : false}", value: "{Remark}", maxLength: 40, change: function (oEvent) {
-
-                  //  editable: "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true ? true : false : false}", /*value: "{Longtext}" */value: "{Remark}", maxLength:"40", change: function (oEvent) {
+                editable: (oCharDetails.MstrChar === "SUB_NAME" || oCharDetails.MstrChar === "SUB_MAIL") ? false :
+                  "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true : false }", value: "{Remark}", maxLength: 40, change: function (oEvent) {
+              //  editable: "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true ? true : false : false}", /*value: "{Longtext}" */value: "{Remark}", maxLength:"40", change: function (oEvent) {
                   var oSource = oEvent.getSource();
                   var oContext = oEvent.getSource().getBindingContext();
                   var oSelectedObj = oContext.getObject();
@@ -690,10 +734,13 @@ sap.ui.define(
                   }
                 }
               });
-              if (oCharDetails.MstrChar === "SUB_NAME" && /* !oCharac.Longtext */ !oCharac.Remark && oThis.sSubmitterName) {
-                oCharModel.setProperty(context.getPath() + "/Remark", oThis.sSubmitterName);
+              if (oCharDetails.MstrChar === "SUB_NAME" && /* !oCharac.Longtext */ !oCharac.Remark && this.sFullName) {
+                oCharModel.setProperty(context.getPath() + "/Remark", this.sFullName);
                 //oCharModel.setProperty(context.getPath() + "/Longtext", oThis.sSubmitterName);
                 oCharac.IsModified = true;
+                if (oColumn7 && oColumn7.setEditable) {
+                  oColumn7.setEditable(false);
+                }
                 //oThis.setDirtyState(true);
               }
               if (oCharDetails.MstrChar === "COUNTRY") {
@@ -702,8 +749,8 @@ sap.ui.define(
                   oThis.onCountryOfSaleValueHelpRequested(oEvent);
                 });
               }
-              if (oCharDetails.MstrChar === "SUB_MAIL" && /* !oCharac.Longtext */ !oCharac.Remark && oThis.sSubmitterEmail) {
-                oCharModel.setProperty(context.getPath() + "/Remark", oThis.sSubmitterEmail);
+              if (oCharDetails.MstrChar === "SUB_MAIL" && /* !oCharac.Longtext */ !oCharac.Remark && this.sEmail) {
+                oCharModel.setProperty(context.getPath() + "/Remark", this.sEmail);
                 //oCharModel.setProperty(context.getPath() + "/Longtext", oThis.sSubmitterEmail);
                 oCharac.IsModified = true;
                 //oThis.setDirtyState(true);
@@ -1668,7 +1715,7 @@ sap.ui.define(
             }
             if (oCharac.MstrChar === "COMMENTS") {
               var oCopyChar = Object.assign({}, oCharac);
-              var sLongText = oThis.sSubmitterName + " " + oThis.formatter.dateFormatter(new Date()) +
+              var sLongText = this.sFullName + " " + oThis.formatter.dateFormatter(new Date()) +
                 " " + oThis.formatter.formatTime(new Date()) + " - " +
                 oThis.getView().byId("commentsedit").getValue();
               oCopyChar.Longtext = sLongText;
@@ -1759,7 +1806,7 @@ sap.ui.define(
                 }
               } else {
                 var oCopyChar = Object.assign({}, oCharac);
-                var sLongText = oThis.sSubmitterName + " " + oThis.formatter.dateFormatter(new Date()) +
+                var sLongText = this.sFullName + " " + oThis.formatter.dateFormatter(new Date()) +
                   " " + oThis.formatter.formatTime(new Date()) + " - " +
                   oThis.getView().byId("commentsedit").getValue();
                 oCopyChar.Longtext = sLongText;
@@ -1777,7 +1824,7 @@ sap.ui.define(
                 oInspPointCopy.InspLotSampleResultsSet.push(oCopyChar);
               }
               if (oCharac.MstrChar === "COMMENTS") {
-                var sLongText = oThis.sSubmitterName + " " + oThis.formatter.dateFormatter(new Date()) +
+                var sLongText = this.sFullName + " " + oThis.formatter.dateFormatter(new Date()) +
                   " " + oThis.formatter.formatTime(new Date()) + " - " +
                   oThis.getView().byId("commentsedit").getValue();
                 var oCopyChar = Object.assign({}, oCharac);
