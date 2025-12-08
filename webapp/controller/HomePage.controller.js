@@ -7,14 +7,16 @@ sap.ui.define([
     "sap/m/Token",
     "sap/ui/core/BusyIndicator",
     "sap/m/MessageToast",
-    "sap/ui/core/Fragment"
-], (BaseController, Formatter, JSONModel, Filter, FilterOperator, Token, BusyIndicator, MessageToast, Fragment) => {
+    "sap/ui/core/Fragment",
+    "sap/m/MessageBox"
+], (BaseController, Formatter, JSONModel, Filter, FilterOperator, Token, BusyIndicator, MessageToast, Fragment, MessageBox) => {
     "use strict";
 
     return BaseController.extend("com.monsterenergy.qm.me.qm.qateam.controller.HomePage", {
         formatter: Formatter,
         async onInit() {
             try {
+
                 const oPlantDetails = await this._getIasDetails();
                 this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
 
@@ -30,8 +32,8 @@ sap.ui.define([
                 this.sPlant = "";
                 this.sPlantName = "";
 
-                 //  this.sPlant = "3011";
-                 // this.sPlantName = "";
+                //this.sPlant = "3011";
+                // this.sPlantName = "";
 
                 if (!this._isQMUser) {
                     this.sPlant = oPlantDetails.Plant;
@@ -46,7 +48,7 @@ sap.ui.define([
                         () => this._userEmail.trim() !== "",
                         () => this.PlantF4()
                     );
-             }
+                }
 
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
@@ -821,9 +823,9 @@ sap.ui.define([
         * Opens Material Valuehelp Dialog
         * @public
         */
-         onBatchValueHelpRequested: async function (oEvent) {
+        onBatchValueHelpRequested: async function (oEvent) {
             var aMaterials = [];
-           
+
 
             if (this._oMaterialSourceIp) {
                 this._oMaterialSourceIp.getTokens().forEach(oToken => {
@@ -1737,17 +1739,17 @@ sap.ui.define([
          * @returns {Promise} Promise that resolves when ExcelJS is available
          * @private
          */
-         _loadExcelJSLibrary: function () {
+        _loadExcelJSLibrary: function () {
             return new Promise((resolve, reject) => {
                 // Check if already loaded
                 if (typeof window !== "undefined" && window.ExcelJS && typeof window.ExcelJS.Workbook !== "undefined") {
                     resolve(window.ExcelJS);
                     return;
                 }
-               
+
                 sap.ui.require(["sap/ui/thirdparty/jquery"], ($) => {
                     const sCDNUrl = "https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js";
-                    
+
                     $.getScript(sCDNUrl)
                         .done(() => {
                             // Wait a bit for the library to initialize
@@ -2099,7 +2101,7 @@ sap.ui.define([
                             if (!oDataItem) continue;
 
                             var sMaterial = oDataItem.Matnr || oDataItem.Material || "";
-                            
+
                             if (!sMaterial && oDataItem["Monster Material"]) {
                                 var sMonsterMaterial = oDataItem["Monster Material"].toString();
                                 var iDashIndex = sMonsterMaterial.indexOf(" - ");
@@ -2109,10 +2111,10 @@ sap.ui.define([
                                     sMaterial = sMonsterMaterial.trim();
                                 }
                             }
-                            
+
                             var sBatch = oDataItem.Charg || oDataItem.Batch || "";
-                            
-                            
+
+
                             // If we can't find Material/Batch in data, use from input set
                             if (!sMaterial || !sBatch) {
                                 var oBatchInput = aBatchInputSet[i];
@@ -2130,7 +2132,7 @@ sap.ui.define([
                             var oResponseForSheet = {
                                 JsonResponse: JSON.stringify([oDataItem])
                             };
-                            
+
                             await this._createExcelSheet(wb, sSheetName, oResponseForSheet);
                             iProcessedCount++;
                         }
@@ -2276,25 +2278,52 @@ sap.ui.define([
                                 link.click();
                                 oBusy.close();
                             } catch (e) {
-                                console.error("Export error:", e);
                                 sap.m.MessageBox.error("Excel generation failed: " + (e.message || "Unknown error"));
                                 oBusy.close();
                             }
                         }).catch((error) => {
-                            console.error("ExcelJS load error:", error);
                             sap.m.MessageBox.error("Failed to load ExcelJS library: " + (error.message || "Unknown error"));
                             oBusy.close();
                         });
                     } catch (e) {
-                        console.error("Template download error:", e);
                         sap.m.MessageBox.error("Template download failed: " + (e.message || "Unknown error"));
                         oBusy.close();
                     }
                 },
-                error: () => {
-                    sap.m.MessageBox.error("Failed to fetch data.");
+                error: (oError) => {
                     oBusy.close();
+
+                    let sMessage = "Failed to fetch template data.";
+
+                    try {
+                        if (oError?.responseText) {
+                            const oResponse = JSON.parse(oError.responseText);
+
+                            // Standard SAP error message
+                            if (oResponse.error?.message?.value) {
+                                sMessage = oResponse.error.message.value;
+                            }
+                            else if (oResponse.error?.message) {
+                                sMessage = oResponse.error.message;
+                            }
+                            // Inner error (common in SAP)
+                            else if (oResponse.error?.innererror?.errordetails?.length) {
+                                sMessage = oResponse.error.innererror.errordetails[0]?.message || sMessage;
+                            }
+                            else {
+                                sMessage = oError.responseText;
+                            }
+                        }
+                        else if (oError?.message) {
+                            sMessage = oError.message;
+                        }
+                    } catch (ex) {
+                        sMessage = "Unknown backend error occurred.";
+                    }
+
+                    sap.m.MessageBox.error(sMessage);
                 }
+
             });
         },
 
@@ -2470,7 +2499,7 @@ sap.ui.define([
             reader.readAsArrayBuffer(oFile);
         },
 
-       onMassUpload: function () {
+        onMassUpload: function () {
             try {
                 if (!this._selectedFile || !this._fileBuffer) {
                     return MessageBox.error("Please select a valid Excel file.");
