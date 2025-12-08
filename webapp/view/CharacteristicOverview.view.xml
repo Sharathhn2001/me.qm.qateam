@@ -147,7 +147,7 @@
                         <ObjectStatus
                             id="objStatusformula"
                             title="{i18n>formula}"
-                            text="{ViewModel>/Formula}"
+                            text="{InspectionDetailsModel>/Zzhbcformula}"
                             class="sapUiTinyMarginBottom"
                         />
                         <ObjectStatus

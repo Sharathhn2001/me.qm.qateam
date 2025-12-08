@@ -100,7 +100,7 @@ sap.ui.define([],
                     case "B":
                     case "C":
                     default:
-                        sPattern = "MM/dd/yyyy";
+                        sPattern = "dd.MM.yyyy";
                 }
 
                 var oDateFormat = sap.ui.core.format.DateFormat.getDateInstance({

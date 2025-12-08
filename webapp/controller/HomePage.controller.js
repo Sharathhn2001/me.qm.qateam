@@ -15,7 +15,6 @@ sap.ui.define([
         formatter: Formatter,
         async onInit() {
             try {
-
                 const oPlantDetails = await this._getIasDetails();
 
                 let rawEmail = oPlantDetails.email;
@@ -30,8 +29,8 @@ sap.ui.define([
                 this.sPlant = "";
                 this.sPlantName = "";
 
-                //  this.sPlant = "3011";
-                // this.sPlantName = "";
+                //   this.sPlant = "3011";
+                //  this.sPlantName = "";
 
                 if (!this._isQMUser) {
                     this.sPlant = oPlantDetails.Plant;
@@ -47,7 +46,6 @@ sap.ui.define([
                         () => this.PlantF4()
                     );
                 }
-
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
                     tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
@@ -1351,7 +1349,7 @@ sap.ui.define([
             oSubmitModel.setProperty("/Ebeln", oSelected.Ebeln);
             oSubmitModel.setProperty("/Ebelp", oSelected.Ebelp);
             oSubmitModel.setProperty("/Matnr", oSelected.Matnr);
-            this.getFormulaF4();
+            this.POFormulaF4();
             oSubmitModel.setProperty("/Charg", oSelected.Charg);
             oEvent.getSource().getBinding("items").filter([]);
         },
@@ -1382,8 +1380,9 @@ sap.ui.define([
                 oModel.setProperty("/Ebelp", oFound.Ebelp || "");
                 oModel.setProperty("/Matnr", oFound.Matnr || "");
                 oModel.setProperty("/Charg", oFound.Charg || "");
+                oModel.setProperty("/Werk", this.sPlant);
 
-                this.getFormulaF4();
+                this.POFormulaF4();
 
             } else {
                 oModel.setProperty("/Ebeln", "");
@@ -1405,10 +1404,10 @@ sap.ui.define([
                 return;
             }
 
-            this.getFormulaF4(sBatch);
+            this.POFormulaF4(sBatch);
         },
 
-        getFormulaF4: async function () {
+        POFormulaF4: async function () {
             try {
                 const sEbeln = this.sSelectedPO;
                 const sEbelp = this.sSelectedPOItem;
@@ -1531,42 +1530,55 @@ sap.ui.define([
         },
 
         onSubmitPress: async function () {
-            const oModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
-            const oData = oModel.getData();
-
-            if (!oData.Ebeln || !oData.Ebelp || !oData.Matnr) {
-                MessageToast.show("Please select a valid PO with Item, Material");
-                return;
+            const oSubmitModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
+            const oSubmit = oSubmitModel.getData();
+            if (!oSubmit.Ebeln || !oSubmit.Ebelp || !oSubmit.Matnr) {
+                return MessageToast.show("Please select a valid PO with Item and Material");
             }
-
+            // const oData = oModel.getData();
             BusyIndicator.show();
 
-            const oInspectionResult = await this._getInspectionDetails();
-
-            if (oInspectionResult) {
-                const sFormula =
-                    this.sSelectedFormula ||
-                    oData.Zzhbcformula ||
-                    "NA";
-                this.getFormulaF4();
-                this._navToInspChars(
-                    oData.Werk,
-                    oData.Matnr,
-                    // oData.Matkx,
-                    oData.Charg,
-                    true,
-                    oData.Ebeln,
-                    oData.Ebelp,
-                    sFormula
-                );
-                this._oSubmitNewDialog.close();
-            } else {
-                MessageToast.show("Inspection Details Not Found");
-            }
-
+            // const oInspectionResult = await this._getInspectionDetails();
+            /*
+                        if (oInspectionResult) {
+                            const sFormula =
+                                this.sSelectedFormula ||
+                                oData.Zzhbcformula ||
+                                "NA";
+                            this.getFormulaF4();
+                            this._navToInspChars(
+                                oData.Werk,
+                                oData.Matnr,
+                                // oData.Matkx,
+                                oData.Charg,
+                                true,
+                                oData.Ebeln,
+                                oData.Ebelp,
+                                sFormula
+                            );
+                            this._oSubmitNewDialog.close();
+                        } else {
+                            MessageToast.show("Inspection Details Not Found");
+                        }
+            
+                        BusyIndicator.hide();
+                        */
+            const sFormula =
+                this.sSelectedFormula ||
+                oSubmit.Zzhbcformula ||
+                "NA";
+            this._navToInspChars(
+                oSubmit.Werk,
+                oSubmit.Matnr,
+                oSubmit.Charg,
+                true,
+                oSubmit.Ebeln,
+                oSubmit.Ebelp,
+                sFormula
+            );
+            this._oSubmitNewDialog.close();
             BusyIndicator.hide();
         },
-
         _getInspectionDetails: async function () {
             const oModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
             const oData = oModel.getData();

@@ -63,9 +63,20 @@ sap.ui.define(
         // Model used to manipulate control states. The chosen values make sure,
         // detail page shows busy indication immediately so there is no break in
         // between the busy indication for loading the view's meta data
-        this._getIasDetails().then(() => {
-          console.log("IAS user loaded:", this.sSubmitterName);
+
+        var oDataModel = new JSONModel({
+          Plant: "",
+          Ebeln: "",
+          Ebelp: "",
+          Material: "",
+          Batch: "",
+          Formula: "",
+          IsSubmitNew: ""
+          // IsQMUser: false
         });
+        oDataModel.setSizeLimit(100000);
+        this.setModel(oDataModel, "DataModel");
+
 
         var oViewModel = new JSONModel({
           busy: false,
@@ -76,14 +87,6 @@ sap.ui.define(
           CharEditable: true,
           InspPointFlag: "A",
 
-          Plant: "",
-          Ebeln: "",
-          Ebelp: "",
-          Material: "",
-          Batch: "",
-          Formula: "",
-          IsSubmitNew: "",
-          // IsQMUser: false
         });
         oViewModel.setSizeLimit(100000);
         this.getRouter().getRoute("RouteCharacteristicOverview").attachPatternMatched(this._onObjectMatched, this);
@@ -200,11 +203,12 @@ sap.ui.define(
           Material: this.sMaterial,
           Batch: this.sBatch,
           Formula: this.sFormula,
-          IsSubmitNew: this.bIsSubmitNew,
-          //IsQMUser: isQMUser
+          IsSubmitNew: this.bIsSubmitNew
+          // IsQMUser: isQMUser
         };
-        const ViewModel = this.getModel("ViewModel");
-        ViewModel.setData(oData);
+
+        const oDataModel = this.getModel("DataModel");
+        oDataModel.setData(oData);
 
 
         if (this.bIsSubmitNew === "true") {
@@ -715,7 +719,7 @@ sap.ui.define(
 
               if (oCharDetails && oCharDetails.CharDescr.toLowerCase().includes("date") === true) {
                 oColumn7 = new DatePicker({
-                  value: /*"{Longtext}" */"{Remark}", displayFormat: "MM.dd.yyyy", valueFormat: "MM.dd.yyyy",
+                  value: /*"{Longtext}" */"{Remark}", displayFormat: "dd.MM.yyyy", valueFormat: "MM.dd.yyyy",
                   editable: "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true ? true : false : false}", change: function (oEvent) {
                     var oContext = oEvent.getSource().getBindingContext();
                     var oSelectedObj = oContext.getObject();
@@ -2685,8 +2689,11 @@ sap.ui.define(
                   var oContext = oEvent.getParameter("listItem").getBindingContext("InspectionPointModel");
                   if (!oContext) return;
                   var oSelectedInspPoint = oContext.getObject();
-                  if (oThis.sInspPoint === oSelectedInspPoint.Insppoint) return;
-
+                  // if (oThis.sInspPoint === oSelectedInspPoint.Insppoint) return;
+                  if (oThis.sInspPoint === oSelectedInspPoint.Insppoint) {
+                    oThis._oInspPointDialog.close();
+                    return;
+                  }
                   if (oThis.getModel("ViewModel").getProperty("/IsDirty")) {
                     sap.m.MessageBox.show(oThis.getResourceBundle().getText("unSavedDataLostMsg"), {
                       icon: sap.m.MessageBox.Icon.QUESTION,

@@ -182,7 +182,7 @@
                                     <DateRangeSelection
                                         id="dateRangeSelection"
                                         change=".onFilterGroupItemChange"
-                                        displayFormat="MM.dd.YYYY"
+                                        displayFormat="dd.MM.yyyy"
                                     />
                                 </fb:control>
                             </fb:FilterGroupItem>
@@ -312,6 +312,7 @@
                         <Button
                             id="createButton"
                             text="{i18n>submitnew}"
+                             icon="sap-icon://add"
                             visible="true"
                             press=".onSubmitNewPress"
                             type="Emphasized"
