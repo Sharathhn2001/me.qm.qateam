@@ -1715,7 +1715,7 @@ _getIasDetails: function () {
             }
             if (oCharac.MstrChar === "COMMENTS") {
               var oCopyChar = Object.assign({}, oCharac);
-              var sLongText = this.sFullName + " " + oThis.formatter.dateFormatter(new Date()) +
+              var sLongText = oThis.sFullName + " " + oThis.formatter.dateFormatter(new Date()) +
                 " " + oThis.formatter.formatTime(new Date()) + " - " +
                 oThis.getView().byId("commentsedit").getValue();
               oCopyChar.Longtext = sLongText;

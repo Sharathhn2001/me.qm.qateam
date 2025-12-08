@@ -15,7 +15,6 @@ sap.ui.define([
         formatter: Formatter,
         async onInit() {
             try {
-                
                 const oPlantDetails = await this._getIasDetails();
                 this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
 
@@ -31,8 +30,8 @@ sap.ui.define([
                 this.sPlant = "";
                 this.sPlantName = "";
 
-                  // this.sPlant = "3011";
-                  //this.sPlantName = "";
+                 //  this.sPlant = "3011";
+                 // this.sPlantName = "";
 
                 if (!this._isQMUser) {
                     this.sPlant = oPlantDetails.Plant;
