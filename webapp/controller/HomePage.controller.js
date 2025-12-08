@@ -1742,8 +1742,7 @@ sap.ui.define([
                     resolve(window.ExcelJS);
                     return;
                 }
-
-                // Use jQuery's getScript method (same as friend's approach) for better CSP compatibility
+               
                 sap.ui.require(["sap/ui/thirdparty/jquery"], ($) => {
                     const sCDNUrl = "https://cdn.jsdelivr.net/npm/exceljs/dist/exceljs.min.js";
                     
@@ -1892,6 +1891,7 @@ sap.ui.define([
             var sFormula = oData.Formula || oData.Zzhbcformula || "";
             var sGlobalMarketRegion = oData["Global Market Region"] || oData.GlobalMarketRegion || "";
             var sMarket = oData.Market || "";
+            var sUDStatus = oData["UD Status"] || oData["UDStatus"] || oData["UD_Status"] || oData.UDStatus || oData.Vbewertung || "";
 
             ws.addRow(["", "PO & Item", sPOItem]);
             ws.addRow(["", "Plant", sPlant]);
@@ -1901,6 +1901,7 @@ sap.ui.define([
             ws.addRow(["", "Formula", sFormula]);
             ws.addRow(["", "Global Market Region", sGlobalMarketRegion]);
             ws.addRow(["", "Market", sMarket]);
+            ws.addRow(["", "UD Status", sUDStatus]);
 
             // Blank row between header and first operation block
             ws.addRow([]);
@@ -1920,7 +1921,6 @@ sap.ui.define([
                     return;
                 }
 
-                // Add a gap between operation blocks, but not before the first one
                 if (iIndex > 0) {
                     ws.addRow([]);
                 }
@@ -1930,7 +1930,6 @@ sap.ui.define([
                     return ip["Sample Type/Syrup Batch"] || ip.SampleTypeSyrupBatch || ip.SampleType || "";
                 });
 
-                // Row: Operation + repeated "Sample Type/Syrup Batch"
                 var aHeaderRow = ["", "Operation"];
                 aSamples.forEach(function () {
                     aHeaderRow.push("Sample Type/Syrup Batch");
@@ -1959,7 +1958,6 @@ sap.ui.define([
 
                 ws.addRow([]);
 
-                // Collect all unique MIC names for this operation dynamically
                 var oMicNameSet = new Set();
                 aInspectionPoints.forEach(function (ip) {
                     var aMics = ip.MICs || ip.mics || ip.Mics || [];
