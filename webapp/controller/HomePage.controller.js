@@ -2402,11 +2402,12 @@ sap.ui.define([
                 }).then(function (oDialog) {
                     this._oUploadDialog = oDialog;
                     oView.addDependent(oDialog);
-
+                    this._resetDialogState();
                     this.getOperation();
                     this._oUploadDialog.open();
                 }.bind(this));
             } else {
+                this._resetDialogState();
                 this.getOperation();
                 this._oUploadDialog.open();
             }
@@ -2602,14 +2603,11 @@ sap.ui.define([
                 })
             };
 
-            console.log("Final Upload Payload → ", this._jsonPayload);
         },
         _sendPayloadToBackend: function () {
-
-            const appId = this.getOwnerComponent().getManifestEntry("sap.app").id;
-            const basePath =
-                sap.ui.require.toUrl(appId.replaceAll(".", "/")) +
-                "/sap/opu/odata/sap/ZQM_BTP_INSP_DATA_UPLOAD_SRV/";
+            var appId = this.getOwnerComponent().getManifestEntry("sap.app").id;
+            var appPath = appId.replaceAll(".", "/");
+            var basePath = sap.ui.require.toUrl(appPath) + "/sap/opu/odata/sap/ZQM_BTP_INSP_DATA_UPLOAD_SRV/";
 
             BusyIndicator.show(0);
 
@@ -2618,22 +2616,30 @@ sap.ui.define([
                 method: "GET",
                 headers: { "X-CSRF-Token": "Fetch" },
 
-                success: (data, text, xhr) => {
-                    const token = xhr.getResponseHeader("X-CSRF-Token") || "";
+                success: (result, xhr, data) => {
+                    var token = data.getResponseHeader("X-CSRF-Token");
                     if (!token) {
                         BusyIndicator.hide();
-                        return MessageBox.error("Failed to fetch CSRF token.");
+                        MessageBox.error("Failed to fetch CSRF token.");
+                        return;
                     }
                     this._postUploadPayload(basePath, token);
                 },
 
                 error: () => {
                     BusyIndicator.hide();
-                    MessageBox.error("Unable to fetch CSRF token from backend.");
+                    MessageBox.error("Unable to fetch CSRF token.");
                 }
             });
         },
+
         _postUploadPayload: function (basePath, token) {
+            if (!this._jsonPayload) {
+                BusyIndicator.hide();
+                MessageBox.error("Payload is empty.");
+                return;
+            }
+
             $.ajax({
                 url: basePath + "UploadTemplateSet",
                 method: "POST",
@@ -2643,8 +2649,9 @@ sap.ui.define([
 
                 success: () => {
                     BusyIndicator.hide();
-                    MessageBox.success("Mass Upload Successful.");
                     this._resetFileState();
+                    this.onCloseDialog();
+                    MessageBox.success("Mass Upload Successful.");
                 },
 
                 error: (err) => {
@@ -2656,27 +2663,34 @@ sap.ui.define([
         _extractODataError: function (err) {
             try {
                 const body = err?.responseText || "";
-
                 if (body.startsWith("<")) {
                     const xml = $.parseXML(body);
-                    return $(xml).find("message").text() || "Unknown backend error.";
+                    return $(xml).find("message").first().text() || "Backend error.";
                 }
-
                 const json = JSON.parse(body);
-                return json.error?.message?.value || "Unknown backend error.";
-
+                return json.error?.message?.value || "Backend error.";
             } catch (e) {
-                return "Processing failed. Unable to read backend error.";
+                return "Unable to read backend error.";
             }
+        },
+        onCloseDialog: function () {
+            this.byId("uploadDialog")?.close();
+        },
+
+        _resetDialogState: function () {
+            this._selectedFile = null;
+            this._fileBuffer = null;
+            this._jsonPayload = null;
+
+            this.byId("fileUploader")?.clear();
+            this.byId("fileSizeText")?.setText("File Size: 0 MB");
         },
 
         _resetFileState: function () {
             this._selectedFile = null;
             this._fileBuffer = null;
-            this._jsonPayload = null;
-            this.byId("fileInput")?.setValue("");
-            this.byId("fileSizeText")?.setText("");
         },
+
 
         onCloseDialog: function () {
             this.byId("uploadDialog")?.close();

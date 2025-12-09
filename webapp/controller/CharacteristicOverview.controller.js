@@ -425,7 +425,6 @@ _getIasDetails: function () {
         } else {
           this.getModel("ViewModel").setProperty("/Operations", []);
         }
-
       },
       _getInspectionOperationSeq: async function () {
         var aFilters = [new Filter({ path: "Insplot", operator: FilterOperator.EQ, value1: this.sInspLot })];
@@ -669,8 +668,6 @@ _getIasDetails: function () {
                 oCharResSpec.Inspoper === oCharac.Inspoper &&
                 oCharResSpec.Inspchar === oCharac.Inspchar);
             });
-
-
             var fnTitleFormat = function (sValue) {
               sValue = sValue.toLowerCase();
               var aValue = sValue.split(" ");
@@ -2848,7 +2845,6 @@ _getInspectionPointsValueHelpDialog: async function (aFieldSeq) {
                                 type: "Transparent",
                                 visible: bIsEditMode && "{= ${InspectionPointModel>Inspoper} === '0010' || ${InspectionPointModel>Inspoper} === '0020'}",
                                 press: async function (oEvent) {
-                                    // Find the ColumnListItem parent
                                     var oRow = oEvent.getSource().getParent();
                                     while (oRow && !oRow.isA("sap.m.ColumnListItem")) {
                                         oRow = oRow.getParent();
@@ -2906,11 +2902,11 @@ _getInspectionPointsValueHelpDialog: async function (aFieldSeq) {
                                     oContext.getModel().refresh();
                                 }
                             }),
-                            // Select Button (always visible)
+                            // Select Button 
                             new sap.m.Button({
                                 icon: "sap-icon://accept",
                                 text: "Select",
-                                type: "Transparent",
+                                type: "Emphasized",
                                 tooltip: "Select this row",
                                 press: function (oEvent) {
                                     // Find the ColumnListItem parent
