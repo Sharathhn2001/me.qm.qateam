@@ -49,6 +49,7 @@ sap.ui.define([
                         () => this.PlantF4()
                     );
                 }
+
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
                     tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
@@ -1366,7 +1367,7 @@ sap.ui.define([
             oSubmitModel.setProperty("/Charg", oSelected.Charg);
             oEvent.getSource().getBinding("items").filter([]);
         },
-        onPurchaseOrderChange: function (oEvent) {
+        onPurchaseOrderChangeInsp: function (oEvent) {
             const sValue = oEvent.getSource().getValue().trim();
             const oModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
             const oPOModel = this.getView().getModel("POModel");
