@@ -32,8 +32,8 @@ sap.ui.define([
                 this.sPlant = "";
                 this.sPlantName = "";
 
-              //  this.sPlant = "3011";
-               //  this.sPlantName = "";
+                //this.sPlant = "3011";
+                //this.sPlantName = "";
 
                 if (!this._isQMUser) {
                     this.sPlant = oPlantDetails.Plant;
@@ -49,7 +49,6 @@ sap.ui.define([
                         () => this.PlantF4()
                     );
                 }
-
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
                     tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
@@ -364,7 +363,7 @@ sap.ui.define([
             var aMaterialTokens = oMaterialMInput.getTokens();
             var aBatchTokens = oBatchMInput.getTokens();
             var aFormulaTokens = oFormulaMInput.getTokens();
-         
+
             //var aPlantFilters = [];
             var aMaterialFilters = [];
             var aBatchFilters = [];
@@ -479,21 +478,21 @@ sap.ui.define([
                 }
             }
 
-          var oStatusCombo = this.byId("statusCombo");
-var sStatusKey = oStatusCombo.getSelectedKey();
+            var oStatusCombo = this.byId("statusCombo");
+            var sStatusKey = oStatusCombo.getSelectedKey();
+            var sStatusDesc = oStatusCombo.getSelectedItem();
+            if (sStatusDesc) {
+                const oItem = oStatusCombo.getSelectedItem();
+                if (oItem) {
+                    sStatusKey = oItem.getKey();
+                }
+            }
 
-if (!sStatusKey) {
-    const oItem = oStatusCombo.getSelectedItem();
-    if (oItem) {
-        sStatusKey = oItem.getKey();
-    }
-}
-
-if (sStatusKey) {
-    aTableFilters.push(
-        new sap.ui.model.Filter("Vbewertung", sap.ui.model.FilterOperator.EQ, sStatusKey)
-    );
-}
+            if (sStatusDesc) {
+                aTableFilters.push(
+                    new sap.ui.model.Filter("Vbewertung", sap.ui.model.FilterOperator.EQ, sStatusKey)
+                );
+            }
 
 
 
@@ -2203,137 +2202,113 @@ if (sStatusKey) {
                 console.error("Export error:", oError);
             }
         },
-        // Fetch template data, generate formatted Excel, and download
         onDownloadTemplate: function () {
             const oModel = this.getView().getModel();
             const oBusy = new sap.m.BusyDialog();
             oBusy.open();
 
             oModel.read("/UploadTemplateSet", {
-                success: (oData) => {
+                success: async (oData) => {
                     try {
                         const sJson = oData.results?.[0]?.JSON;
                         if (!sJson) {
                             sap.m.MessageToast.show("No template data found.");
+                            oBusy.close();
                             return;
                         }
 
                         const aRows = JSON.parse(sJson);
                         if (!Array.isArray(aRows) || !aRows.length) {
                             sap.m.MessageBox.error("Invalid data.");
+                            oBusy.close();
                             return;
                         }
 
-                        // Use the shared ExcelJS loading function for consistency
-                        this._loadExcelJSLibrary().then(async (ExcelJS) => {
-                            try {
-                                const workbook = new ExcelJS.Workbook();
-                                const sheet = workbook.addWorksheet("MassUpload_Template");
+                        const ExcelJS = await this._loadExcelJSLibrary();
+                        const workbook = new ExcelJS.Workbook();
+                        const sheet = workbook.addWorksheet("MassUpload_Template");
 
-                                const headers = Object.keys(aRows[0]);
-                                sheet.addRow(headers);
+                        const headers = Object.keys(aRows[0]);
+                        sheet.addRow(headers);
+                        aRows.forEach(row => sheet.addRow(headers.map(h => row[h] || "")));
+                        sheet.columns.forEach(col => col.width = 25);
 
-                                aRows.forEach(row =>
-                                    sheet.addRow(headers.map(h => row[h] || ""))
-                                );
+                        const colors = {
+                            HDR: "FFFFF9C4",
+                            IP: "FFFFF9C4",
+                            "0010": "FFBBDEFB",
+                            "0020": "FFC8E6C9",
+                            "0030": "FFFFE0B2",
+                            "0040": "FFF8BBD0"
+                        };
 
-                                sheet.getRow(1).eachCell(cell => cell.font = { bold: true });
-                                sheet.columns.forEach(col => col.width = 25);
+                        headers.forEach((_, i) => {
+                            const colIndex = i + 1;
+                            const row1Val = String(sheet.getRow(1).getCell(colIndex).value || "").trim();
+                            const row2Val = String(sheet.getRow(2).getCell(colIndex).value || "").trim();
+                            let fillColor = null;
 
-                                const row1 = sheet.getRow(1);
-                                const row2 = sheet.getRow(2);
+                            if (/HDR|Header/i.test(row1Val) || /HDR|Header/i.test(row2Val)) fillColor = colors.HDR;
+                            else if (/IP/i.test(row1Val) || /IP/i.test(row2Val)) fillColor = colors.IP;
+                            else if (/0010|Items List/i.test(row1Val) || /0010|Items List/i.test(row2Val)) fillColor = colors["0010"];
+                            else if (/0020|Syrup Inspection/i.test(row1Val) || /0020|Syrup Inspection/i.test(row2Val)) fillColor = colors["0020"];
+                            else if (/0030|Final Product Inspection/i.test(row1Val) || /0030|Final Product Inspection/i.test(row2Val)) fillColor = colors["0030"];
+                            else if (/0040|Micros Results/i.test(row1Val) || /0040|Micros Results/i.test(row2Val)) fillColor = colors["0040"];
 
-                                const colors = {
-                                    HDR: "FFFFF9C4",
-                                    IP: "FFFFF9C4",
-                                    "0010": "FFBBDEFB",
-                                    "0020": "FFC8E6C9",
-                                    "0030": "FFFFE0B2",
-                                    "0040": "FFF8BBD0"
-                                };
-
-                                headers.forEach((_, i) => {
-                                    const col = i + 1;
-                                    const v1 = String(row1.getCell(col).value || "").trim();
-                                    const v2 = String(row2.getCell(col).value || "").trim();
-
-                                    let fillColor = null;
-
-                                    if (/HDR|Header/i.test(v1) || /HDR|Header/i.test(v2)) fillColor = colors.HDR;
-                                    else if (/IP/i.test(v1) || /IP/i.test(v2)) fillColor = colors.IP;
-                                    else if (/0010|Items List/i.test(v1) || /0010|Items List/i.test(v2)) fillColor = colors["0010"];
-                                    else if (/0020|Syrup Inspection/i.test(v1) || /0020|Syrup Inspection/i.test(v2)) fillColor = colors["0020"];
-                                    else if (/0030|Final Product Inspection/i.test(v1) || /0030|Final Product Inspection/i.test(v2)) fillColor = colors["0030"];
-                                    else if (/0040|Micros Results/i.test(v1) || /0040|Micros Results/i.test(v2)) fillColor = colors["0040"];
-
-                                    if (fillColor) {
-                                        sheet.getColumn(col).eachCell({ includeEmpty: true }, (cell) => {
-                                            cell.fill = {
-                                                type: "pattern",
-                                                pattern: "solid",
-                                                fgColor: { argb: fillColor }
-                                            };
-                                        });
-                                    }
+                            if (fillColor) {
+                                sheet.getColumn(colIndex).eachCell({ includeEmpty: true }, cell => {
+                                    cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: fillColor } };
                                 });
-
-                                const buffer = await workbook.xlsx.writeBuffer();
-                                const blob = new Blob([buffer], {
-                                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                                });
-
-                                const link = document.createElement("a");
-                                link.href = URL.createObjectURL(blob);
-                                link.download = "MassUpload_Template.xlsx";
-                                link.click();
-                                oBusy.close();
-                            } catch (e) {
-                                sap.m.MessageBox.error("Excel generation failed: " + (e.message || "Unknown error"));
-                                oBusy.close();
                             }
-                        }).catch((error) => {
-                            sap.m.MessageBox.error("Failed to load ExcelJS library: " + (error.message || "Unknown error"));
-                            oBusy.close();
                         });
+
+                        const totalRows = sheet.rowCount;
+                        const totalCols = sheet.columns.length;
+                        const maxRows = Math.max(50, totalRows);
+
+                        for (let r = 1; r <= maxRows; r++) {
+                            const row = sheet.getRow(r);
+                            for (let c = 1; c <= totalCols; c++) {
+                                const cell = row.getCell(c);
+                                if (r <= 4) cell.font = { ...cell.font, bold: true };
+                                cell.border = {
+                                    top: { style: "thin" },
+                                    left: { style: "thin" },
+                                    bottom: { style: "thin" },
+                                    right: { style: "thin" }
+                                };
+                            }
+                        }
+
+                        const buffer = await workbook.xlsx.writeBuffer();
+                        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+                        const link = document.createElement("a");
+                        link.href = URL.createObjectURL(blob);
+                        link.download = "MassUpload_Template.xlsx";
+                        link.click();
+                        oBusy.close();
+
                     } catch (e) {
-                        sap.m.MessageBox.error("Template download failed: " + (e.message || "Unknown error"));
+                        sap.m.MessageBox.error("Excel generation failed: " + (e.message || "Unknown error"));
                         oBusy.close();
                     }
                 },
                 error: (oError) => {
                     oBusy.close();
-
                     let sMessage = "Failed to fetch template data.";
-
                     try {
                         if (oError?.responseText) {
                             const oResponse = JSON.parse(oError.responseText);
-
-                            // Standard SAP error message
-                            if (oResponse.error?.message?.value) {
-                                sMessage = oResponse.error.message.value;
-                            }
-                            else if (oResponse.error?.message) {
-                                sMessage = oResponse.error.message;
-                            }
-                            // Inner error (common in SAP)
-                            else if (oResponse.error?.innererror?.errordetails?.length) {
-                                sMessage = oResponse.error.innererror.errordetails[0]?.message || sMessage;
-                            }
-                            else {
-                                sMessage = oError.responseText;
-                            }
-                        }
-                        else if (oError?.message) {
+                            sMessage = oResponse.error?.message?.value || oResponse.error?.message ||
+                                oResponse.error?.innererror?.errordetails?.[0]?.message || sMessage;
+                        } else if (oError?.message) {
                             sMessage = oError.message;
                         }
-                    } catch (ex) {
+                    } catch {
                         sMessage = "Unknown backend error occurred.";
                     }
-
                     sap.m.MessageBox.error(sMessage);
                 }
-
             });
         },
 
@@ -2614,12 +2589,12 @@ if (sStatusKey) {
                 });
 
 
-                
+
             this._jsonPayload = {
                 Werk: this.sPlant,
                 Name: this.name || "",
                 Email: this._userEmail || "",
-                Operations:sOpe,
+                Operations: sOpe,
                 JSON: JSON.stringify({
                     TotalRecords: items.length,
                     Items: items
