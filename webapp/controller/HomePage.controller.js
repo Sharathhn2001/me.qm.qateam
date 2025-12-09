@@ -32,8 +32,8 @@ sap.ui.define([
                 this.sPlant = "";
                 this.sPlantName = "";
 
-                //this.sPlant = "3011";
-                // this.sPlantName = "";
+              //  this.sPlant = "3011";
+               //  this.sPlantName = "";
 
                 if (!this._isQMUser) {
                     this.sPlant = oPlantDetails.Plant;
@@ -354,7 +354,6 @@ sap.ui.define([
             var oDateRange = this.getView().byId("dateRangeSelection");
 
             // var sSelectedKey = oStatusSelect.getSelectedKey();
-            var oStatusCombo = this.byId("statusCombo");
             //var oMsgStrip = this.getView().byId("msgstrip");
 
             var dStartDate = oDateRange.getDateValue();
@@ -365,7 +364,7 @@ sap.ui.define([
             var aMaterialTokens = oMaterialMInput.getTokens();
             var aBatchTokens = oBatchMInput.getTokens();
             var aFormulaTokens = oFormulaMInput.getTokens();
-            var sStatusKey = oStatusCombo.getSelectedKey();
+         
             //var aPlantFilters = [];
             var aMaterialFilters = [];
             var aBatchFilters = [];
@@ -480,11 +479,22 @@ sap.ui.define([
                 }
             }
 
-            if (sStatusKey) {
-                aTableFilters.push(
-                    new sap.ui.model.Filter("Vbewertung", sap.ui.model.FilterOperator.EQ, sStatusKey)
-                );
-            }
+          var oStatusCombo = this.byId("statusCombo");
+var sStatusKey = oStatusCombo.getSelectedKey();
+
+if (!sStatusKey) {
+    const oItem = oStatusCombo.getSelectedItem();
+    if (oItem) {
+        sStatusKey = oItem.getKey();
+    }
+}
+
+if (sStatusKey) {
+    aTableFilters.push(
+        new sap.ui.model.Filter("Vbewertung", sap.ui.model.FilterOperator.EQ, sStatusKey)
+    );
+}
+
 
 
             return aTableFilters;
@@ -2525,8 +2535,37 @@ sap.ui.define([
                 MessageBox.error("Processing failed: " + e.message);
             }
         },
+        _getSelectedOperations: function () {
+            var oVBox = this.byId("operationCheckBoxVBox");
+            if (!oVBox) {
+                return [];
+            }
+
+            var aItems = oVBox.getItems();
+
+            var aSelectedOps = [];
+
+            aItems.forEach(function (oCheckBox) {
+                if (oCheckBox.getSelected()) {
+
+                    var sText = oCheckBox.getText();
+                    var sKey = sText.split(" - ")[0];
+
+                    aSelectedOps.push(sKey);
+                }
+            });
+
+            return aSelectedOps;
+        },
 
         _buildPayloadFromExcel: function () {
+
+            const aSelectedOps = this._getSelectedOperations();
+
+            if (!aSelectedOps.length) {
+                throw new Error("At least one operation must be selected.");
+            }
+            const sOpe = aSelectedOps.join(",");
 
             const wb = XLSX.read(this._fileBuffer, { type: "array" });
             const sheet = wb.Sheets[wb.SheetNames[0]];
@@ -2574,10 +2613,13 @@ sap.ui.define([
                     return obj;
                 });
 
+
+                
             this._jsonPayload = {
                 Werk: this.sPlant,
                 Name: this.name || "",
                 Email: this._userEmail || "",
+                Operations:sOpe,
                 JSON: JSON.stringify({
                     TotalRecords: items.length,
                     Items: items

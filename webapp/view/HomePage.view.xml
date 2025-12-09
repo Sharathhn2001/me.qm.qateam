@@ -243,10 +243,10 @@
     </fb:control>
 </fb:FilterGroupItem>
 
-                          <fb:FilterGroupItem
+      <fb:FilterGroupItem
     id="statusFilterGroupItem"
     name="Status"
-    label="{i18n>status}"
+    label="{i18n>udstatus}"
     groupName="Group1"
     visibleInFilterBar="true">
 
@@ -254,13 +254,18 @@
         <ComboBox
             id="statusCombo"
             items="{path:'/UsageDecisionF4Set'}"
-            change=".onFilterGroupItemChange">
+            filterSecondaryValues="true"
+            change=".onFilterGroupItemChange"
+            value="{CodeValText}"> 
+            
             <core:ListItem
                 key="{Vbewertung}"
                 text="{CodeValText}" />
         </ComboBox>
     </fb:control>
+
 </fb:FilterGroupItem>
+
 
                         </fb:filterGroupItems>
                     </fb:FilterBar>
@@ -391,7 +396,7 @@
                         >
                             <Label
                                 id="userstatusColumnLabel"
-                                text="{i18n>status}"
+                                text="{i18n>udstatus}"
                             />
                         </Column>
                     </columns>
