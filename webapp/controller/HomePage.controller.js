@@ -16,40 +16,40 @@ sap.ui.define([
         formatter: Formatter,
         async onInit() {
             try {
-
-                const oPlantDetails = await this._getIasDetails();
-                this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
-
-                let rawEmail = oPlantDetails.email;
-                if (Array.isArray(rawEmail)) {
-                    this._userEmail = rawEmail.find(email => email) || "";
-                } else {
-                    this._userEmail = rawEmail || "";
-                }
-
-                this._isQMUser = String(oPlantDetails.isQMUser).toLowerCase() === "true";
-
-                this.sPlant = "";
-                this.sPlantName = "";
-
-                //this.sPlant = "3011";
+                /*
+                                const oPlantDetails = await this._getIasDetails();
+                                this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
+                
+                                let rawEmail = oPlantDetails.email;
+                                if (Array.isArray(rawEmail)) {
+                                    this._userEmail = rawEmail.find(email => email) || "";
+                                } else {
+                                    this._userEmail = rawEmail || "";
+                                }
+                
+                                this._isQMUser = String(oPlantDetails.isQMUser).toLowerCase() === "true";
+                
+                                this.sPlant = "";
+                                this.sPlantName = "";
+                */
+                this.sPlant = "3011";
                 //this.sPlantName = "";
-
-                if (!this._isQMUser) {
-                    this.sPlant = oPlantDetails.Plant;
-                    this.sPlantName = oPlantDetails.PlantName;
-
-                    const oPlantInput = this.byId("plantInputname");
-                    if (oPlantInput) {
-                        oPlantInput.setValue(this.sPlant);
-                    }
-                } else {
-                    this.waitForCondition(
-                        () => this._userEmail.trim() !== "",
-                        () => this.PlantF4()
-                    );
-                }
-
+                /*
+                                if (!this._isQMUser) {
+                                    this.sPlant = oPlantDetails.Plant;
+                                    this.sPlantName = oPlantDetails.PlantName;
+                
+                                    const oPlantInput = this.byId("plantInputname");
+                                    if (oPlantInput) {
+                                        oPlantInput.setValue(this.sPlant);
+                                    }
+                                } else {
+                                    this.waitForCondition(
+                                        () => this._userEmail.trim() !== "",
+                                        () => this.PlantF4()
+                                    );
+                                }
+                */
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
                     tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
@@ -2597,6 +2597,7 @@ sap.ui.define([
                 Name: this.name || "",
                 Email: this._userEmail || "",
                 Operations: sOpe,
+                JSONRes: "",
                 JSON: JSON.stringify({
                     TotalRecords: items.length,
                     Items: items
@@ -2632,7 +2633,6 @@ sap.ui.define([
                 }
             });
         },
-
         _postUploadPayload: function (basePath, token) {
             if (!this._jsonPayload) {
                 BusyIndicator.hide();
@@ -2647,11 +2647,18 @@ sap.ui.define([
                 headers: { "X-CSRF-Token": token },
                 data: JSON.stringify(this._jsonPayload),
 
-                success: () => {
+                success: (data) => {
                     BusyIndicator.hide();
                     this._resetFileState();
                     this.onCloseDialog();
-                    MessageBox.success("Mass Upload Successful.");
+
+                    const jsonRes = data?.d?.JSONRes;
+
+                    if (jsonRes) {
+                        this._showSuccessTable(jsonRes);
+                    } else {
+                        MessageBox.success("Mass Upload Successful.");
+                    }
                 },
 
                 error: (err) => {
@@ -2660,6 +2667,7 @@ sap.ui.define([
                 }
             });
         },
+
         _extractODataError: function (err) {
             try {
                 const body = err?.responseText || "";
@@ -2676,6 +2684,71 @@ sap.ui.define([
         onCloseDialog: function () {
             this.byId("uploadDialog")?.close();
         },
+
+        _showSuccessTable: function (jsonRes) {
+            try {
+                if (typeof jsonRes === "string") {
+                    jsonRes = JSON.parse(jsonRes);
+                }
+
+                const columns = Object.keys(jsonRes[0] || {});
+
+                const oTable = new sap.m.Table({
+                    inset: false,
+                    growing: true,
+                    growingScrollToLoad: true
+                });
+
+                columns.forEach(col => {
+                    oTable.addColumn(new sap.m.Column({
+                        header: new sap.m.Label({ text: col })
+                    }));
+                });
+
+                const oModel = new sap.ui.model.json.JSONModel(jsonRes);
+                oTable.setModel(oModel);
+
+                oTable.bindItems("/", new sap.m.ColumnListItem({
+                    cells: columns.map(col => new sap.m.Text({ text: `{${col}}` }))
+                }));
+
+                const oDialog = new sap.m.Dialog({
+                    title: "Upload Summary",
+                    contentWidth: "800px",
+                    contentHeight: "600px",
+                    resizable: true,
+                    draggable: true,
+                    content: [oTable],
+                    buttons: [
+                        new sap.m.Button({
+                            text: "Download Excel",
+                            type: "Emphasized",
+                            press: () => this._downloadExcel(jsonRes)
+                        }),
+                        new sap.m.Button({
+                            text: "Close",
+                            press: function () {
+                                oDialog.close();
+                                oDialog.destroy();
+                            }
+                        })
+                    ]
+                });
+
+                oDialog.open();
+
+            } catch (err) {
+                MessageBox.error("Unable to display backend table.");
+            }
+        },
+        _downloadExcel: function (data) {
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Upload Summary");
+
+            XLSX.writeFile(wb, "Upload_Summary.xlsx");
+        },
+
 
         _resetDialogState: function () {
             this._selectedFile = null;

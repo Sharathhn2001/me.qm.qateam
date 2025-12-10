@@ -175,7 +175,7 @@ visible="{= ${ViewModel>/isQMUser} === true || ${ViewModel>/isQMUser} === 'true'
                             class="sapUiTinyMarginBottom" /> -->
                         <ObjectStatus
                             id="objStatusUserStatus"
-                            title="{i18n>status}"
+                            title="{i18n>udstatus}"
                             visible="true"
                             text="{InspectionDetailsModel>/Statusdesc}"
                             class="sapUiTinyMarginBottom"
