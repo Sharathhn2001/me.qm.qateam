@@ -177,7 +177,7 @@ visible="{= ${ViewModel>/isQMUser} === true || ${ViewModel>/isQMUser} === 'true'
                             id="objStatusUserStatus"
                             title="{i18n>udstatus}"
                             visible="true"
-                            text="{InspectionDetailsModel>/Statusdesc}"
+                            text="{InspectionDetailsModel>/CodeValText}"
                             class="sapUiTinyMarginBottom"
                         />
                     </VBox>

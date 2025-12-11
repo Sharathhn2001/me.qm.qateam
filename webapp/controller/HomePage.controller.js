@@ -16,40 +16,6 @@ sap.ui.define([
         formatter: Formatter,
         async onInit() {
             try {
-
-                const oPlantDetails = await this._getIasDetails();
-                this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
-
-                let rawEmail = oPlantDetails.email;
-                if (Array.isArray(rawEmail)) {
-                    this._userEmail = rawEmail.find(email => email) || "";
-                } else {
-                    this._userEmail = rawEmail || "";
-                }
-
-                this._isQMUser = String(oPlantDetails.isQMUser).toLowerCase() === "true";
-
-                this.sPlant = "";
-                this.sPlantName = "";
-
-                // this.sPlant = "3011";
-                // this.sPlantName = "";
-
-                if (!this._isQMUser) {
-                    this.sPlant = oPlantDetails.Plant;
-                    this.sPlantName = oPlantDetails.PlantName;
-
-                    const oPlantInput = this.byId("plantInputname");
-                    if (oPlantInput) {
-                        oPlantInput.setValue(this.sPlant);
-                    }
-                } else {
-                    this.waitForCondition(
-                        () => this._userEmail.trim() !== "",
-                        () => this.PlantF4()
-                    );
-                }
-
                 /*
                                 const oPlantDetails = await this._getIasDetails();
                                 this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
@@ -2729,40 +2695,56 @@ sap.ui.define([
                 }
             });
         },
-        _postUploadPayload: function (basePath, token) {
-            if (!this._jsonPayload) {
-                BusyIndicator.hide();
-                MessageBox.error("Payload is empty.");
-                return;
-            }
+      
+_postUploadPayload: function (basePath, token) {
+    if (!this._jsonPayload) {
+        BusyIndicator.hide();
+        MessageBox.error("Payload is empty.");
+        return;
+    }
 
-            $.ajax({
-                url: basePath + "UploadTemplateSet",
-                method: "POST",
-                contentType: "application/json",
-                headers: { "X-CSRF-Token": token },
-                data: JSON.stringify(this._jsonPayload),
+    $.ajax({
+        url: basePath + "UploadTemplateSet",
+        method: "POST",
+        contentType: "application/json",
+        headers: { "X-CSRF-Token": token },
+        data: JSON.stringify(this._jsonPayload),
 
-                success: (data) => {
-                    BusyIndicator.hide();
-                    this._resetFileState();
-                    this.onCloseDialog();
+        success: (data) => {
+            BusyIndicator.hide();
+            this._resetFileState();
+            this.onCloseDialog(); // close mass upload dialog immediately
 
-                    const jsonRes = data?.d?.JSONRes;
+            let jsonRes = data?.d?.JSONRes;
 
-                    if (jsonRes) {
-                        this._showSuccessTable(jsonRes);
-                    } else {
-                        MessageBox.success("Mass Upload Successful.");
+            if (jsonRes) {
+                // Convert stringified JSON if backend sends as string
+                if (typeof jsonRes === "string") {
+                    try {
+                        jsonRes = JSON.parse(jsonRes);
+                    } catch (e) {
+                        MessageBox.error("Invalid JSON response from backend.");
+                        return;
                     }
-                },
-
-                error: (err) => {
-                    BusyIndicator.hide();
-                    MessageBox.error(this._extractODataError(err));
                 }
-            });
+
+                // Show table only if JSON array has data
+                if (Array.isArray(jsonRes) && jsonRes.length > 0) {
+                    this._showSuccessTable(jsonRes);
+                } else {
+                    MessageBox.success("Mass Upload Successful. No details returned.");
+                }
+            } else {
+                MessageBox.success("Mass Upload Successful.");
+            }
         },
+
+        error: (err) => {
+            BusyIndicator.hide();
+            MessageBox.error(this._extractODataError(err));
+        }
+    });
+},
 
         _extractODataError: function (err) {
             try {
