@@ -16,6 +16,7 @@ sap.ui.define([
         formatter: Formatter,
         async onInit() {
             try {
+                
                 const oPlantDetails = await this._getIasDetails();
                 this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
 
@@ -32,22 +33,23 @@ sap.ui.define([
                 this.sPlantName = "";
 
                 //this.sPlant = "3011";
-                //this.sPlantName = "";
-
-                if (!this._isQMUser) {
-                    this.sPlant = oPlantDetails.Plant;
-                    this.sPlantName = oPlantDetails.PlantName;
-
-                    const oPlantInput = this.byId("plantInputname");
-                    if (oPlantInput) {
-                        oPlantInput.setValue(this.sPlant);
-                    }
-                } else {
-                    this.waitForCondition(
-                        () => this._userEmail.trim() !== "",
-                        () => this.PlantF4()
-                    );
-                }
+               // this.sPlantName = "";
+               
+                                if (!this._isQMUser) {
+                                    this.sPlant = oPlantDetails.Plant;
+                                    this.sPlantName = oPlantDetails.PlantName;
+                
+                                    const oPlantInput = this.byId("plantInputname");
+                                    if (oPlantInput) {
+                                        oPlantInput.setValue(this.sPlant);
+                                    }
+                                } else {
+                                    this.waitForCondition(
+                                        () => this._userEmail.trim() !== "",
+                                        () => this.PlantF4()
+                                    );
+                                }
+                        
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
                     tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
@@ -692,6 +694,7 @@ sap.ui.define([
             */
         onMaterialValueHelpRequested: async function (oEvent) {
             this._oMaterialSourceIp = oEvent.getSource();
+            this.getMaterialF4();
 
             try {
                 if (!this._oMaterialValueHelpDialog) {
@@ -710,7 +713,9 @@ sap.ui.define([
 
             this._oMaterialValueHelpDialog.open();
         },
-
+        onMaterialLiveChange: function (oEvent) {
+            this.getMaterialF4();
+        },
         onMaterialSearch: function (oEvent) {
             var sSearchQuery = oEvent.getParameter("value");
             var oBinding = oEvent.getSource().getBinding("items");
@@ -843,7 +848,6 @@ sap.ui.define([
 
             await this.getBatchF4(aMaterials);
 
-
             this._oBatchSourceIp = oEvent.getSource();
 
             try {
@@ -906,6 +910,22 @@ sap.ui.define([
 
             oEvent.getSource().getBinding("items").filter([]);
         },
+      
+    onBatchLiveChange: async function (oEvent) {
+
+    var aMaterials = [];
+
+    if (this._oMaterialSourceIp) {
+        this._oMaterialSourceIp.getTokens().forEach(oToken => {
+            aMaterials.push(oToken.getKey());
+        });
+    }
+
+   // const sValue = oEvent.getParameter("value") || "";
+
+    await this.getBatchF4(aMaterials);
+},
+
         onBatchCancel: function (oEvent) {
             oEvent.getSource().getBinding("items").filter([]);
         },
@@ -1184,7 +1204,7 @@ sap.ui.define([
                 oPurchaseOrderF4 = await this.readDataFromODataModel("/PO_F4Set",
                     [
                         new Filter({ path: "Werks", operator: FilterOperator.EQ, value1: this.sPlant }),
-                        // new Filter({ path: "Distinct", operator: FilterOperator.EQ, value1: "X" })
+                        new Filter({ path: "Distinct", operator: FilterOperator.EQ, value1: "X" })
                     ]);
 
             } catch (Error) {
@@ -1224,6 +1244,10 @@ sap.ui.define([
   */
             this._oPurchaseOrderValueHelpDialog.open();
         },
+        onPOLiveChange: function (oEvent) {
+            this.getPurchaseOrderF4();
+        },
+
         onPurchaseOrderClose: function (oEvent) {
             var aContexts = oEvent.getParameter("selectedContexts");
             var oInput = this._oPurchaseOrderSourceIp;
@@ -2594,6 +2618,7 @@ sap.ui.define([
 
             return aSelectedOps;
         },
+
         _buildPayloadFromExcel: function () {
 
             const aSelectedOps = this._getSelectedOperations();
@@ -2605,7 +2630,7 @@ sap.ui.define([
             const sheet = wb.Sheets[wb.SheetNames[0]];
             const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
 
-            if (data.length < 2) throw new Error("Excel must contain header and description rows.");
+            if (data.length < 2) throw new Error("Excel must contain header");
 
             const headers = data[0].map(h => String(h).trim());
             const rows = data.slice(2);
@@ -2624,7 +2649,14 @@ sap.ui.define([
                 .map(r => {
                     const o = {};
                     headers.forEach((h, i) => {
-                        if (selectedCols.includes(h)) o[h] = String(r[i] || "").trim();
+                        if (selectedCols.includes(h)) {
+
+                            const cell = r[i];
+
+                            o[h] = (cell === undefined || cell === null)
+                                ? ""
+                                : String(cell).trim();
+                        }
                     });
                     return o;
                 });
@@ -2640,13 +2672,8 @@ sap.ui.define([
                     Items: items
                 })
             };
-
-            console.log(
-                this._jsonPayload.JSON,
-            );
-
-
         },
+
         _sendPayloadToBackend: function () {
             var appId = this.getOwnerComponent().getManifestEntry("sap.app").id;
             var appPath = appId.replaceAll(".", "/");
@@ -2727,7 +2754,7 @@ sap.ui.define([
                 const json = JSON.parse(body);
                 return json.error?.message?.value || "Backend error.";
             } catch (e) {
-                return "Unable to read backend error.";
+                return "backend error.";
             }
         },
 

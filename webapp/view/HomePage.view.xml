@@ -75,6 +75,7 @@
                                         showValueHelp="true"
                                         showSuggestion="true"
                                         valueHelpRequest=".onPurchaseOrderValueHelp"
+                                        liveChange=".onPOLiveChange"
                                         tokenUpdate=".onPurchaseOrderTokenChange"
                                         suggestionItems="{
 				                            path: 'PurchaseOrderF4Model>/results',
@@ -102,6 +103,7 @@
                                         showValueHelp="true"
                                         showSuggestion="true"
                                         valueHelpRequest=".onMaterialValueHelpRequested"
+                                        liveChange=".onMaterialLiveChange"
                                         tokenUpdate=".onMaterialTokenChange"
                                         suggestionItems="{
 				                            path: 'MaterialF4Model>/results',
@@ -131,6 +133,7 @@
                                         showSuggestion="true"
                                         valueHelpRequest=".onBatchValueHelpRequested"
                                         tokenUpdate=".onBatchTokenChange"
+                                        liveChange=".onBatchLiveChange"
                                         suggestionItems="{
 				                            path: 'BatchF4Model>/results',
 				                            sorter: { path: 'Charg' }
