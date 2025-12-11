@@ -16,40 +16,38 @@ sap.ui.define([
         formatter: Formatter,
         async onInit() {
             try {
-                
-                                const oPlantDetails = await this._getIasDetails();
-                                this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
-                
-                                let rawEmail = oPlantDetails.email;
-                                if (Array.isArray(rawEmail)) {
-                                    this._userEmail = rawEmail.find(email => email) || "";
-                                } else {
-                                    this._userEmail = rawEmail || "";
-                                }
-                
-                                this._isQMUser = String(oPlantDetails.isQMUser).toLowerCase() === "true";
-                
-                                this.sPlant = "";
-                                this.sPlantName = "";
-                
-               // this.sPlant = "3011";
+                const oPlantDetails = await this._getIasDetails();
+                this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
+
+                let rawEmail = oPlantDetails.email;
+                if (Array.isArray(rawEmail)) {
+                    this._userEmail = rawEmail.find(email => email) || "";
+                } else {
+                    this._userEmail = rawEmail || "";
+                }
+
+                this._isQMUser = String(oPlantDetails.isQMUser).toLowerCase() === "true";
+
+                this.sPlant = "";
+                this.sPlantName = "";
+
+                //this.sPlant = "3011";
                 //this.sPlantName = "";
-                
-                                if (!this._isQMUser) {
-                                    this.sPlant = oPlantDetails.Plant;
-                                    this.sPlantName = oPlantDetails.PlantName;
-                
-                                    const oPlantInput = this.byId("plantInputname");
-                                    if (oPlantInput) {
-                                        oPlantInput.setValue(this.sPlant);
-                                    }
-                                } else {
-                                    this.waitForCondition(
-                                        () => this._userEmail.trim() !== "",
-                                        () => this.PlantF4()
-                                    );
-                                }
-                
+
+                if (!this._isQMUser) {
+                    this.sPlant = oPlantDetails.Plant;
+                    this.sPlantName = oPlantDetails.PlantName;
+
+                    const oPlantInput = this.byId("plantInputname");
+                    if (oPlantInput) {
+                        oPlantInput.setValue(this.sPlant);
+                    }
+                } else {
+                    this.waitForCondition(
+                        () => this._userEmail.trim() !== "",
+                        () => this.PlantF4()
+                    );
+                }
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
                     tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
@@ -2596,63 +2594,40 @@ sap.ui.define([
 
             return aSelectedOps;
         },
-
         _buildPayloadFromExcel: function () {
 
             const aSelectedOps = this._getSelectedOperations();
+            if (!aSelectedOps.length) throw new Error("At least one operation must be selected.");
 
-            if (!aSelectedOps.length) {
-                throw new Error("At least one operation must be selected.");
-            }
             const sOpe = aSelectedOps.join(",");
 
             const wb = XLSX.read(this._fileBuffer, { type: "array" });
             const sheet = wb.Sheets[wb.SheetNames[0]];
             const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
 
-            if (data.length < 2) {
-                throw new Error("Excel file must contain at least header and description rows.");
-            }
+            if (data.length < 2) throw new Error("Excel must contain header and description rows.");
 
             const headers = data[0].map(h => String(h).trim());
-            const desc = data[1].map(h => String(h).trim());
             const rows = data.slice(2);
 
-            const selectedOps = this._oUploadDialog
-                .getContent()[0]
-                .getItems()[1]
-                .getItems()
-                .filter(cb => cb.getSelected())
-                .map(cb => cb.getText());
+            const headerOps = headers.map(h => h ? h.split("|")[0].trim() : "");
 
-            if (!selectedOps.length) {
-                throw new Error("At least one operation must be selected.");
-            }
-
-            const selectedValues = selectedOps.flatMap(op =>
-                op.split(" - ").map(x => x.trim())
-            );
-
-            const selectedCols = headers.filter((h, i) =>
-                h.startsWith("HDR|") ||
-                h.startsWith("IP|") ||
-                selectedValues.includes(h) ||
-                selectedValues.includes(desc[i])
-            );
+            const selectedCols = headers.filter((h, i) => {
+                const up = h.toUpperCase();
+                const op = headerOps[i];
+                if (up.startsWith("HDR|") || up.startsWith("IP|")) return true;
+                return aSelectedOps.includes(op);
+            });
 
             const items = rows
-                .filter(r => r.some(cell => cell !== ""))
-                .map(row => {
-                    const obj = {};
+                .filter(r => r.some(c => c !== ""))
+                .map(r => {
+                    const o = {};
                     headers.forEach((h, i) => {
-                        if (selectedCols.includes(h)) {
-                            obj[h] = String(row[i] || "").trim();
-                        }
+                        if (selectedCols.includes(h)) o[h] = String(r[i] || "").trim();
                     });
-                    return obj;
+                    return o;
                 });
-
-
 
             this._jsonPayload = {
                 Werk: this.sPlant,
@@ -2665,6 +2640,11 @@ sap.ui.define([
                     Items: items
                 })
             };
+
+            console.log(
+                this._jsonPayload.JSON,
+            );
+
 
         },
         _sendPayloadToBackend: function () {
@@ -2695,128 +2675,126 @@ sap.ui.define([
                 }
             });
         },
-  
 
-        _postUploadPayload: function (basePath, token) {
-    if (!this._jsonPayload) {
-        BusyIndicator.hide();
-        MessageBox.error("Payload is empty.");
-        return;
-    }
 
-    $.ajax({
-        url: basePath + "UploadTemplateSet",
-        method: "POST",
-        contentType: "application/json",
-        headers: { "X-CSRF-Token": token },
-        data: JSON.stringify(this._jsonPayload),
-
-        success: (data) => {
-            BusyIndicator.hide();
-            this._resetFileState();
-            this.onCloseDialog();
-
-            let jsonRes = data?.d?.JSONRes;
-
-            if (typeof jsonRes === "string") {
-                try { jsonRes = JSON.parse(jsonRes); } catch (e) {
-                    MessageBox.error("Invalid JSON response."); 
-                    return;
-                }
+        _postUploadPayload: function () {
+            if (!this._jsonPayload) {
+                BusyIndicator.hide();
+                return;
             }
 
-            if (Array.isArray(jsonRes) && jsonRes.length > 0) {
-                this._showSuccessTable(jsonRes);
-            } else {
-                MessageBox.success("Mass Upload Successful.");
+            const oModel = this.getView().getModel();
+            BusyIndicator.show();
+
+            oModel.create("/UploadTemplateSet", this._jsonPayload, {
+                success: (data) => {
+                    BusyIndicator.hide();
+                    this._resetFileState();
+                    this.onCloseDialog();
+
+                    let jsonRes = data?.JSONRes;
+
+                    if (jsonRes === null || jsonRes === "") {
+                        MessageBox.success("Mass Upload Successful.");
+                        return;
+                    }
+
+                    if (typeof jsonRes === "string") {
+                        try { jsonRes = JSON.parse(jsonRes); } catch (e) {
+                            MessageBox.success("Mass Upload Successful.");
+                            return;
+                        }
+                    }
+
+                    this._showSuccessTable(jsonRes);
+                },
+
+                error: (err) => {
+                    BusyIndicator.hide();
+                    MessageBox.error(this._extractODataError(err));
+                }
+            });
+        },
+
+
+        _extractODataError: function (err) {
+            try {
+                const body = err?.responseText || "";
+                if (body.startsWith("<")) {
+                    const xml = $.parseXML(body);
+                    return $(xml).find("message").first().text() || "Backend error.";
+                }
+                const json = JSON.parse(body);
+                return json.error?.message?.value || "Backend error.";
+            } catch (e) {
+                return "Unable to read backend error.";
             }
         },
 
-        error: (err) => {
-            BusyIndicator.hide();
-            MessageBox.error(this._extractODataError(err));
-        }
-    });
-},
+        onCloseDialog: function () {
+            this.byId("uploadDialog")?.close();
+        },
 
-_extractODataError: function (err) {
-    try {
-        const body = err?.responseText || "";
-        if (body.startsWith("<")) {
-            const xml = $.parseXML(body);
-            return $(xml).find("message").first().text() || "Backend error.";
-        }
-        const json = JSON.parse(body);
-        return json.error?.message?.value || "Backend error.";
-    } catch (e) {
-        return "Unable to read backend error.";
-    }
-},
+        _showSuccessTable: function (jsonRes) {
+            try {
+                if (typeof jsonRes === "string") jsonRes = JSON.parse(jsonRes);
 
-onCloseDialog: function () {
-    this.byId("uploadDialog")?.close();
-},
+                const columns = Object.keys(jsonRes[0] || {});
+                const oTable = new sap.m.Table({ fixedLayout: false });
 
-_showSuccessTable: function (jsonRes) {
-    try {
-        if (typeof jsonRes === "string") jsonRes = JSON.parse(jsonRes);
+                columns.forEach(col => {
+                    oTable.addColumn(new sap.m.Column({
+                        header: new sap.m.Label({ text: col })
+                    }));
+                });
 
-        const columns = Object.keys(jsonRes[0] || {});
-        const oTable = new sap.m.Table({ fixedLayout: false });
+                const oModel = new sap.ui.model.json.JSONModel(jsonRes);
+                oTable.setModel(oModel);
 
-        columns.forEach(col => {
-            oTable.addColumn(new sap.m.Column({
-                header: new sap.m.Label({ text: col })
-            }));
-        });
+                oTable.bindItems("/", new sap.m.ColumnListItem({
+                    cells: columns.map(col => new sap.m.Text({ text: `{${col}}` }))
+                }));
 
-        const oModel = new sap.ui.model.json.JSONModel(jsonRes);
-        oTable.setModel(oModel);
+                const oScroll = new sap.m.ScrollContainer({
+                    height: "100%",
+                    width: "100%",
+                    vertical: true,
+                    horizontal: true,
+                    content: [oTable]
+                });
 
-        oTable.bindItems("/", new sap.m.ColumnListItem({
-            cells: columns.map(col => new sap.m.Text({ text: `{${col}}` }))
-        }));
+                const oDialog = new sap.m.Dialog({
+                    title: "Upload Summary",
+                    contentWidth: "900px",
+                    contentHeight: "600px",
+                    resizable: true,
+                    draggable: true,
+                    content: [oScroll],
+                    buttons: [
+                        new sap.m.Button({
+                            text: "Download Excel",
+                            type: "Emphasized",
+                            press: () => this._downloadExcel(jsonRes)
+                        }),
+                        new sap.m.Button({
+                            text: "Close",
+                            press: function () { oDialog.close(); oDialog.destroy(); }
+                        })
+                    ]
+                });
 
-        const oScroll = new sap.m.ScrollContainer({
-            height: "100%",
-            width: "100%",
-            vertical: true,
-            horizontal: true,
-            content: [oTable]
-        });
+                oDialog.open();
+            } catch (err) {
+                MessageBox.error("Unable to display backend table.");
+            }
+        },
 
-        const oDialog = new sap.m.Dialog({
-            title: "Upload Summary",
-            contentWidth: "900px",
-            contentHeight: "600px",
-            resizable: true,
-            draggable: true,
-            content: [oScroll],
-            buttons: [
-                new sap.m.Button({
-                    text: "Download Excel",
-                    type: "Emphasized",
-                    press: () => this._downloadExcel(jsonRes)
-                }),
-                new sap.m.Button({
-                    text: "Close",
-                    press: function () { oDialog.close(); oDialog.destroy(); }
-                })
-            ]
-        });
-
-        oDialog.open();
-    } catch (err) {
-        MessageBox.error("Unable to display backend table.");
-    }
-},
-
-_downloadExcel: function (data) {
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Upload Summary");
-    XLSX.writeFile(wb, "Upload_Summary.xlsx");
-},
+        _downloadExcel: function (data) {
+            const ws = XLSX.utils.json_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Upload Summary");
+            XLSX.writeFile(wb, "Upload_Summary.xlsx");
+        },
 
         _resetDialogState: function () {
             this._selectedFile = null;
