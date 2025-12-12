@@ -32,8 +32,8 @@ sap.ui.define([
                 this.sPlant = "";
                 this.sPlantName = "";
 
-                //this.sPlant = "3011";
-               // this.sPlantName = "";
+            //     this.sPlant = "3011";
+            //    this.sPlantName = "";
                
                                 if (!this._isQMUser) {
                                     this.sPlant = oPlantDetails.Plant;
@@ -1715,7 +1715,10 @@ sap.ui.define([
                     if (oData.Matnr && oData.Charg) {
                         aBatchInputSet.push({
                             Material: oData.Matnr,
-                            Batch: oData.Charg
+                            Batch: oData.Charg,
+                            PO: oData.Ebeln || "",
+                            POItem: oData.Ebelp || "",
+                            Formula: oData.Zzhbcformula || ""
                         });
                     }
                 }
