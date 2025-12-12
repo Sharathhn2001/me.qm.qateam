@@ -16,7 +16,7 @@ sap.ui.define([
         formatter: Formatter,
         async onInit() {
             try {
-                
+
                 const oPlantDetails = await this._getIasDetails();
                 this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
 
@@ -32,24 +32,25 @@ sap.ui.define([
                 this.sPlant = "";
                 this.sPlantName = "";
 
-            //     this.sPlant = "3011";
-            //    this.sPlantName = "";
-               
-                                if (!this._isQMUser) {
-                                    this.sPlant = oPlantDetails.Plant;
-                                    this.sPlantName = oPlantDetails.PlantName;
-                
-                                    const oPlantInput = this.byId("plantInputname");
-                                    if (oPlantInput) {
-                                        oPlantInput.setValue(this.sPlant);
-                                    }
-                                } else {
-                                    this.waitForCondition(
-                                        () => this._userEmail.trim() !== "",
-                                        () => this.PlantF4()
-                                    );
-                                }
-                        
+
+                // this.sPlant = "3011";
+                //  this.sPlantName = "";
+
+                if (!this._isQMUser) {
+                    this.sPlant = oPlantDetails.Plant;
+                    this.sPlantName = oPlantDetails.PlantName;
+
+                    const oPlantInput = this.byId("plantInputname");
+                    if (oPlantInput) {
+                        oPlantInput.setValue(this.sPlant);
+                    }
+                } else {
+                    this.waitForCondition(
+                        () => this._userEmail.trim() !== "",
+                        () => this.PlantF4()
+                    );
+                }
+
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
                     tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
@@ -910,21 +911,21 @@ sap.ui.define([
 
             oEvent.getSource().getBinding("items").filter([]);
         },
-      
-    onBatchLiveChange: async function (oEvent) {
 
-    var aMaterials = [];
+        onBatchLiveChange: async function (oEvent) {
 
-    if (this._oMaterialSourceIp) {
-        this._oMaterialSourceIp.getTokens().forEach(oToken => {
-            aMaterials.push(oToken.getKey());
-        });
-    }
+            var aMaterials = [];
 
-   // const sValue = oEvent.getParameter("value") || "";
+            if (this._oMaterialSourceIp) {
+                this._oMaterialSourceIp.getTokens().forEach(oToken => {
+                    aMaterials.push(oToken.getKey());
+                });
+            }
 
-    await this.getBatchF4(aMaterials);
-},
+            // const sValue = oEvent.getParameter("value") || "";
+
+            await this.getBatchF4(aMaterials);
+        },
 
         onBatchCancel: function (oEvent) {
             oEvent.getSource().getBinding("items").filter([]);
@@ -2470,8 +2471,8 @@ sap.ui.define([
                 },
                 */
 
-        MAX_TOTAL_ROWS: 50,
-        MAX_FILE_SIZE_MB: 5,
+        //Mass Upload of Inspection Lot - Sharath
+        MAX_FILE_SIZE_MB: 20,
         _oUploadDialog: null,
         _selectedFile: null,
         _fileBuffer: null,
@@ -2499,7 +2500,6 @@ sap.ui.define([
                 this._oUploadDialog.open();
             }
         },
-
 
         getOperation: async function () {
             var oVBox = this.byId("operationCheckBoxVBox");
@@ -2573,6 +2573,31 @@ sap.ui.define([
             reader.readAsArrayBuffer(oFile);
         },
 
+        _validateUniqueMaterialBatch: function (data) {
+            const header = data[0];
+
+            const matIndex = header.indexOf("HDR|QALS-MATNR");
+            const batchIndex = header.indexOf("HDR|QALS-CHARG");
+
+            const unique = new Set();
+
+            for (let i = 4; i < data.length; i++) {
+                const row = data[i] || [];
+
+                const material = String(row[matIndex] || "").trim();
+                const batch = String(row[batchIndex] || "").trim();
+
+                if (!material && !batch) continue;
+
+                const key = material + "__" + batch;
+                unique.add(key);
+
+                if (unique.size > 50) {
+                    throw new Error("Only 50 unique Material + Batch combinations are allowed.");
+                }
+            }
+        },
+
         onMassUpload: function () {
             try {
                 if (!this._selectedFile || !this._fileBuffer) {
@@ -2583,13 +2608,7 @@ sap.ui.define([
                 const sheet = wb.Sheets[wb.SheetNames[0]];
                 const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
 
-                const dataRows = Math.max(data.length - 4, 0);
-
-                if (dataRows > this.MAX_TOTAL_ROWS) {
-                    return MessageBox.error(
-                        `Maximum allowed rows: ${this.MAX_TOTAL_ROWS}. Your file contains ${dataRows}.`
-                    );
-                }
+                const result = this._validateUniqueMaterialBatch(data);
 
                 this._buildPayloadFromExcel();
                 this._sendPayloadToBackend();
@@ -2599,6 +2618,8 @@ sap.ui.define([
                 MessageBox.error("Processing failed: " + e.message);
             }
         },
+
+
         _getSelectedOperations: function () {
             var oVBox = this.byId("operationCheckBoxVBox");
             if (!oVBox) {
@@ -2745,7 +2766,6 @@ sap.ui.define([
                 }
             });
         },
-
 
         _extractODataError: function (err) {
             try {
