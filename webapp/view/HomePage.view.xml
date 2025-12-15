@@ -13,7 +13,7 @@
         <f:header>
             <f:DynamicPageHeader id="dynamicPageHeader">
                 <f:content>
-                   <fb:FilterBar
+                    <fb:FilterBar
                         id="filterbar"
                         persistencyKey="myPersKey"
                         useToolbar="false"
@@ -62,7 +62,7 @@
                                         tokenUpdate=".onFilterGroupItemChange" /> -->
                                 </fb:control>
                             </fb:FilterGroupItem>
-                             <fb:FilterGroupItem
+                            <fb:FilterGroupItem
                                 id="PurchaseOrderFilterGroupItem"
                                 name="Ebeln"
                                 label="{i18n>PurchaseOrder}"
@@ -77,6 +77,7 @@
                                         valueHelpRequest=".onPurchaseOrderValueHelp"
                                         liveChange=".onPOLiveChange"
                                         tokenUpdate=".onPurchaseOrderTokenChange"
+                                        submit=".onPOEnter"
                                         suggestionItems="{
 				                            path: 'PurchaseOrderF4Model>/results',
 				                            sorter: { path: 'Ebeln' }
@@ -85,7 +86,6 @@
                                         <core:ListItem
                                             key="{PurchaseOrderF4Model>Ebeln}"
                                             text="{= ${PurchaseOrderF4Model>Ebeln} + ' - ' + ${PurchaseOrderF4Model>Ebelp} }"
-                                            additionalText="{PurchaseOrderF4Model>Ebelp}"
                                         />
                                     </MultiInput>
                                 </fb:control>
@@ -190,86 +190,85 @@
                                 </fb:control>
                             </fb:FilterGroupItem>
 
-                              <fb:FilterGroupItem
+                            <fb:FilterGroupItem
                                 id="sampleFilterGroupItem"
                                 name="SampleType"
                                 visible="true"
                                 label="{i18n>SampleType}"
                                 groupName="Group1"
-                                visibleInFilterBar="true">
-                            <fb:control>
-    <MultiInput
-        id="sampleTypeMInput"
-        editable="true"
-        showValueHelp="true"
-        showSuggestion="true"
-        valueHelpRequest=".onSampleTypeValueHelp"
-        tokenUpdate=".onSampleTypeTokenChange"
-        suggestionItems="{
+                                visibleInFilterBar="true"
+                            >
+                                <fb:control>
+                                    <MultiInput
+                                        id="sampleTypeMInput"
+                                        editable="true"
+                                        showValueHelp="true"
+                                        showSuggestion="true"
+                                        valueHelpRequest=".onSampleTypeValueHelp"
+                                        tokenUpdate=".onSampleTypeTokenChange"
+                                        suggestionItems="{
             path: 'SampleTypeModel>/results',
             sorter: { path: 'SampleType' }
-        }">
-        
-        <core:ListItem
-            key="{SampleTypeModel>SampleType}"
-            text="{SampleTypeModel>SampleTypeDesc}" />
-            
-    </MultiInput>
-</fb:control>
- </fb:FilterGroupItem>
-                             <fb:FilterGroupItem
-    id="syrupBatchFilterGroupItem"
-    name="SyrupBatch"
-    visible="true"
-    label="{i18n>SyrupBatch}"
-    groupName="Group1"
-    visibleInFilterBar="true">
-
-    <fb:control>
-        <MultiInput
-            id="syrupBatchMInput"
-            editable="true"
-            showValueHelp="true"
-            showSuggestion="true"
-            valueHelpRequest=".SyrupBatchValueHelp"
-            tokenUpdate=".onSyrupBatchTokenChange"
-            suggestionItems="{
+        }"
+                                    >
+                                        <core:ListItem
+                                            key="{SampleTypeModel>SampleType}"
+                                            text="{SampleTypeModel>SampleTypeDesc}"
+                                        />
+                                    </MultiInput>
+                                </fb:control>
+                            </fb:FilterGroupItem>
+                            <fb:FilterGroupItem
+                                id="syrupBatchFilterGroupItem"
+                                name="SyrupBatch"
+                                visible="true"
+                                label="{i18n>SyrupBatch}"
+                                groupName="Group1"
+                                visibleInFilterBar="true"
+                            >
+                                <fb:control>
+                                    <MultiInput
+                                        id="syrupBatchMInput"
+                                        editable="true"
+                                        showValueHelp="true"
+                                        showSuggestion="true"
+                                        valueHelpRequest=".SyrupBatchValueHelp"
+                                        tokenUpdate=".onSyrupBatchTokenChange"
+                                        suggestionItems="{
                 path: 'SyrupBatchModel>/results',
                 sorter: { path: 'SyrupBatch' }
-            }">
+            }"
+                                    >
+                                        <core:ListItem
+                                            key="{SyrupBatchModel>Userc1}"
+                                            text="{SyrupBatchModel>Userc1}"
+                                        />
+                                    </MultiInput>
+                                </fb:control>
+                            </fb:FilterGroupItem>
 
-            <core:ListItem
-                key="{SyrupBatchModel>Userc1}"
-                text="{SyrupBatchModel>Userc1}" />
-
-        </MultiInput>
-    </fb:control>
-</fb:FilterGroupItem>
-
-      <fb:FilterGroupItem
-    id="statusFilterGroupItem"
-    name="Status"
-    label="{i18n>udstatus}"
-    groupName="Group1"
-    visibleInFilterBar="true">
-
-    <fb:control>
-        <ComboBox
-            id="statusCombo"
-            items="{path:'/UsageDecisionF4Set'}"
-            filterSecondaryValues="true"
-            change=".onFilterGroupItemChange"
-            value="{CodeValText}"> 
-            
-            <core:ListItem
-                key="{Vbewertung}"
-                text="{CodeValText}" />
-        </ComboBox>
-    </fb:control>
-
-</fb:FilterGroupItem>
-
-
+                            <fb:FilterGroupItem
+                                id="statusFilterGroupItem"
+                                name="Status"
+                                label="{i18n>udstatus}"
+                                groupName="Group1"
+                                visibleInFilterBar="true"
+                            >
+                                <fb:control>
+                                    <ComboBox
+                                        id="statusCombo"
+                                        items="{path:'/UsageDecisionF4Set'}"
+                                        filterSecondaryValues="true"
+                                        change=".onFilterGroupItemChange"
+                                        value="{CodeValText}"
+                                    >
+                                        <core:ListItem
+                                            key="{Vbewertung}"
+                                            text="{CodeValText}"
+                                        />
+                                    </ComboBox>
+                                </fb:control>
+                            </fb:FilterGroupItem>
                         </fb:filterGroupItems>
                     </fb:FilterBar>
                 </f:content>
@@ -298,16 +297,19 @@
                             level="H3"
                         />
                         <ToolbarSpacer id="tableToolbarSpacer" />
-                         <Button
-    text="Mass Upload"
-    icon="sap-icon://upload"
-    type="Emphasized"
-    press=".onOpenUploadDialog"/>
-    <Button
-    text="Download Excel Template"
-    icon="sap-icon://excel-attachment"
-    type="Emphasized"
-    press=".onDownloadTemplate"/>
+
+                        <Button
+                            text="Mass Upload"
+                            icon="sap-icon://upload"
+                            type="Emphasized"
+                            press=".onOpenUploadDialog"
+                        />
+                        <Button
+                            text="Download Excel Template"
+                            icon="sap-icon://excel-attachment"
+                            type="Emphasized"
+                            press=".onDownloadTemplate"
+                        />
 
                         <Button
                             id="exportToExcelButton"
@@ -317,112 +319,130 @@
                             type="Emphasized"
                             icon="sap-icon://excel-attachment"
                         />
+
                         <Button
                             id="createButton"
                             text="{i18n>submitnew}"
-                             icon="sap-icon://add"
+                            icon="sap-icon://add"
                             visible="true"
                             press=".onSubmitNewPress"
                             type="Emphasized"
                         />
+
+                        <Button
+                            id="sortbutton"
+                            tooltip="Sort"
+                            icon="sap-icon://sort"
+                            press="handleSortButtonPressed"
+                            type="Emphasized"
+                        />
                     </OverflowToolbar>
                 </headerToolbar>
-               <columns>
-                        <Column
-                            id="dateColumn"
-                            minScreenWidth="Tablet"
-                            demandPopin="true"
-                            popinDisplay="Inline"
-                            hAlign="Begin"
-                        >
-                            <Label
-                                id="dateColumnLabel"
-                                text="{i18n>date}"
-                                wrapping="true"
+                <columns>
+                    <Column
+                        id="dateColumn"
+                        minScreenWidth="Tablet"
+                        demandPopin="true"
+                        popinDisplay="Inline"
+                        hAlign="Begin"
+                    >
+                        <Label
+                            id="dateColumnLabel"
+                            text="{i18n>date}"
+                            wrapping="true"
+                        />
+                    </Column>
+                    <Column
+                        id="Ebeln"
+                        width="10%"
+                        hAlign="Begin"
+                    >
+                        <Label
+                            id="ColumnLabelPurchase"
+                            text="{i18n>Purchase Order}"
+                            wrapping="true"
+                        />
+                    </Column>
+                    <Column
+                        id="materialColumn"
+                        width="20%"
+                        hAlign="Begin"
+                    >
+                        <Label
+                            id="materialColumnLabel"
+                            text="{i18n>material}"
+                        />
+                    </Column>
+                    <Column
+                        id="batchColumn"
+                        minScreenWidth="Tablet"
+                        demandPopin="true"
+                        popinDisplay="Inline"
+                        hAlign="Begin"
+                    >
+                        <Label
+                            id="batchColumnLabel"
+                            text="{i18n>batch}"
+                        />
+                    </Column>
+                    <Column
+                        id="formulaColumn"
+                        hAlign="Begin"
+                        minScreenWidth="Tablet"
+                        demandPopin="true"
+                        popinDisplay="Inline"
+                    >
+                        <Label
+                            id="formulaColumnLabel"
+                            text="{i18n>formula}"
+                        />
+                    </Column>
+                    <Column
+                        id="sampletypeColumn"
+                        hAlign="Begin"
+                        width="25%"
+                        minScreenWidth="Tablet"
+                        demandPopin="true"
+                        popinDisplay="Inline"
+                    >
+                        <Label
+                            id="sampletypeColumnLabel"
+                            text="{i18n>Syrup Batch : Sample Type}"
+                        />
+                    </Column>
+                    <Column
+                        id="userstatusColumn"
+                        hAlign="Begin"
+                        visible="true"
+                    >
+                        <Label
+                            id="userstatusColumnLabel"
+                            text="{i18n>udstatus}"
+                        />
+                    </Column>
+                </columns>
+                <items>
+                    <ColumnListItem
+                        id="clmlistitem"
+                        visible="false"
+                        type="Navigation"
+                    >
+                        <cells>
+                            <Text
+                                text="{path:'CreateDt', formatter:'.formatter.dateFormatter'}"
                             />
-                        </Column>
-                          <Column id="Ebeln" width="10%" hAlign="Begin">
-            <Label id="ColumnLabelPurchase" text="{i18n>Purchase Order}" wrapping="true" />
-             
-        </Column>
-                        <Column
-                            id="materialColumn"
-                            width="20%"
-                            hAlign="Begin"
-                        >
-                            <Label
-                                id="materialColumnLabel"
-                                text="{i18n>material}"
+                            <Text
+                                text="{Ebeln} -  {= ${Ebelp} === '00000' ? '' : parseInt(${Ebelp}, 10) }"
                             />
-                        </Column>
-                        <Column
-                            id="batchColumn"
-                            minScreenWidth="Tablet"
-                            demandPopin="true"
-                            popinDisplay="Inline"
-                            hAlign="Begin"
-                        >
-                            <Label
-                                id="batchColumnLabel"
-                                text="{i18n>batch}"
-                            />
-                        </Column>
-                        <Column
-                            id="formulaColumn"
-                            hAlign="Begin"
-                            minScreenWidth="Tablet"
-                            demandPopin="true"
-                            popinDisplay="Inline"
-                        >
-                            <Label
-                                id="formulaColumnLabel"
-                                text="{i18n>formula}"
-                            />
-                        </Column>
-                         <Column
-                            id="sampletypeColumn"
-                            hAlign="Begin"
-                             width="25%"
-                            minScreenWidth="Tablet"
-                            demandPopin="true"
-                            popinDisplay="Inline"
-                        >
-                            <Label
-                                id="sampletypeColumnLabel"
-                                text="{i18n>Syrup Batch : Sample Type}"
-                            />
-                        </Column>
-                        <Column
-                            id="userstatusColumn"
-                            hAlign="Begin"
-                            visible="true"
-                        >
-                            <Label
-                                id="userstatusColumnLabel"
-                                text="{i18n>udstatus}"
-                            />
-                        </Column>
-                    </columns>
-                    <items>
-                        <ColumnListItem
-                            id="clmlistitem"
-                            visible="false"
-                            type="Navigation"
-                        >
-                            <cells>
-                                <Text
-                                    text="{path:'CreateDt', formatter:'.formatter.dateFormatter'}"
-                                />
-                                 <Text text="{Ebeln} -  {= ${Ebelp} === '00000' ? '' : parseInt(${Ebelp}, 10) }"/>
-                                <Text text="{Matnr} - {Maktx}" />
-                                <Text text="{Charg}" />
-                                <Text text="{Zzhbcformula}" />
-                                 <Text text="{SampleSyrup}" />
-                                <Text text="{CodeValText}" />
-                            </cells>
-                        </ColumnListItem>
-                    </items>
-                </Table>
+                            <Text text="{Matnr} - {Maktx}" />
+                            <Text text="{Charg}" />
+                            <Text text="{Zzhbcformula}" />
+                            <Text text="{SampleSyrup}" />
+                            <Text text="{CodeValText}" />
+                        </cells>
+                    </ColumnListItem>
+                </items>
+            </Table>
         </f:content>
     </f:DynamicPage>
 </mvc:View>

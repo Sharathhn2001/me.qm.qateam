@@ -1,11 +1,11 @@
+<!-- Change to add PO and multi-formula / creation of inspection lot – Sharath -->
 <core:FragmentDefinition
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
-    xmlns:core="sap.ui.core">
-
+    xmlns:core="sap.ui.core"
+>
     <Dialog title="{i18n>submitnew}">
         <content>
-
             <f:SimpleForm
                 id="SimpleFormsubmitnew"
                 editable="true"
@@ -16,67 +16,90 @@
                 labelSpanS="12"
                 columnsXL="1"
                 columnsL="1"
-                columnsM="1">
-
+                columnsM="1"
+            >
                 <f:content>
-
-                    <Label text="{i18n>Purchase Order}" required="true"/>
-                 <Input
-    id="create_purchaseOrder"
-    value="{SubmitNewModel>/Ebeln}"
-    showValueHelp="true"
-    valueHelpRequest=".onPurchaseOrderValueHelpRequested"
-    change="onPurchaseOrderChangeInsp"
-    showSuggestion="true"
-    placeholder="Select Purchase Order"
-    suggestionItems="{ path: 'POModel>/results' }">
-
-    <core:ListItem
-        key="{POModel>Ebeln}"
-        text="{POModel>Ebeln}"
-        additionalText="{POModel>Ebelp}" />
-</Input>
-                    <Label text="{i18n>material}" required="true" />
+                    <Label
+                        text="{i18n>Purchase Order}"
+                        required="true"
+                    />
+                    <Input
+                        id="create_purchaseOrder"
+                        value="{
+        parts: [
+            'SubmitNewModel>/Ebeln',
+            'SubmitNewModel>/Ebelp'
+        ],
+        formatter: '.formatPOValue'
+    }"
+                        showValueHelp="true"
+                        valueHelpRequest=".onPurchaseOrderValueHelpRequested"
+                        change="onPurchaseOrderChangeInsp"
+                        showSuggestion="true"
+                        placeholder="Select Purchase Order"
+                        suggestionItems="{ path: 'POModel>/results' }"
+                    >
+                        <core:ListItem
+                            key="{POModel>Ebeln}"
+                            text="{POModel>Ebeln}"
+                            additionalText="{POModel>Ebelp}"
+                        />
+                    </Input>
+                    <Label
+                        text="{i18n>material}"
+                        required="true"
+                    />
                     <Input
                         id="create_material"
                         value="{SubmitNewModel>/Matnr}"
                         editable="true"
+                    />
+
+                    <Label
+                        text="{i18n>batch}"
+                        required="true"
+                    />
+                    <Input
+                        id="create_batch"
+                        value="{SubmitNewModel>/Charg}"
+                        editable="true"
+                        liveChange=".onBatchChange"
+                        placeholder="Please Enter Batch"
+                    />
+
+                    <Label
+                        text="{i18n>formula}"
+                        required="true"
+                    />
+                    <ComboBox
+                        id="idFormulaCB"
+                        selectedKey="{SubmitNewModel>/Zzhbcformula}"
+                        placeholder="Select Formula"
+                        items="{FormulaModel>/results}"
+                        change=".onFormulaChange"
+                    >
+                        <core:ListItem
+                            key="{FormulaModel>Zzhbcformula}"
+                            text="{FormulaModel>Zzhbcformula}"
                         />
-
-                    <Label text="{i18n>batch}" required="true" />
-                   <Input
-    id="create_batch"
-    value="{SubmitNewModel>/Charg}"
-    editable="true"
-    liveChange=".onBatchChange"
-    placeholder="Please Enter Batch"/>
-
-
-<Label text="{i18n>formula}" required="true"/>
-<ComboBox
-    id="idFormulaCB"
-    selectedKey="{SubmitNewModel>/Zzhbcformula}"
-    placeholder="Select Formula"
-    items="{FormulaModel>/results}"
-    change=".onFormulaChange">
-    <core:ListItem
-        key="{FormulaModel>Zzhbcformula}"
-        text="{FormulaModel>Zzhbcformula}" />
-</ComboBox>
-
+                    </ComboBox>
                 </f:content>
-
             </f:SimpleForm>
-
         </content>
 
         <beginButton>
-            <Button text="{i18n>submit}" type="Emphasized" press="onSubmitPress" />
+            <Button
+                text="{i18n>submit}"
+                type="Emphasized"
+                press="onSubmitPress"
+            />
         </beginButton>
 
         <endButton>
-            <Button text="{i18n>cancel}" press="onCancelPress" />
+            <Button
+                text="{i18n>cancel}"
+                press="onCancelPress"
+            />
         </endButton>
-
     </Dialog>
 </core:FragmentDefinition>

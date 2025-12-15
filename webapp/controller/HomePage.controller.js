@@ -8,8 +8,10 @@ sap.ui.define([
     "sap/ui/core/BusyIndicator",
     "sap/m/MessageToast",
     "sap/ui/core/Fragment",
-    "sap/m/MessageBox"
-], (BaseController, Formatter, JSONModel, Filter, FilterOperator, Token, BusyIndicator, MessageToast, Fragment, MessageBox) => {
+    "sap/m/MessageBox",
+    "sap/ui/Device"
+
+], (BaseController, Formatter, JSONModel, Filter, FilterOperator, Token, BusyIndicator, MessageToast, Fragment, MessageBox, Device) => {
     "use strict";
 
     return BaseController.extend("com.monsterenergy.qm.me.qm.qateam.controller.HomePage", {
@@ -33,8 +35,8 @@ sap.ui.define([
                 this.sPlantName = "";
 
 
-                // this.sPlant = "3011";
-                //  this.sPlantName = "";
+                //this.sPlant = "3011";
+                //this.sPlantName = "";
 
                 if (!this._isQMUser) {
                     this.sPlant = oPlantDetails.Plant;
@@ -50,7 +52,7 @@ sap.ui.define([
                         () => this.PlantF4()
                     );
                 }
-
+                */
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
                     tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
@@ -348,15 +350,12 @@ sap.ui.define([
             //var oPlantMInput = this.getView().byId("plantMIput");
             var oPurchaseOrderMI = this.byId("PurchaseOrderInput");
             var oSampleTypeMI = this.byId("sampleTypeMInput");
-            var oSyrupBatchInput = this.byId("idsyrupbatch");
             var oMaterialMInput = this.getView().byId("materialMInput");
             var oBatchMInput = this.getView().byId("batchMInput");
             var oFormulaMInput = this.getView().byId("formulaMInput");
             var oDateRange = this.getView().byId("dateRangeSelection");
-
             // var sSelectedKey = oStatusSelect.getSelectedKey();
             //var oMsgStrip = this.getView().byId("msgstrip");
-
             var dStartDate = oDateRange.getDateValue();
             var dEndDate = oDateRange.getSecondDateValue();
             //var aPlantTokens = oPlantMInput.getTokens();
@@ -392,12 +391,12 @@ sap.ui.define([
 
                         const sEbeln = oToken.getKey();
 
-                        const sEbelp = oToken.getCustomData()[0]?.getValue() || "";
+                        //const sEbelp = oToken.getCustomData()[0]?.getValue() || "";
 
                         aPOFilters.push(new sap.ui.model.Filter({
                             filters: [
                                 new sap.ui.model.Filter("Ebeln", sap.ui.model.FilterOperator.EQ, sEbeln),
-                                new sap.ui.model.Filter("Ebelp", sap.ui.model.FilterOperator.EQ, sEbelp)
+                                // new sap.ui.model.Filter("Ebelp", sap.ui.model.FilterOperator.EQ, sEbelp)
                             ],
                             and: true
                         }));
@@ -408,7 +407,6 @@ sap.ui.define([
                     aTableFilters.push(new sap.ui.model.Filter({ filters: aPOFilters, and: false }));
                 }
             }
-
 
             if (aSampleTypeTokens.length > 0) {
                 let aSampleFilters = [];
@@ -496,8 +494,6 @@ sap.ui.define([
                 );
             }
 
-
-
             return aTableFilters;
 
         },
@@ -507,16 +503,16 @@ sap.ui.define([
          * @private
          */
         _filterHeaderTable: function (aTableFilters) {
-            // Checks wether Table already having Items, if Items found add Filters to that.
+
             if (this.oTable.getBinding("items")) {
                 this.oTable.getBinding("items").filter(aTableFilters);
             } else {
-                // Binds Items Aggregation to Header Table
+
                 this.oTable.bindAggregation("items", {
                     path: "/InspectionHeaderSet",
                     template: this.getView().byId("clmlistitem").clone().setVisible(true)
                 });
-                // Adding Filters and Sort to Items.
+
                 this.oTable.getBinding("items").filter(aTableFilters);
             }
         },
@@ -881,6 +877,7 @@ sap.ui.define([
                 oBinding.filter([]);
             }
         },
+
         onBatchClose: function (oEvent) {
             var aContexts = oEvent.getParameter("selectedContexts");
             var aTokens = [];
@@ -930,6 +927,7 @@ sap.ui.define([
         onBatchCancel: function (oEvent) {
             oEvent.getSource().getBinding("items").filter([]);
         },
+
         getFormulaF4: async function (aMaterials, aBatch) {
             var oFormulaF4Model = this.getView().getModel("FormulaF4Model");
             var oFormulaF4 = {};
@@ -965,6 +963,7 @@ sap.ui.define([
                 this.getView().setModel(oFormulaF4Model, "FormulaF4Model");
             }
         },
+
         onFormulaTokenChange: function (oEvent) {
             var oParameters = oEvent.getParameters();
             var oSource = oEvent.getSource();
@@ -1029,6 +1028,7 @@ sap.ui.define([
             oEvent.getSource().getBinding("items").filter([]);
             this.onFilterGroupItemChange(oEvent);
         },
+
         onFormulaCancel: function (oEvent) {
             oEvent.getSource().getBinding("items").filter([]);
         },
@@ -1049,6 +1049,7 @@ sap.ui.define([
                 this._oSyrupBatchValueHelpDialog.open();
             }
         },
+
         getSyrupBatchF4: function () {
             var oView = this.getView();
             var oModel = oView.getModel("SyrupBatchModel");
@@ -1090,7 +1091,6 @@ sap.ui.define([
                     sap.m.MessageBox.error(sMsg, { title: "Error" });
                 });
         },
-
 
         onSyrupBatchSearch: function (oEvent) {
             let sValue = oEvent.getParameter("value");
@@ -1224,6 +1224,7 @@ sap.ui.define([
                 this.getView().setModel(oPurchaseOrderF4Model, "PurchaseOrderF4Model");
             }
         },
+
         onPurchaseOrderValueHelp: async function (oEvent) {
             this.getPurchaseOrderF4();
             this._oPurchaseOrderSourceIp = oEvent.getSource();
@@ -1242,9 +1243,37 @@ sap.ui.define([
               } else {
                   this._oPurchaseOrderValueHelpDialog.setMultiSelect(false);
               }
-  */
+             */
             this._oPurchaseOrderValueHelpDialog.open();
         },
+
+        onPOEnter: function (oEvent) {
+            const oInput = oEvent.getSource();
+            const sText = oEvent.getParameter("value") || "";
+
+            if (!sText) return;
+
+            const parts = sText.split("-");
+            const sEbeln = parts[0]?.trim();
+            const sEbelp = parts[1]?.trim() || "";
+
+            if (!sEbeln) return;
+
+            const oToken = new sap.m.Token({
+                key: sEbeln,
+                text: sText,
+                customData: [
+                    new sap.ui.core.CustomData({
+                        key: "Ebelp",
+                        value: sEbelp
+                    })
+                ]
+            });
+
+            oInput.addToken(oToken);
+            oInput.setValue("");
+        },
+
         onPOLiveChange: function (oEvent) {
             this.getPurchaseOrderF4();
         },
@@ -1269,7 +1298,6 @@ sap.ui.define([
             this.onFilterGroupItemChange(oEvent);
             oEvent.getSource().getBinding("items").filter([]);
         },
-
 
         onPurchaseOrderChange: function (oEvent) {
             const oInput = oEvent.getSource();
@@ -1313,6 +1341,7 @@ sap.ui.define([
                 oBinding.filter([]);
             }
         },
+
         onPurchaseOrderValueHelpRequested: function (oEvent) {
             this._oPOSourceIp = oEvent.getSource();
             const oView = this.getView();
@@ -1346,6 +1375,7 @@ sap.ui.define([
                 error: function () { oPOModel.setData({ results: [] }); }
             });
         },
+
         onPOSearch: function (oEvent) {
             const sQuery = oEvent.getParameter("value").trim();
             const oList = oEvent.getSource();
@@ -1366,14 +1396,17 @@ sap.ui.define([
                 new sap.ui.model.Filter(field, sap.ui.model.FilterOperator.Contains, sQuery)
             );
 
-
             const oCombinedFilter = new sap.ui.model.Filter({
                 filters: aFilters,
                 and: false
             });
 
-
             oBinding.filter([oCombinedFilter]);
+        },
+
+        formatPOValue: function (ebeln, ebelp) {
+            if (!ebeln) return "";
+            return ebelp ? `${ebeln} - ${ebelp}` : ebeln;
         },
 
         onPOSelect: function (oEvent) {
@@ -1390,6 +1423,7 @@ sap.ui.define([
             oSubmitModel.setProperty("/Charg", oSelected.Charg);
             oEvent.getSource().getBinding("items").filter([]);
         },
+
         onPurchaseOrderChangeInsp: function (oEvent) {
             const sValue = oEvent.getSource().getValue().trim();
             const oModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
@@ -1398,7 +1432,6 @@ sap.ui.define([
                 MessageToast.show("PO list not loaded");
                 return;
             }
-
             const aPOList = oPOModel.getProperty("/results") || [];
 
             if (!sValue) {
@@ -1431,6 +1464,7 @@ sap.ui.define([
                 MessageToast.show("Invalid Purchase Order");
             }
         },
+
         onBatchChange: function (oEvent) {
             const sBatch = oEvent.getParameter("value")?.trim() || "";
             const oFormulaModel = this.getView().getModel("FormulaModel");
@@ -1539,11 +1573,13 @@ sap.ui.define([
             oSubmitModel.setData({ Ebeln: "", Ebelp: "", Matnr: "", Charg: "", Zzhbcformula: "" });
             this._oSubmitNewDialog.open();
         },
+
         onCancelPress: function () {
             if (this._oSubmitNewDialog) {
                 this._oSubmitNewDialog.close();
             }
         },
+
         onFormulaChange: function (oEvent) {
             const oCB = oEvent.getSource();
             const sKey = oCB.getSelectedKey();
@@ -1616,6 +1652,7 @@ sap.ui.define([
             this._oSubmitNewDialog.close();
             BusyIndicator.hide();
         },
+
         _getInspectionDetails: async function () {
             const oModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
             const oData = oModel.getData();
@@ -2291,6 +2328,10 @@ sap.ui.define([
                 console.error("Export error:", oError);
             }
         },
+
+
+
+        //Excel template download for MASS Upload - Sharath
         onDownloadTemplate: function () {
             const oModel = this.getView().getModel();
             const oBusy = new sap.m.BusyDialog();
@@ -2394,7 +2435,7 @@ sap.ui.define([
                             sMessage = oError.message;
                         }
                     } catch {
-                        sMessage = "Unknown backend error occurred.";
+                        sMessage = "backend error occurred.";
                     }
                     sap.m.MessageBox.error(sMessage);
                 }
@@ -2501,6 +2542,7 @@ sap.ui.define([
             }
         },
 
+        // Function to display the operation details in a checkbox – Sharath
         getOperation: async function () {
             var oVBox = this.byId("operationCheckBoxVBox");
             if (!oVBox) {
@@ -2543,6 +2585,8 @@ sap.ui.define([
             });
         },
 
+
+        // Handle the file size in MB for display – Sharath
         onFileChange: function (oEvent) {
             const oFile = oEvent.getParameter("files")?.[0];
             this._resetFileState();
@@ -2573,6 +2617,7 @@ sap.ui.define([
             reader.readAsArrayBuffer(oFile);
         },
 
+        // Validation and restriction on the number of InspLot/line items uploaded at one time – Sharath
         _validateUniqueMaterialBatch: function (data) {
             const header = data[0];
 
@@ -2598,6 +2643,7 @@ sap.ui.define([
             }
         },
 
+        // Mass upload functionality – Sharath
         onMassUpload: function () {
             try {
                 if (!this._selectedFile || !this._fileBuffer) {
@@ -2698,6 +2744,7 @@ sap.ui.define([
             };
         },
 
+        // Handle the mass upload success and display the dynamic response table – Sharath
         _sendPayloadToBackend: function () {
             var appId = this.getOwnerComponent().getManifestEntry("sap.app").id;
             var appPath = appId.replaceAll(".", "/");
@@ -2864,6 +2911,98 @@ sap.ui.define([
         onCloseDialog: function () {
             this.byId("uploadDialog")?.close();
         },
+
+        // Handle sort order for table – Sharath
+        handleSortButtonPressed: function () {
+            this.getViewSettingsDialog(
+                "com.monsterenergy.qm.me.qm.qateam.fragment.SortDialog"
+            ).then(function (oDialog) {
+                this._oViewSettingsDialog = oDialog;
+                oDialog.open();
+            }.bind(this));
+        },
+
+        getViewSettingsDialog: function (sDialogFragmentName) {
+            this._mViewSettingsDialogs = this._mViewSettingsDialogs || {};
+
+            if (!this._mViewSettingsDialogs[sDialogFragmentName]) {
+                this._mViewSettingsDialogs[sDialogFragmentName] = Fragment.load({
+                    id: this.getView().getId(),
+                    name: sDialogFragmentName,
+                    controller: this
+                }).then(function (oDialog) {
+                    if (Device.system.desktop) {
+                        oDialog.addStyleClass("sapUiSizeCompact");
+                    }
+                    this.getView().addDependent(oDialog);
+                    return oDialog;
+                }.bind(this));
+            }
+            return this._mViewSettingsDialogs[sDialogFragmentName];
+        },
+
+        handleSortDialogConfirm: function (oEvent) {
+            var oTable = this.byId("table");
+            var oBinding = oTable.getBinding("items");
+            var mParams = oEvent.getParameters();
+
+            var sPath = mParams.sortItem.getKey();
+            var bDescending = mParams.sortDescending;
+
+            if (sPath === "None") {
+                oBinding.sort([]);
+                this.byId("sortbutton").setType("Transparent");
+                return;
+            }
+
+            this.byId("sortbutton").setType("Emphasized");
+
+            oTable.getColumns().forEach(function (oCol) {
+                oCol.setSortIndicator("None");
+            });
+
+            var oColumn = this.byId(sPath);
+            if (oColumn) {
+                oColumn.setSortIndicator(
+                    bDescending ? "Descending" : "Ascending"
+                );
+            }
+
+            oBinding.sort([new sap.ui.model.Sorter(sPath, bDescending)]);
+
+            if (this.oSmartVariantManagement) {
+                this.oSmartVariantManagement.currentVariantSetModified(true);
+            }
+        },
+
+        onSortChange: function (oEvent) {
+            var oTable = this.byId("table");
+            var oBinding = oTable.getBinding("items");
+            var oItem = oEvent.getParameter("item");
+
+            if (oItem.getSortOrder() === "None") {
+                oBinding.sort([]);
+            } else {
+                oBinding.sort([
+                    new sap.ui.model.Sorter(
+                        oItem.getKey(),
+                        oItem.getSortOrder() === "Descending"
+                    )
+                ]);
+            }
+
+            if (this.oSmartVariantManagement) {
+                this.oSmartVariantManagement.currentVariantSetModified(true);
+            }
+        },
+
+        onExit: function () {
+            if (this._oViewSettingsDialog) {
+                this._oViewSettingsDialog.destroy();
+                this._oViewSettingsDialog = null;
+            }
+            this._mViewSettingsDialogs = {};
+        }
 
     });
 });
