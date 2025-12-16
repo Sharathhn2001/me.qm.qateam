@@ -52,7 +52,7 @@ sap.ui.define([
                         () => this.PlantF4()
                     );
                 }
-                */
+                
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
                     tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
@@ -786,7 +786,7 @@ sap.ui.define([
                 aFilters.push(new Filter({ filters: aMaterialFilters, and: false }));
             }
             try {
-                oBatchF4 = await this.readDataFromODataModel("/Batch_F4Set", aFilters);
+                oBatchF4 = await this.readDataFromODataModel("/BatchAll_F4Set", aFilters);
             } catch (error) { }
 
             if (oBatchF4Model) {
