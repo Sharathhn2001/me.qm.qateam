@@ -35,7 +35,7 @@ sap.ui.define([
                 this.sPlantName = "";
 
 
-                //this.sPlant = "3011";
+                //  this.sPlant = "3011";
                 //this.sPlantName = "";
 
                 if (!this._isQMUser) {
@@ -52,7 +52,7 @@ sap.ui.define([
                         () => this.PlantF4()
                     );
                 }
-                
+
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
                     tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
@@ -2632,16 +2632,26 @@ sap.ui.define([
                 const material = String(row[matIndex] || "").trim();
                 const batch = String(row[batchIndex] || "").trim();
 
-                if (!material && !batch) continue;
+                if (!material && !batch) {
+                    continue;
+                }
 
-                const key = material + "__" + batch;
-                unique.add(key);
+                unique.add(material + "__" + batch);
 
                 if (unique.size > 50) {
-                    throw new Error("Only 50 unique Material + Batch combinations are allowed.");
+                    const excess = unique.size - 50;
+
+                    sap.m.MessageBox.warning(
+                        `Only up to 50 unique Material – Batch combinations are allowed.\n` +
+                        `You have added ${unique.size} combinations (${excess} more than allowed).`
+                    );
+                    return false;
                 }
             }
+
+            return true;
         },
+
 
         // Mass upload functionality – Sharath
         onMassUpload: function () {
@@ -2654,17 +2664,19 @@ sap.ui.define([
                 const sheet = wb.Sheets[wb.SheetNames[0]];
                 const data = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: "" });
 
-                const result = this._validateUniqueMaterialBatch(data);
+                const isValid = this._validateUniqueMaterialBatch(data);
+                if (!isValid) {
+                    return;
+                }
+
 
                 this._buildPayloadFromExcel();
                 this._sendPayloadToBackend();
 
             } catch (e) {
-                console.error(e);
                 MessageBox.error("Processing failed: " + e.message);
             }
         },
-
 
         _getSelectedOperations: function () {
             var oVBox = this.byId("operationCheckBoxVBox");
@@ -2774,7 +2786,6 @@ sap.ui.define([
             });
         },
 
-
         _postUploadPayload: function () {
             if (!this._jsonPayload) {
                 BusyIndicator.hide();
@@ -2824,7 +2835,7 @@ sap.ui.define([
                 const json = JSON.parse(body);
                 return json.error?.message?.value || "Backend error.";
             } catch (e) {
-                return "backend error.";
+                return "backend issue.";
             }
         },
 
