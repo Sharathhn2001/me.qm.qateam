@@ -1,21 +1,25 @@
+<!--++BOC REQ0032724 - Purchase Order SelectDialog Fragment - Sharath -->
 <core:FragmentDefinition
-	xmlns="sap.m"
-	xmlns:core="sap.ui.core"
-    >
-	<SelectDialog
-		noDataText="{i18n>noPurchaseOrderFoundMessage}"
-		title="{i18n>PurchaseOrder}"
-		search="onPurchaseOrderSearch"
-		confirm="onPurchaseOrderClose"
-		cancel="onPurchaseOrderCancel"
-		multiSelect="true"
-		rememberSelections="false"
-		items="{
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+    <SelectDialog
+        noDataText="{i18n>noPurchaseOrderFoundMessage}"
+        title="{i18n>PurchaseOrder}"
+        search="onPurchaseOrderSearch"
+        confirm="onPurchaseOrderClose"
+        cancel="onPurchaseOrderCancel"
+        multiSelect="true"
+        rememberSelections="false"
+        items="{
 			path: 'PurchaseOrderF4Model>/results'
-		}">
-		<StandardListItem
-			title="{PurchaseOrderF4Model>Ebeln}"
-			 description="{PurchaseOrderF4Model>Ebelp}"
-			type="Active" />
-	</SelectDialog>
+		}"
+    >
+        <StandardListItem
+            title="{PurchaseOrderF4Model>Ebeln}"
+            description="{PurchaseOrderF4Model>Ebelp}"
+            type="Active"
+        />
+    </SelectDialog>
 </core:FragmentDefinition>
+<!--++EOC REQ0032724 - Purchase Order SelectDialog Fragment - Sharath -->

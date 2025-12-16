@@ -1,4 +1,8 @@
-<core:FragmentDefinition xmlns="sap.m" xmlns:core="sap.ui.core">
+<!--++BOC REQ0032724 - Purchase Order SelectDialog Fragment for Insp Lot - Sharath -->
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
     <TableSelectDialog
         id="valueHelpDialogPO"
         title="Select Purchase Order"
@@ -8,21 +12,69 @@
         noDataText="No Purchase Orders Found"
         items="{
             path : 'POModel>/results'
-        }">
-
+        }"
+    >
         <columns>
-            <Column><header><Text text="PO No"/></header></Column>
-            <Column><header><Text text="PO Item"/></header></Column>
-            <Column><header><Text text="Plant"/></header></Column>
-            <Column><header><Text text="Plant Name"/></header></Column>
-            <Column><header><Text text="Mat Group"/></header></Column>
-            <Column><header><Text text="Material#"/></header></Column>
-            <Column><header><Text text="Description"/></header></Column>
-            <Column><header><Text text="Batch"/></header></Column>
-            <Column><header><Text text="Vendor"/></header></Column>
-            <Column><header><Text text="Vendor Name"/></header></Column>
-            <Column><header><Text text="Quantity"/></header></Column>
-            <Column><header><Text text="Unit"/></header></Column>
+            <Column>
+                <header>
+                    <Text text="PO No" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="PO Item" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="Plant" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="Plant Name" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="Mat Group" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="Material#" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="Description" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="Batch" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="Vendor" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="Vendor Name" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="Quantity" />
+                </header>
+            </Column>
+            <Column>
+                <header>
+                    <Text text="Unit" />
+                </header>
+            </Column>
         </columns>
 
         <items>
@@ -43,6 +95,6 @@
                 </cells>
             </ColumnListItem>
         </items>
-
     </TableSelectDialog>
 </core:FragmentDefinition>
+<!--++EOC REQ0032724 - Purchase Order SelectDialog Fragment for Insp Lot - Sharath -->

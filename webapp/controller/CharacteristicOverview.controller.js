@@ -249,6 +249,7 @@ sap.ui.define(
         });
       },
 
+      //++BOC REQ0032723 - Function to get email and name (User details from IAS)
       _getIasDetails: function () {
         const appId = this.getOwnerComponent().getManifestEntry("/sap.app/id");
         const appPath = appId.replaceAll(".", "/");
@@ -289,6 +290,7 @@ sap.ui.define(
           });
         });
       },
+      //++EOC REQ0032723
 
       fetchStatus: async function () {
         BusyIndicator.show();
@@ -336,12 +338,13 @@ sap.ui.define(
         return sap.ushell.Container.getDirtyFlag();
       },
 
+
       _getInspectionDetails: async function () {
         var aFilters = [new Filter({ path: "Werk", operator: FilterOperator.EQ, value1: this.sPlant }),
-        new Filter({ path: "Ebeln", operator: FilterOperator.EQ, value1: this.sEbeln }),
-        new Filter({ path: "Ebelp", operator: FilterOperator.EQ, value1: this.sEbelp }),
-        new Filter({ path: "Matnr", operator: FilterOperator.EQ, value1: this.sMaterial }),
-        new Filter({ path: "Zzhbcformula", operator: FilterOperator.EQ, value1: this.sFormula }),
+        new Filter({ path: "Ebeln", operator: FilterOperator.EQ, value1: this.sEbeln }), //++Added - REQ0032723 -sharath
+        new Filter({ path: "Ebelp", operator: FilterOperator.EQ, value1: this.sEbelp }), //++Added - REQ0032723 -sharath
+        new Filter({ path: "Matnr", operator: FilterOperator.EQ, value1: this.sMaterial }), //++Added - REQ0032723 -sharath
+        new Filter({ path: "Zzhbcformula", operator: FilterOperator.EQ, value1: this.sFormula }), //++Added - REQ0032723 -sharath
         new Filter({ path: "Charg", operator: FilterOperator.EQ, value1: this.sBatch })];
         var oInspDetails = { results: [] };
 
@@ -358,6 +361,7 @@ sap.ui.define(
           var bCharEditable = oStatusDesc === "Submitted (Final)" ? false : true;
           this.getModel("ViewModel").setProperty("/CharEditable", bCharEditable);
 
+          //++BOC REQ0032724 - Logic to hide the Edit button based on UD status -   Sharath
           var sCodeValText = oInspDetails.results[0].CodeValText;
           var sVbewertung = oInspDetails.results[0].VBEWERTUNG;
           // var bUdEdit = (!sCodeValText || sCodeValText.trim() === "" || sCodeValText === "Not valuated");
@@ -365,7 +369,7 @@ sap.ui.define(
             || !sVbewertung || sVbewertung.trim() === "");
 
           this.getModel("ViewModel").setProperty("/UdstatusEdit", bUdEdit);
-
+          //++EOC REQ0032724 - End of logic to hide the Edit button - Sharath
 
           this.getModel("ViewModel").setProperty("/InspLot", this.sInspLot);
           this.getModel("ViewModel").setProperty("/InspPointFlag", this.sInspPointFlag);

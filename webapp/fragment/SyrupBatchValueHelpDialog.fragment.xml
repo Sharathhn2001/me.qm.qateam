@@ -1,7 +1,8 @@
-<core:FragmentDefinition 
+<!--++BOC REQ0032724 - Syrup SelectDialog Start - Sharath -->
+<core:FragmentDefinition
     xmlns="sap.m"
-    xmlns:core="sap.ui.core">
-
+    xmlns:core="sap.ui.core"
+>
     <SelectDialog
         noDataText="{i18n>noSyrupBatchFoundMessage}"
         title="{i18n>SyrupBatch}"
@@ -12,12 +13,12 @@
         rememberSelections="false"
         items="{
             path: 'SyrupBatchModel>/results'
-        }">
-
+        }"
+    >
         <StandardListItem
             title="{SyrupBatchModel>Userc1}"
-            type="Active" />
-
+            type="Active"
+        />
     </SelectDialog>
-
 </core:FragmentDefinition>
+<!--++EOC REQ0032724 - Syrup SelectDialog End - Sharath -->

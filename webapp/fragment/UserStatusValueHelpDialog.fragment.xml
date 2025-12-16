@@ -1,20 +1,25 @@
+<!--++BOC REQ0032724 - User Status SelectDialog Start - Sharath -->
 <core:FragmentDefinition
-	xmlns="sap.m"
-	xmlns:core="sap.ui.core">
-	<SelectDialog
-		noDataText="{i18n>nouserStatusFoundMessage}"
-		title="{i18n>userStatus}"
-		search="onUserStatusSearch"
-		confirm="onUserStatusClose"
-		cancel="onUserStatusCancel"
-		multiSelect="false"
-		rememberSelections="false"
-		items="{
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+    <SelectDialog
+        noDataText="{i18n>nouserStatusFoundMessage}"
+        title="{i18n>userStatus}"
+        search="onUserStatusSearch"
+        confirm="onUserStatusClose"
+        cancel="onUserStatusCancel"
+        multiSelect="false"
+        rememberSelections="false"
+        items="{
 			path: 'UserStatusModel>/results'
-		}">
-		<StandardListItem
-			title="{UserStatusModel>Status}"
-			description="{UserStatusModel>Statusdesc}"
-			type="Active" />
-	</SelectDialog>
+		}"
+    >
+        <StandardListItem
+            title="{UserStatusModel>Status}"
+            description="{UserStatusModel>Statusdesc}"
+            type="Active"
+        />
+    </SelectDialog>
 </core:FragmentDefinition>
+<!--++EOC REQ0032724 - User Status SelectDialog End - Sharath -->

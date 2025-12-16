@@ -1,21 +1,32 @@
+<!--++BOC REQ0032717 - Mass Upload Dialog Fragment Start - Sharath -->
 <core:FragmentDefinition
     xmlns="sap.m"
     xmlns:core="sap.ui.core"
-    xmlns:unified="sap.ui.unified">
-
+    xmlns:unified="sap.ui.unified"
+>
     <Dialog
         id="uploadDialog"
         title="Mass Upload"
         draggable="true"
         resizable="true"
         contentWidth="500px"
-        class="sapUiContentPadding">
+        class="sapUiContentPadding"
+    >
+        <VBox
+            width="100%"
+            id="vboxUploadContent"
+            renderType="Bare"
+        >
+            <Title
+                text="Select Operations"
+                level="H4"
+                class="sapUiTinyMarginBottom"
+            />
 
-        <VBox width="100%" id="vboxUploadContent" renderType="Bare">
-
-            <Title text="Select Operations" level="H4" class="sapUiTinyMarginBottom"/>
-
-            <VBox id="operationCheckBoxVBox" class="sapUiSmallMarginBottom"/>
+            <VBox
+                id="operationCheckBoxVBox"
+                class="sapUiSmallMarginBottom"
+            />
 
             <unified:FileUploader
                 id="fileUploader"
@@ -23,15 +34,27 @@
                 fileType="xlsx,xls"
                 change="onFileChange"
                 placeholder="Choose Excel file"
-                width="100%"/>
+                width="100%"
+            />
 
-            <Text id="fileSizeText" text="File Size: 0 MB" class="sapUiTinyMarginTop"/>
+            <Text
+                id="fileSizeText"
+                text="File Size: 0 MB"
+                class="sapUiTinyMarginTop"
+            />
         </VBox>
 
         <buttons>
-            <Button text="Cancel" press="onCloseDialog"/>
-            <Button text="Upload" type="Emphasized" press="onMassUpload"/>
+            <Button
+                text="Cancel"
+                press="onCloseDialog"
+            />
+            <Button
+                text="Upload"
+                type="Emphasized"
+                press="onMassUpload"
+            />
         </buttons>
-
     </Dialog>
 </core:FragmentDefinition>
+<!--++EOC REQ0032717 - Mass Upload Dialog Fragment End - Sharath -->

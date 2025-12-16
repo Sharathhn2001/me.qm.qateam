@@ -124,12 +124,14 @@ visible="{= ${ViewModel>/isQMUser} === true || ${ViewModel>/isQMUser} === 'true'
                             text="{InspectionDetailsModel>/Werk} - {InspectionDetailsModel>/Name1}"
                             class="sapUiTinyMarginBottom"
                         />
+                        <!--++BOC REQ0032723 - ObjectStatus to display Purchase Order-Sharath -->
                           <ObjectStatus
                             id="objStatusPO"
                             title="{i18n>Purchase Order}"
                             text="{InspectionDetailsModel>/Ebeln} - {InspectionDetailsModel>/Ebelp}"
                             class="sapUiTinyMarginBottom"
                         />
+                        <!--++EOC REQ0032723 - End of ObjectStatus for Purchase Order -->
                         <ObjectStatus
                             id="objStatusMaterial"
                             title="{i18n>material}"
@@ -173,6 +175,7 @@ visible="{= ${ViewModel>/isQMUser} === true || ${ViewModel>/isQMUser} === 'true'
                         <!-- <ObjectStatus id="objStatusLiqBatchNo" title="{i18n>liqBatchNo}"
                             text="{InspectionDetailsModel>/LiquidBatchNo}"
                             class="sapUiTinyMarginBottom" /> -->
+                            <!--++BOC REQ0032723 - ObjectStatus to display UD Status - Sharath -->
                         <ObjectStatus
                             id="objStatusUserStatus"
                             title="{i18n>udstatus}"
@@ -180,6 +183,7 @@ visible="{= ${ViewModel>/isQMUser} === true || ${ViewModel>/isQMUser} === 'true'
                             text="{InspectionDetailsModel>/CodeValText}"
                             class="sapUiTinyMarginBottom"
                         />
+                        <!--++EOC REQ0032723 - End of ObjectStatus for UD Status -->
                     </VBox>
                 </grid:items>
             </grid:CSSGrid>

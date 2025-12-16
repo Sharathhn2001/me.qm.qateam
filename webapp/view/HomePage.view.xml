@@ -62,6 +62,7 @@
                                         tokenUpdate=".onFilterGroupItemChange" /> -->
                                 </fb:control>
                             </fb:FilterGroupItem>
+                            <!--++BOC REQ0032724 - Purchase Order Filter Start - Sharath -->
                             <fb:FilterGroupItem
                                 id="PurchaseOrderFilterGroupItem"
                                 name="Ebeln"
@@ -90,6 +91,8 @@
                                     </MultiInput>
                                 </fb:control>
                             </fb:FilterGroupItem>
+                            <!--++EOC REQ0032724 - Purchase Order Filter End - Sharath -->
+
                             <fb:FilterGroupItem
                                 id="imaterialFilterGroupItem"
                                 name="Matnr"
@@ -189,7 +192,7 @@
                                     />
                                 </fb:control>
                             </fb:FilterGroupItem>
-
+                            <!--++BOC REQ0032724 - Sample Type Filter Start - Sharath-->
                             <fb:FilterGroupItem
                                 id="sampleFilterGroupItem"
                                 name="SampleType"
@@ -218,6 +221,9 @@
                                     </MultiInput>
                                 </fb:control>
                             </fb:FilterGroupItem>
+                            <!--++EOC REQ0032724 - Sample Type Filter End - Sharath-->
+
+                            <!--++BOC REQ0032724 - Syrup Batch Filter Start - Sharath -->
                             <fb:FilterGroupItem
                                 id="syrupBatchFilterGroupItem"
                                 name="SyrupBatch"
@@ -246,7 +252,9 @@
                                     </MultiInput>
                                 </fb:control>
                             </fb:FilterGroupItem>
+                            <!--++EOC REQ0032724 - Syrup Batch Filter End - Sharath-->
 
+                            <!--++BOC REQ0032724 - UD Status Filter Start - Sharath-->
                             <fb:FilterGroupItem
                                 id="statusFilterGroupItem"
                                 name="Status"
@@ -269,6 +277,7 @@
                                     </ComboBox>
                                 </fb:control>
                             </fb:FilterGroupItem>
+                            <!--++EOC REQ0032724 - UD Status Filter End - Sharath-->
                         </fb:filterGroupItems>
                     </fb:FilterBar>
                 </f:content>
@@ -297,19 +306,23 @@
                             level="H3"
                         />
                         <ToolbarSpacer id="tableToolbarSpacer" />
-
+                        <!--++BOC REQ0032717 - Mass Upload Button Start - Sharath -->
                         <Button
                             text="Mass Upload"
                             icon="sap-icon://upload"
                             type="Emphasized"
                             press=".onOpenUploadDialog"
                         />
+                        <!--++EOC REQ0032717 - Mass Upload Button End - Sharath -->
+
+                        <!--++BOC REQ0032717 - Download Excel Template Button Start - Sharath-->
                         <Button
                             text="Download Excel Template"
                             icon="sap-icon://excel-attachment"
                             type="Emphasized"
                             press=".onDownloadTemplate"
                         />
+                        <!--++EOC REQ0032717 - Download Excel Template Button End - Sharath-->
 
                         <Button
                             id="exportToExcelButton"
@@ -352,6 +365,7 @@
                             wrapping="true"
                         />
                     </Column>
+                    <!--++BOC REQ0032724 - PO Column Start - Sharath -->
                     <Column
                         id="Ebeln"
                         width="10%"
@@ -363,6 +377,7 @@
                             wrapping="true"
                         />
                     </Column>
+                    <!--++EOC REQ0032724 - PO Column End - Sharath -->
                     <Column
                         id="materialColumn"
                         width="20%"
@@ -397,6 +412,7 @@
                             text="{i18n>formula}"
                         />
                     </Column>
+                    <!--++BOC REQ0032724 - Sample Type Column Start - Sharath -->
                     <Column
                         id="sampletypeColumn"
                         hAlign="Begin"
@@ -410,6 +426,8 @@
                             text="{i18n>Syrup Batch : Sample Type}"
                         />
                     </Column>
+                    <!--++EOC REQ0032724 - Sample Type Column End - Sharath -->
+                    <!--++BOC REQ0032724 - User Status Column Start - Sharath -->
                     <Column
                         id="userstatusColumn"
                         hAlign="Begin"
@@ -420,6 +438,7 @@
                             text="{i18n>udstatus}"
                         />
                     </Column>
+                    <!--++EOC REQ0032724 - User Status Column End - Sharath -->
                 </columns>
                 <items>
                     <ColumnListItem
@@ -431,14 +450,17 @@
                             <Text
                                 text="{path:'CreateDt', formatter:'.formatter.dateFormatter'}"
                             />
+                            <!--++BOC REQ0032724 - Display PO/Item, Material, Batch, Formula, Sample Type, CodeValText Start - Sharath -->
                             <Text
-                                text="{Ebeln} -  {= ${Ebelp} === '00000' ? '' : parseInt(${Ebelp}, 10) }"
-                            />
+                                text="{Ebeln} - {= ${Ebelp} === '00000' ? '' : parseInt(${Ebelp}, 10) }"
+                            /> <!--++Added PO & Item display-->
                             <Text text="{Matnr} - {Maktx}" />
                             <Text text="{Charg}" />
                             <Text text="{Zzhbcformula}" />
-                            <Text text="{SampleSyrup}" />
-                            <Text text="{CodeValText}" />
+                            <Text text="{SampleSyrup}" /> <!--++Added Sample Type/Syrup Batch display-->
+                            <Text text="{CodeValText}" />  <!--++Added CodeValText display-->
+                    
+                            <!--++EOC REQ0032724 - End of added display fields - Sharath-->
                         </cells>
                     </ColumnListItem>
                 </items>

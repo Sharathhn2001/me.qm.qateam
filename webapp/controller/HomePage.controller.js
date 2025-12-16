@@ -34,9 +34,10 @@ sap.ui.define([
                 this.sPlant = "";
                 this.sPlantName = "";
 
-
-                //  this.sPlant = "3011";
-                //this.sPlantName = "";
+                /*Sharath--BOC - Logic to run the app locally in the absence of IAS
+                  this.sPlant = "3011";
+                  this.sPlantName = "";
+                EOC */
 
                 if (!this._isQMUser) {
                     this.sPlant = oPlantDetails.Plant;
@@ -109,9 +110,9 @@ sap.ui.define([
                     this.getMaterialF4();
                     this.getBatchF4([]);
                     this.getFormulaF4();
-                    this.getPurchaseOrderF4();
-                    this.getSampleTypeF4();
-                    this.getSyrupBatchF4();
+                    this.getPurchaseOrderF4(); //Added REQ0032724
+                    this.getSampleTypeF4(); //Added REQ0032724
+                    this.getSyrupBatchF4(); //Added REQ0032724
                 }
 
             } catch (oError) {
@@ -134,49 +135,52 @@ sap.ui.define([
             wait();
         },
 
-        getSubmitterInfo: async function () {
-            BusyIndicator.show();
+        /*--BOC REQ0032724 - Deprecated Submitter Info Dialog Logic (Not in Use)-- Sharath
+         getSubmitterInfo: async function () {
+             BusyIndicator.show();
+ 
+             try {
+                 if (!this._oSubmitterInfoDialog) {
+                     this._oSubmitterInfoDialog = await this.loadFragment({
+                         name: "com.monsterenergy.qm.me.qm.qateam.fragment.SubmitterNameEmailDialog"
+                     });
+                 }
+             } catch (error) {
+                 return;
+             }
+ 
+             this._oSubmitterInfoDialog.open();
+             BusyIndicator.hide();
+         },
+         onSubmitterDetailSubmitPress: async function () {
+             var oSubmitterModel = this.getView().getModel("ViewModel");
+             var oCreateObject = oSubmitterModel.getData();
+             var oSubmitterNameIp = this.getView().byId("submitter_name1");
+             var oSubmitterEmailIp = this.getView().byId("submitter_email1");
+             var bIsValid = true;
+ 
+             if (!oCreateObject.SubmitterName) {
+                 oSubmitterNameIp.setValueState("Error");
+                 oSubmitterNameIp.setValueStateText(this.getResourceBundle().getText("enterSubName"));
+                 bIsValid = false;
+             }
+             if (!oCreateObject.SubmitterEmail) {
+                 oSubmitterEmailIp.setValueState("Error");
+                 oSubmitterEmailIp.setValueStateText(this.getResourceBundle().getText("enterSubEmail"));
+                 bIsValid = false;
+             }
+ 
+             if (!bIsValid) {
+                 MessageToast.show(this.getResourceBundle().getText("fillMandatory"));
+                 return;
+             }
+             this._oSubmitterInfoDialog.close();
+         },
+         onSubmitterEscape: function (oPromise) {
+             oPromise.reject();
+         },
+        /*--EOC REQ0032724 - Deprecated Submitter Info Dialog Logic End--*/
 
-            try {
-                if (!this._oSubmitterInfoDialog) {
-                    this._oSubmitterInfoDialog = await this.loadFragment({
-                        name: "com.monsterenergy.qm.me.qm.qateam.fragment.SubmitterNameEmailDialog"
-                    });
-                }
-            } catch (error) {
-                return;
-            }
-
-            this._oSubmitterInfoDialog.open();
-            BusyIndicator.hide();
-        },
-        onSubmitterDetailSubmitPress: async function () {
-            var oSubmitterModel = this.getView().getModel("ViewModel");
-            var oCreateObject = oSubmitterModel.getData();
-            var oSubmitterNameIp = this.getView().byId("submitter_name1");
-            var oSubmitterEmailIp = this.getView().byId("submitter_email1");
-            var bIsValid = true;
-
-            if (!oCreateObject.SubmitterName) {
-                oSubmitterNameIp.setValueState("Error");
-                oSubmitterNameIp.setValueStateText(this.getResourceBundle().getText("enterSubName"));
-                bIsValid = false;
-            }
-            if (!oCreateObject.SubmitterEmail) {
-                oSubmitterEmailIp.setValueState("Error");
-                oSubmitterEmailIp.setValueStateText(this.getResourceBundle().getText("enterSubEmail"));
-                bIsValid = false;
-            }
-
-            if (!bIsValid) {
-                MessageToast.show(this.getResourceBundle().getText("fillMandatory"));
-                return;
-            }
-            this._oSubmitterInfoDialog.close();
-        },
-        onSubmitterEscape: function (oPromise) {
-            oPromise.reject();
-        },
         _onMultiInputValidate: function (oArgs) {
             if (oArgs.suggestionObject) {
                 //var oObject = oArgs.suggestionObject.getBindingContext().getObject();

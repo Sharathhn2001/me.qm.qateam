@@ -1,3 +1,4 @@
+<!--++BOC REQ0032723 - ViewSettingsDialog Fragment Start - Sharath -->
 <core:FragmentDefinition
     xmlns="sap.m"
     xmlns:core="sap.ui.core"
@@ -48,3 +49,4 @@
         </sortItems>
     </ViewSettingsDialog>
 </core:FragmentDefinition>
+<!--++EOC REQ0032723 - ViewSettingsDialog Fragment End - Sharath -->

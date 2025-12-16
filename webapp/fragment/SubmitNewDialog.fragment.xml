@@ -1,4 +1,4 @@
-<!-- Change to add PO and multi-formula / creation of inspection lot – Sharath -->
+<!--++BOC REQ0032723 Change to add PO and multi-formula / creation of inspection lot – Sharath -->
 <core:FragmentDefinition
     xmlns="sap.m"
     xmlns:f="sap.ui.layout.form"
@@ -103,3 +103,4 @@
         </endButton>
     </Dialog>
 </core:FragmentDefinition>
+<!--++EOC REQ0032723 Change to add PO and multi-formula / creation of inspection lot – Sharath -->
