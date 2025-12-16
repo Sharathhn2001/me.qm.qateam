@@ -62,7 +62,7 @@
                                         tokenUpdate=".onFilterGroupItemChange" /> -->
                                 </fb:control>
                             </fb:FilterGroupItem>
-                            <!--++BOC REQ0032724 - Purchase Order Filter Start - Sharath -->
+                            <!--++BOC REQ0032724 - Purchase Order Filter Start - 01/12/2025 -->
                             <fb:FilterGroupItem
                                 id="PurchaseOrderFilterGroupItem"
                                 name="Ebeln"
@@ -192,7 +192,7 @@
                                     />
                                 </fb:control>
                             </fb:FilterGroupItem>
-                            <!--++BOC REQ0032724 - Sample Type Filter Start - Sharath-->
+                            <!--++BOC REQ0032724 - Sample Type Filter Start - 01/12/2025-->
                             <fb:FilterGroupItem
                                 id="sampleFilterGroupItem"
                                 name="SampleType"
@@ -221,9 +221,9 @@
                                     </MultiInput>
                                 </fb:control>
                             </fb:FilterGroupItem>
-                            <!--++EOC REQ0032724 - Sample Type Filter End - Sharath-->
+                            <!--++EOC REQ0032724 - Sample Type Filter End - by Sharath on 01/12/2025-->
 
-                            <!--++BOC REQ0032724 - Syrup Batch Filter Start - Sharath -->
+                            <!--++BOC REQ0032724 - Syrup Batch Filter Start - 01/12/2025 -->
                             <fb:FilterGroupItem
                                 id="syrupBatchFilterGroupItem"
                                 name="SyrupBatch"
@@ -254,7 +254,7 @@
                             </fb:FilterGroupItem>
                             <!--++EOC REQ0032724 - Syrup Batch Filter End - Sharath-->
 
-                            <!--++BOC REQ0032724 - UD Status Filter Start - Sharath-->
+                            <!--++BOC REQ0032724 - UD Status Filter Start - 02/12/2025-->
                             <fb:FilterGroupItem
                                 id="statusFilterGroupItem"
                                 name="Status"
@@ -306,7 +306,7 @@
                             level="H3"
                         />
                         <ToolbarSpacer id="tableToolbarSpacer" />
-                        <!--++BOC REQ0032717 - Mass Upload Button Start - Sharath -->
+                        <!--++BOC REQ0032717 - Mass Upload Button Start - by Sharath on 08/12/2025 -->
                         <Button
                             text="Mass Upload"
                             icon="sap-icon://upload"
@@ -315,7 +315,7 @@
                         />
                         <!--++EOC REQ0032717 - Mass Upload Button End - Sharath -->
 
-                        <!--++BOC REQ0032717 - Download Excel Template Button Start - Sharath-->
+                        <!--++BOC REQ0032717 - Download Excel Template Button Start - by Sharath on 05/12/2025-->
                         <Button
                             text="Download Excel Template"
                             icon="sap-icon://excel-attachment"
@@ -365,7 +365,7 @@
                             wrapping="true"
                         />
                     </Column>
-                    <!--++BOC REQ0032724 - PO Column Start - Sharath -->
+                    <!--++BOC REQ0032724 - PO Column Start - by Sharath on 01/12/2025 -->
                     <Column
                         id="Ebeln"
                         width="10%"
@@ -377,7 +377,7 @@
                             wrapping="true"
                         />
                     </Column>
-                    <!--++EOC REQ0032724 - PO Column End - Sharath -->
+                    <!--++EOC REQ0032724 - PO Column End - by Sharath on 01/12/2025 -->
                     <Column
                         id="materialColumn"
                         width="20%"
@@ -412,7 +412,7 @@
                             text="{i18n>formula}"
                         />
                     </Column>
-                    <!--++BOC REQ0032724 - Sample Type Column Start - Sharath -->
+                    <!--++BOC REQ0032724 - Sample Type Column Start - by Sharath on 02/12/2025 -->
                     <Column
                         id="sampletypeColumn"
                         hAlign="Begin"
@@ -426,8 +426,8 @@
                             text="{i18n>Syrup Batch : Sample Type}"
                         />
                     </Column>
-                    <!--++EOC REQ0032724 - Sample Type Column End - Sharath -->
-                    <!--++BOC REQ0032724 - User Status Column Start - Sharath -->
+                    <!--++EOC REQ0032724 - Sample Type Column End - by Sharath on 01/12/2025-->
+                    <!--++BOC REQ0032724 - User Status Column Start - by Sharath on 01/12/2025 -->
                     <Column
                         id="userstatusColumn"
                         hAlign="Begin"
@@ -438,7 +438,7 @@
                             text="{i18n>udstatus}"
                         />
                     </Column>
-                    <!--++EOC REQ0032724 - User Status Column End - Sharath -->
+                    <!--++EOC REQ0032724 - User Status Column End - by Sharath on 01/12/2025 -->
                 </columns>
                 <items>
                     <ColumnListItem

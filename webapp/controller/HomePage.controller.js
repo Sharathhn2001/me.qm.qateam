@@ -1,3 +1,62 @@
+/**
+ * Controller Name    : HomePage.controller.js
+ * Description        :
+ *   Home controller for the Production Data Submission BTP application.
+ *   This controller contains the landing page logic for the app.
+ *
+ * Key responsibilities include:
+ *   - Managing the Filter Bar and Table display
+ *   - Handling value help dialogs and user interactions with the table
+ *   - Providing inspection lot creation and display functionality
+ *
+ * ObjectID           :
+ * Author             : Sharath H N
+ * Date               :
+ * Business Contact   : 
+ *-----------------------------------------------------------------------*
+ * Misc. Notes        : NA
+ *-----------------------------------------------------------------------*
+
+Modification History:
+
+1) Request#          : REQ0032724
+   Developer         : Sharath H N
+   Date              : 02/12/2025
+   Incident          : N/A
+   CMS               :
+   Description       :
+   - Move submitted records from the “Submit New” section to the “Previously Submitted Records” section
+   - Added Purchase Order and Multiple Formula dropdowns for inspection lot creation
+   - Implemented sorting for table data
+  
+*-----------------------------------------------------------------------*
+
+2) Request#          : REQ0032723
+   Developer         : Sharath H N
+   Date              : 05/12/2025
+   Incident          : N/A
+   CMS               :
+   Description       :
+   - Display of Syrup Batch, Sample Type, and UD Status as columns in BTP
+   - Added Purchase Order, Syrup Batch, Sample Type, and UD Status in the filter header
+
+*-----------------------------------------------------------------------*
+
+3) Request#          : REQ0032717
+   Developer         : Sharath H N
+   Date              : 12/12/2025
+   Incident          : N/A
+   CMS               :
+   Description       :
+   - Mass upload of inspection results for ZCO in BTP, with manual creation of inspection lots
+   - Implemented Excel template download with color coding to differentiate operations
+   - Added checkboxes to select operations during upload
+   - Implemented restriction on the number of inspection lots uploaded at one time
+   - Display of file size and processing of data based on selected operations
+
+*-----------------------------------------------------------------------*
+*/
+
 sap.ui.define([
     "com/monsterenergy/qm/me/qm/qateam/controller/BaseController",
     "com/monsterenergy/qm/me/qm/qateam/js/Formatter",
@@ -110,9 +169,9 @@ sap.ui.define([
                     this.getMaterialF4();
                     this.getBatchF4([]);
                     this.getFormulaF4();
-                    this.getPurchaseOrderF4(); //Added REQ0032724
-                    this.getSampleTypeF4(); //Added REQ0032724
-                    this.getSyrupBatchF4(); //Added REQ0032724
+                    this.getPurchaseOrderF4(); //Added by Sharath for REQ0032724 on 01/12/2025
+                    this.getSampleTypeF4(); //Added by Sharath for REQ0032724 on 01/12/2025
+                    this.getSyrupBatchF4(); //Added by Sharath for REQ0032724 on 01/12/2025
                 }
 
             } catch (oError) {
@@ -387,7 +446,7 @@ sap.ui.define([
                     and: true
                 }));
             }
-            //++BOC REQ0032724 - Added Filter Tokens
+            //++BOC REQ0032724 - Added Filter Tokens|by Sharath on on 02/12/2025
             if (aPurchaseOrderTokens.length > 0) {
                 let aPOFilters = [];
 
@@ -624,6 +683,9 @@ sap.ui.define([
             this.getMaterialF4();
             this.getBatchF4([]);
             this.getFormulaF4();
+            this.getPurchaseOrderF4(); //Added by Sharath for REQ0032724 on 01/12/2025
+            this.getSampleTypeF4(); //Added by Sharath for REQ0032724 on 01/12/2025
+            this.getSyrupBatchF4(); //Added by Sharath for REQ0032724 on 01/12/2025
         },
 
         _handleValueHelpSearchPlant: function (evt) {
@@ -1039,7 +1101,7 @@ sap.ui.define([
             oEvent.getSource().getBinding("items").filter([]);
         },
 
-        //++BOC | REQ0032724 | Syrup Batch, Sample Type & Purchase Order Value Helps – Sharath
+        //++BOC | REQ0032724 | Syrup Batch, Sample Type & Purchase Order Value Helps | by Sharath on 01/12/2025
 
         SyrupBatchValueHelp: function (oEvent) {
             this.getSyrupBatchF4();
@@ -1245,7 +1307,7 @@ sap.ui.define([
                 return;
             }
 
-            //--BOC | REQ0032724 | Multi-select handling commented – Sharath
+            //--BOC | REQ0032724 | Multi-select handling commented – by Sharath on 01/12/2025
             /*
             if (this.oPurchaseOrderSourceIp instanceof sap.m.MultiInput) {
                 this._oPurchaseOrderValueHelpDialog.setMultiSelect(true);
@@ -1354,7 +1416,7 @@ sap.ui.define([
 
         //++EOC | REQ0032724
 
-        //++BOC | REQ0032723 | Purchase Order Selection & Movement Logic – Sharath
+        //++BOC | REQ0032723 | Purchase Order Selection & Movement Logic – by Sharath on 04/12/2025
 
         onPurchaseOrderValueHelpRequested: function (oEvent) {
             this._oPOSourceIp = oEvent.getSource();
@@ -1507,7 +1569,7 @@ sap.ui.define([
 
         //++EOC | REQ0032723
 
-        //++BOC | REQ0032723 | PO Formula F4 & Submit New Handling – Sharath
+        //++BOC | REQ0032723 | PO Formula F4 & Submit New Handling – by Sharath on 04/12/2025
 
         POFormulaF4: async function () {
             try {
@@ -1634,7 +1696,7 @@ sap.ui.define([
         },
 
         //++EOC | REQ0032723
-        //++BOC | REQ0032723 | Submit New & Navigation Handling – Sharath
+        //++BOC | REQ0032723 | Submit New & Navigation Handling – by Sharath on 04/12/2025
 
         onSubmitPress: async function () {
             const oSubmitModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
@@ -2371,7 +2433,7 @@ sap.ui.define([
         },
 
 
-        //++BOC | REQ0032717 | Download Mass Upload Template – Sharath
+        //++BOC | REQ0032717 | Download Mass Upload Template – by Sharath on 05/12/2025
         onDownloadTemplate: function () {
             const oModel = this.getView().getModel();
             const oBusy = new sap.m.BusyDialog();
@@ -2490,7 +2552,7 @@ sap.ui.define([
         },
         //++EOC | REQ0032717
 
-        //++BOC | REQ0032717 | Deprecated: Spreadsheet Export Implementation – Sharath
+        //++BOC | REQ0032717 | Deprecated: Spreadsheet Export Implementation –  by Sharath on 05/12/2025
         /*
         onDownloadTemplate: function () {
             const oModel = this.getView().getModel();
@@ -2562,7 +2624,7 @@ sap.ui.define([
         */
         //++EOC | REQ0032717
 
-        //++BOC | REQ0032717 | Mass Upload of Inspection Lot – Configuration and State Variables – Sharath
+        //++BOC | REQ0032717 | Mass Upload of Inspection Lot – Configuration and State Variables –  by Sharath on 08/12/2025
         MAX_FILE_SIZE_MB: 20,
         _oUploadDialog: null,
         _selectedFile: null,
@@ -2571,7 +2633,7 @@ sap.ui.define([
         _selectedOperations: [],
         //++EOC | REQ0032717
 
-        //++BOC | REQ0032717 | Open Mass Upload Dialog – Sharath
+        //++BOC | REQ0032717 | Open Mass Upload Dialog –  by Sharath on 08/12/2025
         onOpenUploadDialog: function () {
             var oView = this.getView();
 
@@ -2595,7 +2657,7 @@ sap.ui.define([
         },
         //++EOC | REQ0032717
 
-        //++BOC | REQ0032717 | Function to display the operation details in a checkbox – Sharath
+        //++BOC | REQ0032717 | Function to display the operation details in a checkbox – by Sharath on 09/12/2025
         getOperation: async function () {
             var oVBox = this.byId("operationCheckBoxVBox");
             if (!oVBox) {
@@ -2640,7 +2702,7 @@ sap.ui.define([
         //++EOC | REQ0032717
 
 
-        //++BOC | REQ0032717 | Handle the file size in MB for display – Sharath
+        //++BOC | REQ0032717 | Handle the file size in MB for display – by Sharath on 08/12/2025
         onFileChange: function (oEvent) {
             const oFile = oEvent.getParameter("files")?.[0];
             this._resetFileState();
@@ -2672,7 +2734,7 @@ sap.ui.define([
         },
         //++EOC | REQ0032717
 
-        //++BOC | REQ0032717 | Validation and restriction on the number of InspLot/line items uploaded at one time – Sharath
+        //++BOC | REQ0032717 | Validation and restriction on the number of InspLot/line items uploaded at one time – by Sharath on 11/12/2025
         _validateUniqueMaterialBatch: function (data) {
             const header = data[0];
 
@@ -2710,7 +2772,7 @@ sap.ui.define([
 
 
 
-        //++BOC | REQ0032717 | Mass upload functionality – Sharath
+        //++BOC | REQ0032717 | Mass upload functionality –by Sharath on 08/12/2025
         onMassUpload: function () {
             try {
                 if (!this._selectedFile || !this._fileBuffer) {
@@ -2735,7 +2797,7 @@ sap.ui.define([
         },
         //++EOC | REQ0032717
 
-        //++BOC | REQ0032717 | Get selected operations from checkbox – Sharath
+        //++BOC | REQ0032717 | Get selected operations from checkbox – by Sharath on 09/12/2025
         _getSelectedOperations: function () {
             var oVBox = this.byId("operationCheckBoxVBox");
             if (!oVBox) {
@@ -2759,7 +2821,7 @@ sap.ui.define([
         },
         //++EOC | REQ0032717
 
-        //++BOC | REQ0032717 | Build payload from Excel based on selected operations – Sharath
+        //++BOC | REQ0032717 | Build payload from Excel based on selected operations –by Sharath on 10/12/2025
         _buildPayloadFromExcel: function () {
 
             const aSelectedOps = this._getSelectedOperations();
@@ -2817,7 +2879,7 @@ sap.ui.define([
         //++EOC | REQ0032717
 
 
-        //++BOC | REQ0032717 | Send payload to backend – Fetch CSRF token – Sharath
+        //++BOC | REQ0032717 | Send payload to backend – Fetch CSRF token – by Sharath on 10/12/2025
         _sendPayloadToBackend: function () {
             var appId = this.getOwnerComponent().getManifestEntry("sap.app").id;
             var appPath = appId.replaceAll(".", "/");
@@ -2848,7 +2910,7 @@ sap.ui.define([
         },
         //++EOC | REQ0032717
 
-        //++BOC | REQ0032717 | Post mass upload payload to backend – Sharath
+        //++BOC | REQ0032717 | Post mass upload payload to backend – by Sharath on 10/12/2025
         _postUploadPayload: function () {
             if (!this._jsonPayload) {
                 BusyIndicator.hide();
@@ -2889,7 +2951,7 @@ sap.ui.define([
         },
         //++EOC | REQ0032717
 
-        //++BOC | REQ0032717 | Extract OData backend error message – Sharath
+        //++BOC | REQ0032717 | Extract OData backend error message – by Sharath on 10/12/2025
         _extractODataError: function (err) {
             try {
                 const body = err?.responseText || "";
@@ -2905,13 +2967,13 @@ sap.ui.define([
         },
         //++EOC | REQ0032717
 
-        //++BOC | REQ0032717 | Close mass upload dialog – Sharath
+        //++BOC | REQ0032717 | Close mass upload dialog – by Sharath on 11/12/2025
         onCloseDialog: function () {
             this.byId("uploadDialog")?.close();
         },
         //++EOC | REQ0032717
 
-        //++BOC | REQ0032717 | Display backend success response table – Sharath
+        //++BOC | REQ0032717 | Display backend success response table – by Sharath on 12/12/2025
         _showSuccessTable: function (jsonRes) {
             try {
                 if (typeof jsonRes === "string") jsonRes = JSON.parse(jsonRes);
@@ -2967,7 +3029,7 @@ sap.ui.define([
         },
         //++EOC | REQ0032717
 
-        //++BOC | REQ0032717 | Download upload summary as Excel – Sharath
+        //++BOC | REQ0032717 | Download upload summary as Excel – by Sharath on 12/12/2025
         _downloadExcel: function (data) {
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
@@ -2976,7 +3038,7 @@ sap.ui.define([
         },
         //++EOC | REQ0032717
 
-        //++BOC | REQ0032717 | Reset dialog state after upload – Sharath
+        //++BOC | REQ0032717 | Reset dialog state after upload – by Sharath on 11/12/2025
         _resetDialogState: function () {
             this._selectedFile = null;
             this._fileBuffer = null;
@@ -2987,14 +3049,14 @@ sap.ui.define([
         },
         //++EOC | REQ0032717
 
-        //++BOC | REQ0032717 | Reset file state on file change/error – Sharath
+        //++BOC | REQ0032717 | Reset file state on file change/error – by Sharath on 11/12/2025
         _resetFileState: function () {
             this._selectedFile = null;
             this._fileBuffer = null;
         },
         //++EOC | REQ0032717
 
-        //++BOC | REQ0032723 | Handle sort button press – Sharath
+        //++BOC | REQ0032723 | Handle sort button press – by Sharath on 15/12/2025
         handleSortButtonPressed: function () {
             this.getViewSettingsDialog(
                 "com.monsterenergy.qm.me.qm.qateam.fragment.SortDialog"
@@ -3005,7 +3067,7 @@ sap.ui.define([
         },
         //++EOC | REQ0032723
 
-        //++BOC | REQ0032723 | Load and cache ViewSettings (Sort) dialog – Sharath
+        //++BOC | REQ0032723 | Load and cache ViewSettings (Sort) dialog – by Sharath on 15/12/2025
         getViewSettingsDialog: function (sDialogFragmentName) {
             this._mViewSettingsDialogs = this._mViewSettingsDialogs || {};
 
@@ -3026,7 +3088,7 @@ sap.ui.define([
         },
         //++EOC | REQ0032723
 
-        //++BOC | REQ0032723 | Handle sort dialog confirm action – Sharath
+        //++BOC | REQ0032723 | Handle sort dialog confirm action – by Sharath on 15/12/2025
         handleSortDialogConfirm: function (oEvent) {
             var oTable = this.byId("table");
             var oBinding = oTable.getBinding("items");
@@ -3062,7 +3124,7 @@ sap.ui.define([
         },
         //++EOC | REQ0032723
 
-        //++BOC | REQ0032723 | Handle sort change from table column menu – Sharath
+        //++BOC | REQ0032723 | Handle sort change from table column menu – by Sharath on 15/12/2025
         onSortChange: function (oEvent) {
             var oTable = this.byId("table");
             var oBinding = oTable.getBinding("items");
@@ -3085,7 +3147,7 @@ sap.ui.define([
         },
         //++EOC | REQ0032723
 
-        //++BOC | REQ0032723 | Cleanup ViewSettings dialogs on exit – Sharath
+        //++BOC | REQ0032723 | Cleanup ViewSettings dialogs on exit – by Sharath on 15/12/2025
         onExit: function () {
             if (this._oViewSettingsDialog) {
                 this._oViewSettingsDialog.destroy();

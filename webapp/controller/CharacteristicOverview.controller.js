@@ -1,3 +1,37 @@
+/**
+ * Controller Name    : CharacteristicOverview.controller.js
+ * Description        :
+ *   Main controller for the Production Data Submission BTP application.
+ *   This includes the logic to create and view Inspection Lots and Inspection Points.
+ *
+ * Key responsibilities include:
+ *   - Viewing newly created Inspection Lot details
+ *   - Providing Inspection Point creation and operation details
+ *   - Displaying and editing Inspection Lot and Inspection Point details
+ *   - Managing user comment and document uploads
+ *
+ * ObjectID           :
+ * Author             : Sharath H N
+ * Date               :
+ * Business Contact   :
+ *-----------------------------------------------------------------------*
+ * Misc. Notes        : NA
+ *-----------------------------------------------------------------------*
+
+Modification History:
+
+1) Request#          : REQ0032723
+   Developer         : Sharath H N
+   Date              : 28/12/2025
+   Incident          : N/A
+   CMS               :
+   Description       :
+   - Implemented a Select button
+   - Fixed issues in the Inspection Point edit and display screens
+
+*-----------------------------------------------------------------------*
+*/
+
 sap.ui.define(
   [
     "com/monsterenergy/qm/me/qm/qateam/controller/BaseController",
@@ -249,7 +283,7 @@ sap.ui.define(
         });
       },
 
-      //++BOC REQ0032723 - Function to get email and name (User details from IAS)
+      //++BOC REQ0032723 - Function to get email and name (User details from IAS) | by Sharath on 28/11/2025
       _getIasDetails: function () {
         const appId = this.getOwnerComponent().getManifestEntry("/sap.app/id");
         const appPath = appId.replaceAll(".", "/");
@@ -341,10 +375,10 @@ sap.ui.define(
 
       _getInspectionDetails: async function () {
         var aFilters = [new Filter({ path: "Werk", operator: FilterOperator.EQ, value1: this.sPlant }),
-        new Filter({ path: "Ebeln", operator: FilterOperator.EQ, value1: this.sEbeln }), //++Added - REQ0032723 -sharath
-        new Filter({ path: "Ebelp", operator: FilterOperator.EQ, value1: this.sEbelp }), //++Added - REQ0032723 -sharath
-        new Filter({ path: "Matnr", operator: FilterOperator.EQ, value1: this.sMaterial }), //++Added - REQ0032723 -sharath
-        new Filter({ path: "Zzhbcformula", operator: FilterOperator.EQ, value1: this.sFormula }), //++Added - REQ0032723 -sharath
+        new Filter({ path: "Ebeln", operator: FilterOperator.EQ, value1: this.sEbeln }), //++Added - REQ0032723 - by Sharath on 04/12/2025
+        new Filter({ path: "Ebelp", operator: FilterOperator.EQ, value1: this.sEbelp }), //++Added - REQ0032723 - by Sharath on 04/12/2025
+        new Filter({ path: "Matnr", operator: FilterOperator.EQ, value1: this.sMaterial }), //++Added - REQ0032723 - by Sharath on 04/12/2025
+        new Filter({ path: "Zzhbcformula", operator: FilterOperator.EQ, value1: this.sFormula }), //++Added - REQ0032723 - by Sharath on 04/12/2025
         new Filter({ path: "Charg", operator: FilterOperator.EQ, value1: this.sBatch })];
         var oInspDetails = { results: [] };
 
@@ -361,7 +395,7 @@ sap.ui.define(
           var bCharEditable = oStatusDesc === "Submitted (Final)" ? false : true;
           this.getModel("ViewModel").setProperty("/CharEditable", bCharEditable);
 
-          //++BOC REQ0032724 - Logic to hide the Edit button based on UD status -   Sharath
+          //++BOC REQ0032724 - Logic to hide the Edit button based on UD status - by Sharath on 12/12/2025
           var sCodeValText = oInspDetails.results[0].CodeValText;
           var sVbewertung = oInspDetails.results[0].VBEWERTUNG;
           // var bUdEdit = (!sCodeValText || sCodeValText.trim() === "" || sCodeValText === "Not valuated");
@@ -2877,7 +2911,7 @@ sap.ui.define(
                         oContext.getModel().refresh();
                       }
                     }),
-                    //++BOC | REQ0032723 | Select Button – Sharath
+                    //++BOC | REQ0032723 | Select Button – by Sharath on 28/11/2025
                     new sap.m.Button({
                       icon: "sap-icon://accept",
                       text: "Select",

@@ -1,3 +1,36 @@
+
+/*-----------------------------------------------------------------------*
+        * Controller Name   : BaseController.js
+        * Description       :
+        *  Base controller for the Production Data Submission application.
+        *  This reusable base class en@oncapsulates common functionalities and utilities
+        *  shared across all application controllers, promoting consistency
+        *
+        *   Key responsibilities include:
+        *     • Accessing and managing view and component models.
+        *     • Handling routing and navigation operations..
+        *     • Providing i18n resource bundle access for localization.
+        *     • Supporting OData interactions.
+        *     • Providing generic value help (F4) dialog initialization and handling.
+        *     
+        *     
+        * ObjectID          : 
+        * Author            : Sharath H N
+        * Date              : 
+        * Business Contact  :
+        *-----------------------------------------------------------------------*
+        * Misc. Notes       : NA
+        *-----------------------------------------------------------------------*
+        * Modification History
+        * 1) Request#       : 
+        *    Developer      : 
+        *    Date           : 
+        *    Incident       : N/A
+        *    CMS            :
+        *    Description    : 
+        *-----------------------------------------------------------------------*
+        */
+
 sap.ui.define([
     "sap/ui/core/mvc/Controller",
     "sap/ui/core/UIComponent",
@@ -72,85 +105,85 @@ sap.ui.define([
         },
 */
 
-_getIasDetails: function () {
-    const appId = this.getOwnerComponent().getManifestEntry("/sap.app/id");
-    const appPath = appId.replaceAll(".", "/");
-    const appModulePath = jQuery.sap.getModulePath(appPath);
-    const url = appModulePath + "/user-api/attributes";
+        _getIasDetails: function () {
+            const appId = this.getOwnerComponent().getManifestEntry("/sap.app/id");
+            const appPath = appId.replaceAll(".", "/");
+            const appModulePath = jQuery.sap.getModulePath(appPath);
+            const url = appModulePath + "/user-api/attributes";
 
-    return new Promise((resolve, reject) => {
-        $.ajax({
-            url: url,
-            type: 'GET',
-            contentType: 'application/json',
-            success: function (data) {
-                const oView = this.getView();
-                const firstName = data.firstname || "";
-                const lastName = data.lastname || "";
-                const email = Array.isArray(data.email) ? data.email[0] : data.email;
+            return new Promise((resolve, reject) => {
+                $.ajax({
+                    url: url,
+                    type: 'GET',
+                    contentType: 'application/json',
+                    success: function (data) {
+                        const oView = this.getView();
+                        const firstName = data.firstname || "";
+                        const lastName = data.lastname || "";
+                        const email = Array.isArray(data.email) ? data.email[0] : data.email;
 
-                const groupList = Array.isArray(data.Groups)
-                    ? data.Groups
-                    : typeof data.Groups === "string"
-                        ? data.Groups.split(",").map(s => s.trim())
-                        : [];
+                        const groupList = Array.isArray(data.Groups)
+                            ? data.Groups
+                            : typeof data.Groups === "string"
+                                ? data.Groups.split(",").map(s => s.trim())
+                                : [];
 
-                const isQMUser = groupList.includes("BTP_QM_INT_QCEMEA");
+                        const isQMUser = groupList.includes("BTP_QM_INT_QCEMEA");
 
-                if (isQMUser) {
-                    oView.byId("plantFilterGroupItemMultiPlant")?.setVisible(true);
-                    oView.byId("plantMIput")?.setVisible(true);
-                    oView.byId("plantFilterGroupItemplantname")?.setVisible(false);
-                    oView.byId("plantName")?.setVisible(false);
-                    oView.byId("materialMInput")?.setEnabled(false);
-                    oView.byId("batchMInput")?.setEnabled(false);
-                    oView.byId("formulaMInput")?.setEnabled(false);
-                    oView.byId("createButton")?.setVisible(false);
+                        if (isQMUser) {
+                            oView.byId("plantFilterGroupItemMultiPlant")?.setVisible(true);
+                            oView.byId("plantMIput")?.setVisible(true);
+                            oView.byId("plantFilterGroupItemplantname")?.setVisible(false);
+                            oView.byId("plantName")?.setVisible(false);
+                            oView.byId("materialMInput")?.setEnabled(false);
+                            oView.byId("batchMInput")?.setEnabled(false);
+                            oView.byId("formulaMInput")?.setEnabled(false);
+                            oView.byId("createButton")?.setVisible(false);
 
-                    resolve({
-                        isQMUser: true,
-                        Plant: null,
-                        PlantName: null,
-                        email: data.email,
-                         email: email,
-                        firstName: firstName,
-                        lastName: lastName
-                    });
-                    return;
-                }
+                            resolve({
+                                isQMUser: true,
+                                Plant: null,
+                                PlantName: null,
+                                email: data.email,
+                                email: email,
+                                firstName: firstName,
+                                lastName: lastName
+                            });
+                            return;
+                        }
 
-                oView.byId("plantFilterGroupItemMultiPlant")?.setVisible(false);
-                oView.byId("plantMIput")?.setVisible(false);
-                oView.byId("plantFilterGroupItemplantname")?.setVisible(true);
-                oView.byId("plantName")?.setVisible(true);
-                oView.byId("createButton")?.setVisible(true);
-                oView.byId("materialMInput")?.setEnabled(true);
-                oView.byId("batchMInput")?.setEnabled(true);
-                oView.byId("formulaMInput")?.setEnabled(true);
+                        oView.byId("plantFilterGroupItemMultiPlant")?.setVisible(false);
+                        oView.byId("plantMIput")?.setVisible(false);
+                        oView.byId("plantFilterGroupItemplantname")?.setVisible(true);
+                        oView.byId("plantName")?.setVisible(true);
+                        oView.byId("createButton")?.setVisible(true);
+                        oView.byId("materialMInput")?.setEnabled(true);
+                        oView.byId("batchMInput")?.setEnabled(true);
+                        oView.byId("formulaMInput")?.setEnabled(true);
 
-                const PlantCode = (data.unique_Identifier || data[" unique_Identifier"] || "").trim();
-                const PlantName = data.custom_plants_name?.trim() || "";
+                        const PlantCode = (data.unique_Identifier || data[" unique_Identifier"] || "").trim();
+                        const PlantName = data.custom_plants_name?.trim() || "";
 
-                if (PlantCode) {
-                    resolve({
-                        isQMUser: false,
-                        Plant: PlantCode,
-                        PlantName: PlantName,
-                        email: data.email,
-                        email: email,
-                        firstName: firstName,
-                        lastName: lastName
-                    });
-                } else {
-                    reject();
-                }
-            }.bind(this),
-            error: function () {
-                reject();
-            }
-        });
-    });
-},
+                        if (PlantCode) {
+                            resolve({
+                                isQMUser: false,
+                                Plant: PlantCode,
+                                PlantName: PlantName,
+                                email: data.email,
+                                email: email,
+                                firstName: firstName,
+                                lastName: lastName
+                            });
+                        } else {
+                            reject();
+                        }
+                    }.bind(this),
+                    error: function () {
+                        reject();
+                    }
+                });
+            });
+        },
 
         /**
          * Event handler when the share by E-Mail button has been clicked
