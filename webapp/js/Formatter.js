@@ -133,6 +133,65 @@ sap.ui.define([],
                 if (sUser && sUserDesc) {
                     return sUser + " - " + sUserDesc;
                 }
+            },
+            /**
+             * Formats a date value to DD.MM.YYYY format.
+             * Handles Date objects, date strings, and SAP date formats.
+             * @param {Date|String|Object} vDate - The date value to format
+             * @returns {String} Formatted date string in DD.MM.YYYY format, or empty string if invalid
+             */
+            dateToDDMMYYYY: function (vDate) {
+                if (!vDate) {
+                    return "";
+                }
+
+                var oDate = null;
+
+                // Handle Date object
+                if (vDate instanceof Date) {
+                    oDate = vDate;
+                }
+                // Handle string dates (ISO format, etc.)
+                else if (typeof vDate === "string" && vDate.trim() !== "") {
+                    // Try parsing as ISO date string
+                    oDate = new Date(vDate);
+                    // Check if date is valid
+                    if (isNaN(oDate.getTime())) {
+                        // Try parsing as SAP date format (YYYYMMDD)
+                        if (vDate.length === 8 && /^\d+$/.test(vDate)) {
+                            var sYear = vDate.substring(0, 4);
+                            var sMonth = vDate.substring(4, 6);
+                            var sDay = vDate.substring(6, 8);
+                            oDate = new Date(parseInt(sYear), parseInt(sMonth) - 1, parseInt(sDay));
+                        } else {
+                            // If still invalid, return original string
+                            return vDate;
+                        }
+                    }
+                }
+                // Handle SAP date object (if it has ms property)
+                else if (vDate && typeof vDate === "object" && vDate.ms !== undefined) {
+                    oDate = new Date(vDate.ms);
+                }
+                // If already in DD.MM.YYYY format, return as is
+                else if (typeof vDate === "string" && /^\d{2}\.\d{2}\.\d{4}$/.test(vDate)) {
+                    return vDate;
+                }
+                else {
+                    return String(vDate);
+                }
+
+                // Format to DD.MM.YYYY
+                if (oDate && !isNaN(oDate.getTime())) {
+                    var iDay = oDate.getDate();
+                    var iMonth = oDate.getMonth() + 1;
+                    var iYear = oDate.getFullYear();
+                    var sDay = iDay < 10 ? "0" + iDay : String(iDay);
+                    var sMonth = iMonth < 10 ? "0" + iMonth : String(iMonth);
+                    return sDay + "." + sMonth + "." + iYear;
+                }
+
+                return String(vDate);
             }
         };
     });

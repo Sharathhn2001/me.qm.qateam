@@ -55,6 +55,20 @@ Modification History:
    - Display of file size and processing of data based on selected operations
 
 *-----------------------------------------------------------------------*
+
+4) Request#          : REQ0032729
+   Developer         : PANKAJ MISHRA
+   Date              : 16/12/2025
+   Incident          : N/A
+   CMS               :
+   Description       :
+   - Implemented Export to Excel feature for inspection results
+   - Added functionality to export selected records to Excel format
+   - Support for single and multiple record export with dynamic sheet creation
+   - Implemented ExcelJS library integration for Excel file generation
+   - Added date formatting and sheet name generation utilities
+
+*-----------------------------------------------------------------------*
 */
 
 sap.ui.define([
@@ -78,40 +92,40 @@ sap.ui.define([
         async onInit() {
             try {
 
-                const oPlantDetails = await this._getIasDetails();
-                this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
+                // const oPlantDetails = await this._getIasDetails();
+                // this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
 
-                let rawEmail = oPlantDetails.email;
-                if (Array.isArray(rawEmail)) {
-                    this._userEmail = rawEmail.find(email => email) || "";
-                } else {
-                    this._userEmail = rawEmail || "";
-                }
+                // let rawEmail = oPlantDetails.email;
+                // if (Array.isArray(rawEmail)) {
+                //     this._userEmail = rawEmail.find(email => email) || "";
+                // } else {
+                //     this._userEmail = rawEmail || "";
+                // }
 
-                this._isQMUser = String(oPlantDetails.isQMUser).toLowerCase() === "true";
+                // this._isQMUser = String(oPlantDetails.isQMUser).toLowerCase() === "true";
 
-                this.sPlant = "";
-                this.sPlantName = "";
+                // this.sPlant = "";
+                // this.sPlantName = "";
 
-                /*Sharath--BOC - Logic to run the app locally in the absence of IAS
+                // /*Sharath--BOC - Logic to run the app locally in the absence of IAS
                   this.sPlant = "3011";
                   this.sPlantName = "";
-                EOC */
+                // EOC */
 
-                if (!this._isQMUser) {
-                    this.sPlant = oPlantDetails.Plant;
-                    this.sPlantName = oPlantDetails.PlantName;
+                // if (!this._isQMUser) {
+                //     this.sPlant = oPlantDetails.Plant;
+                //     this.sPlantName = oPlantDetails.PlantName;
 
-                    const oPlantInput = this.byId("plantInputname");
-                    if (oPlantInput) {
-                        oPlantInput.setValue(this.sPlant);
-                    }
-                } else {
-                    this.waitForCondition(
-                        () => this._userEmail.trim() !== "",
-                        () => this.PlantF4()
-                    );
-                }
+                //     const oPlantInput = this.byId("plantInputname");
+                //     if (oPlantInput) {
+                //         oPlantInput.setValue(this.sPlant);
+                //     }
+                // } else {
+                //     this.waitForCondition(
+                //         () => this._userEmail.trim() !== "",
+                //         () => this.PlantF4()
+                //     );
+                // }
 
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
@@ -1825,12 +1839,14 @@ sap.ui.define([
 
         //++EOC | REQ0032723
 
+        //++BOC | REQ0032729 | Export to Excel Feature – by PANKAJ MISHRA on 16/12/2025
 
         /**
          * Event handler for Export to Excel button press.
          * Gets selected table items and calls the OData service to export data.
          * @public
          */
+        //++BOC | REQ0032729 | Export to Excel Button Press Handler – by PANKAJ MISHRA on 16/12/2025
         onExportToExcelPress: function () {
             var oTable = this.getView().byId("table");
             var aSelectedItems = oTable.getSelectedItems();
@@ -1909,12 +1925,14 @@ sap.ui.define([
                 oThis.onExportExcel(null, aBatchInputSet);
             }
         },
+        //++EOC | REQ0032729 | Export to Excel Button Press Handler – PANKAJ MISHRA
 
         /**
          * Loads ExcelJS library dynamically if not already loaded
          * @returns {Promise} Promise that resolves when ExcelJS is available
          * @private
          */
+        //++BOC | REQ0032729 | Load ExcelJS Library Dynamically – by PANKAJ MISHRA on 16/12/2025
         _loadExcelJSLibrary: function () {
             return new Promise((resolve, reject) => {
                 // Check if already loaded
@@ -1944,6 +1962,7 @@ sap.ui.define([
                 });
             });
         },
+        //++EOC | REQ0032729 | Load ExcelJS Library Dynamically – PANKAJ MISHRA
 
         /**
          * Generates a sanitized and unique sheet name from Material and Batch.
@@ -1953,6 +1972,7 @@ sap.ui.define([
          * @returns {String} Sanitized sheet name
          * @private
          */
+        //++BOC | REQ0032729 | Generate Excel Sheet Name – by PANKAJ MISHRA on 16/12/2025
         _generateSheetName: function (sMaterial, sBatch, wb) {
 
             var sSanitizedMaterial = (sMaterial || "Material").toString().replace(/[*?:\\\/\[\]]/g, "_");
@@ -1984,67 +2004,7 @@ sap.ui.define([
 
             return sSheetName;
         },
-
-        /**
-         * Formats a date value to DD.MM.YYYY format.
-         * Handles Date objects, date strings, and SAP date formats.
-         * @param {Date|String|Object} vDate - The date value to format
-         * @returns {String} Formatted date string in DD.MM.YYYY format, or empty string if invalid
-         * @private
-         */
-        _formatDateToDDMMYYYY: function (vDate) {
-            if (!vDate) {
-                return "";
-            }
-
-            var oDate = null;
-
-            // Handle Date object
-            if (vDate instanceof Date) {
-                oDate = vDate;
-            }
-            // Handle string dates (ISO format, etc.)
-            else if (typeof vDate === "string" && vDate.trim() !== "") {
-                // Try parsing as ISO date string
-                oDate = new Date(vDate);
-                // Check if date is valid
-                if (isNaN(oDate.getTime())) {
-                    // Try parsing as SAP date format (YYYYMMDD)
-                    if (vDate.length === 8 && /^\d+$/.test(vDate)) {
-                        var sYear = vDate.substring(0, 4);
-                        var sMonth = vDate.substring(4, 6);
-                        var sDay = vDate.substring(6, 8);
-                        oDate = new Date(parseInt(sYear), parseInt(sMonth) - 1, parseInt(sDay));
-                    } else {
-                        // If still invalid, return original string
-                        return vDate;
-                    }
-                }
-            }
-            // Handle SAP date object (if it has ms property)
-            else if (vDate && typeof vDate === "object" && vDate.ms !== undefined) {
-                oDate = new Date(vDate.ms);
-            }
-            // If already in DD.MM.YYYY format, return as is
-            else if (typeof vDate === "string" && /^\d{2}\.\d{2}\.\d{4}$/.test(vDate)) {
-                return vDate;
-            }
-            else {
-                return String(vDate);
-            }
-
-            // Format to DD.MM.YYYY
-            if (oDate && !isNaN(oDate.getTime())) {
-                var iDay = oDate.getDate();
-                var iMonth = oDate.getMonth() + 1;
-                var iYear = oDate.getFullYear();
-                var sDay = iDay < 10 ? "0" + iDay : String(iDay);
-                var sMonth = iMonth < 10 ? "0" + iMonth : String(iMonth);
-                return sDay + "." + sMonth + "." + iYear;
-            }
-
-            return String(vDate);
-        },
+        //++EOC | REQ0032729 | Generate Excel Sheet Name – PANKAJ MISHRA
 
         /**
          * Creates a single Excel sheet from response data.
@@ -2053,6 +2013,7 @@ sap.ui.define([
          * @param {Object} oResponseData - The response data from OData service
          * @private
          */
+        //++BOC | REQ0032729 | Create Excel Sheet from Response Data – by PANKAJ MISHRA on 16/12/2025
         _createExcelSheet: async function (wb, sSheetName, oResponseData) {
             // Extract data from OData response
             var aData = [];
@@ -2129,7 +2090,7 @@ sap.ui.define([
             var sMaterial = oData["Monster Material"] || oData.Material || oData.Matnr || "";
             var sBatch = oData.Batch || oData.Charg || "";
             var vManufactureDate = oData["Manufacture Date"] || oData.ManufactureDate || oData.Hsdat || "";
-            var sManufactureDate = this._formatDateToDDMMYYYY(vManufactureDate);
+            var sManufactureDate = Formatter.dateToDDMMYYYY(vManufactureDate);
             var sFormula = oData.Formula || oData.Zzhbcformula || "";
             var sGlobalMarketRegion = oData["Global Market Region"] || oData.GlobalMarketRegion || "";
             var sMarket = oData.Market || "";
@@ -2239,6 +2200,7 @@ sap.ui.define([
                 col.width = maxLength + 2;
             });
         },
+        //++EOC | REQ0032729 | Create Excel Sheet from Response Data – PANKAJ MISHRA
 
         /**
          * Unified function to export inspection data to Excel file.
@@ -2247,6 +2209,7 @@ sap.ui.define([
          * @param {Array} aBatchInputSet - Array of Material/Batch objects (for multiple selection)
          * @public
          */
+        //++BOC | REQ0032729 | Unified Export to Excel Function – by PANKAJ MISHRA on 16/12/2025
         onExportExcel: async function (oResponseData, aBatchInputSet) {
             try {
                 // Load ExcelJS library dynamically
@@ -2431,7 +2394,9 @@ sap.ui.define([
                 console.error("Export error:", oError);
             }
         },
+        //++EOC | REQ0032729 | Unified Export to Excel Function – PANKAJ MISHRA
 
+        //++EOC | REQ0032729 | Export to Excel Feature – PANKAJ MISHRA
 
         //++BOC | REQ0032717 | Download Mass Upload Template – by Sharath on 05/12/2025
         onDownloadTemplate: function () {
