@@ -2688,11 +2688,9 @@ sap.ui.define(
             */
 
 
-
-      // INC0077965 - Edit Inspection Point - Sharath
+      //++BOC | INC0077965 | Edit Inspection Point – Sharath
       _getInspectionPointsValueHelpDialog: async function (aFieldSeq) {
         var oThis = this;
-
         var aInspPointSet = await this.readDataFromODataModel("/InspPointsSet", [
           new sap.ui.model.Filter({ path: "Insplot", operator: sap.ui.model.FilterOperator.EQ, value1: this.sInspLot }),
           new sap.ui.model.Filter({ path: "Inspoper", operator: sap.ui.model.FilterOperator.EQ, value1: this.sOperation }),
@@ -2875,6 +2873,7 @@ sap.ui.define(
                         oContext.getModel().refresh();
                       }
                     }),
+                    //++BOC | REQ0032723 | Select Button – Sharath
                     new sap.m.Button({
                       icon: "sap-icon://accept",
                       text: "Select",
@@ -2912,13 +2911,13 @@ sap.ui.define(
               ])
             })
           });
-
+          //++EOC | REQ0032723
           this.getView().addDependent(this._oInspPointDialog);
         }
 
         this._oInspPointDialog.open();
       },
-
+      //++EOC | INC0077965
 
       updateInspectionPoint: function (sPath, oPayload) {
         var oThis = this;

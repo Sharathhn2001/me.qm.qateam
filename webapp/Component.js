@@ -26,8 +26,12 @@ sap.ui.define([
             // enable routing
             this.getRouter().initialize();
 
+            //++BOC | REQ0032717 | XLSX Library Inclusion – Sharath
+            //++Added
             jQuery.getScript("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js");
-        
+            //++EOC | REQ0032717
+
+
         }
     });
 });

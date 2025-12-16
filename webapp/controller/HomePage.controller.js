@@ -383,6 +383,7 @@ sap.ui.define([
                     and: true
                 }));
             }
+            //++BOC REQ0032724 - Added Filter Tokens
             if (aPurchaseOrderTokens.length > 0) {
                 let aPOFilters = [];
 
@@ -442,6 +443,23 @@ sap.ui.define([
                 }
             }
 
+            var oStatusCombo = this.byId("statusCombo");
+            var sStatusKey = oStatusCombo.getSelectedKey();
+            var sStatusDesc = oStatusCombo.getSelectedItem();
+            if (sStatusDesc) {
+                const oItem = oStatusCombo.getSelectedItem();
+                if (oItem) {
+                    sStatusKey = oItem.getKey();
+                }
+            }
+
+            if (sStatusDesc) {
+                aTableFilters.push(
+                    new sap.ui.model.Filter("Vbewertung", sap.ui.model.FilterOperator.EQ, sStatusKey)
+                );
+            }
+            //++EOC REQ0032724 - Added Token-based Table Filters
+
             if (aMaterialTokens.length > 0) {
                 for (var i = 0; i < aMaterialTokens.length; i++) {
                     if (aMaterialTokens[i].getKey()) {
@@ -476,22 +494,6 @@ sap.ui.define([
                 if (aFormulaFilters.length > 0) {
                     aTableFilters.push(new Filter({ filters: aFormulaFilters, and: false }));
                 }
-            }
-
-            var oStatusCombo = this.byId("statusCombo");
-            var sStatusKey = oStatusCombo.getSelectedKey();
-            var sStatusDesc = oStatusCombo.getSelectedItem();
-            if (sStatusDesc) {
-                const oItem = oStatusCombo.getSelectedItem();
-                if (oItem) {
-                    sStatusKey = oItem.getKey();
-                }
-            }
-
-            if (sStatusDesc) {
-                aTableFilters.push(
-                    new sap.ui.model.Filter("Vbewertung", sap.ui.model.FilterOperator.EQ, sStatusKey)
-                );
             }
 
             return aTableFilters;
@@ -1033,6 +1035,8 @@ sap.ui.define([
             oEvent.getSource().getBinding("items").filter([]);
         },
 
+        //++BOC | REQ0032724 | Syrup Batch, Sample Type & Purchase Order Value Helps – Sharath
+
         SyrupBatchValueHelp: function (oEvent) {
             this.getSyrupBatchF4();
 
@@ -1119,7 +1123,6 @@ sap.ui.define([
             }));
         },
 
-
         onSyrupBatchVHCancel: function () {
             this._oSyrupBatchValueHelpDialog.close();
         },
@@ -1129,7 +1132,6 @@ sap.ui.define([
             let oData = {};
 
             try {
-
                 oData = await this.readDataFromODataModel("/SampleType_F4Set", []);
             } catch (Error) {
                 const oError = JSON.parse(Error.responseText);
@@ -1238,12 +1240,17 @@ sap.ui.define([
             } catch (error) {
                 return;
             }
-            /*  if (this.oPurchaseOrderSourceIp instanceof sap.m.MultiInput) {
-                  this._oPurchaseOrderValueHelpDialog.setMultiSelect(true);
-              } else {
-                  this._oPurchaseOrderValueHelpDialog.setMultiSelect(false);
-              }
-             */
+
+            //--BOC | REQ0032724 | Multi-select handling commented – Sharath
+            /*
+            if (this.oPurchaseOrderSourceIp instanceof sap.m.MultiInput) {
+                this._oPurchaseOrderValueHelpDialog.setMultiSelect(true);
+            } else {
+                this._oPurchaseOrderValueHelpDialog.setMultiSelect(false);
+            }
+            */
+            //--EOC | REQ0032724
+
             this._oPurchaseOrderValueHelpDialog.open();
         },
 
@@ -1323,7 +1330,6 @@ sap.ui.define([
             oInput.setValue("");
         },
 
-
         onPurchaseOrderSearch: function (oEvent) {
             var sSearchQuery = oEvent.getParameter("value");
             var oBinding = oEvent.getSource().getBinding("items");
@@ -1341,6 +1347,10 @@ sap.ui.define([
                 oBinding.filter([]);
             }
         },
+
+        //++EOC | REQ0032724
+
+        //++BOC | REQ0032723 | Purchase Order Selection & Movement Logic – Sharath
 
         onPurchaseOrderValueHelpRequested: function (oEvent) {
             this._oPOSourceIp = oEvent.getSource();
@@ -1368,11 +1378,17 @@ sap.ui.define([
                 oPOModel.setSizeLimit(50000);
                 oView.setModel(oPOModel, "POModel");
             }
-            const aFilters = [new sap.ui.model.Filter("Werks", sap.ui.model.FilterOperator.EQ, this.sPlant)];
+            const aFilters = [
+                new sap.ui.model.Filter("Werks", sap.ui.model.FilterOperator.EQ, this.sPlant)
+            ];
             oModel.read("/PO_F4Set", {
                 filters: aFilters,
-                success: function (oData) { oPOModel.setData(oData); },
-                error: function () { oPOModel.setData({ results: [] }); }
+                success: function (oData) {
+                    oPOModel.setData(oData);
+                },
+                error: function () {
+                    oPOModel.setData({ results: [] });
+                }
             });
         },
 
@@ -1412,14 +1428,19 @@ sap.ui.define([
         onPOSelect: function (oEvent) {
             const aContexts = oEvent.getParameter("selectedContexts");
             if (!aContexts?.length) return;
+
             const oSelected = aContexts[0].getObject();
             const oSubmitModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
+
             this.sSelectedPO = oSelected.Ebeln;
             this.sSelectedPOItem = oSelected.Ebelp;
+
             oSubmitModel.setProperty("/Ebeln", oSelected.Ebeln);
             oSubmitModel.setProperty("/Ebelp", oSelected.Ebelp);
             oSubmitModel.setProperty("/Matnr", oSelected.Matnr);
+
             this.POFormulaF4();
+
             oSubmitModel.setProperty("/Charg", oSelected.Charg);
             oEvent.getSource().getBinding("items").filter([]);
         },
@@ -1428,10 +1449,12 @@ sap.ui.define([
             const sValue = oEvent.getSource().getValue().trim();
             const oModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
             const oPOModel = this.getView().getModel("POModel");
+
             if (!oPOModel) {
                 MessageToast.show("PO list not loaded");
                 return;
             }
+
             const aPOList = oPOModel.getProperty("/results") || [];
 
             if (!sValue) {
@@ -1477,6 +1500,10 @@ sap.ui.define([
 
             this.POFormulaF4(sBatch);
         },
+
+        //++EOC | REQ0032723
+
+        //++BOC | REQ0032723 | PO Formula F4 & Submit New Handling – Sharath
 
         POFormulaF4: async function () {
             try {
@@ -1602,6 +1629,9 @@ sap.ui.define([
             this._setFormulaDetails(oFormula);
         },
 
+        //++EOC | REQ0032723
+        //++BOC | REQ0032723 | Submit New & Navigation Handling – Sharath
+
         onSubmitPress: async function () {
             const oSubmitModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
             const oSubmit = oSubmitModel.getData();
@@ -1611,31 +1641,35 @@ sap.ui.define([
             // const oData = oModel.getData();
             BusyIndicator.show();
 
-            // const oInspectionResult = await this._getInspectionDetails();
+            //--BOC | REQ0032723 | Old Inspection Details Logic (Commented)
             /*
-                        if (oInspectionResult) {
-                            const sFormula =
-                                this.sSelectedFormula ||
-                                oData.Zzhbcformula ||
-                                "NA";
-                            this.getFormulaF4();
-                            this._navToInspChars(
-                                oData.Werk,
-                                oData.Matnr,
-                                // oData.Matkx,
-                                oData.Charg,
-                                true,
-                                oData.Ebeln,
-                                oData.Ebelp,
-                                sFormula
-                            );
-                            this._oSubmitNewDialog.close();
-                        } else {
-                            MessageToast.show("Inspection Details Not Found");
-                        }
-            
-                        BusyIndicator.hide();
-                        */
+                // const oInspectionResult = await this._getInspectionDetails();
+        
+                if (oInspectionResult) {
+                    const sFormula =
+                        this.sSelectedFormula ||
+                        oData.Zzhbcformula ||
+                        "NA";
+                    this.getFormulaF4();
+                    this._navToInspChars(
+                        oData.Werk,
+                        oData.Matnr,
+                        // oData.Matkx,
+                        oData.Charg,
+                        true,
+                        oData.Ebeln,
+                        oData.Ebelp,
+                        sFormula
+                    );
+                    this._oSubmitNewDialog.close();
+                } else {
+                    MessageToast.show("Inspection Details Not Found");
+                }
+        
+                BusyIndicator.hide();
+            */
+            //--EOC | REQ0032723
+
             const sFormula =
                 this.sSelectedFormula ||
                 oSubmit.Zzhbcformula ||
@@ -1722,6 +1756,9 @@ sap.ui.define([
 
             this.getRouter().navTo("RouteCharacteristicOverview", oParams);
         },
+
+        //++EOC | REQ0032723
+
 
         /**
          * Event handler for Export to Excel button press.
@@ -2330,8 +2367,7 @@ sap.ui.define([
         },
 
 
-
-        //Excel template download for MASS Upload - Sharath
+        //++BOC | REQ0032717 | Download Mass Upload Template – Sharath
         onDownloadTemplate: function () {
             const oModel = this.getView().getModel();
             const oBusy = new sap.m.BusyDialog();
@@ -2411,7 +2447,9 @@ sap.ui.define([
                         }
 
                         const buffer = await workbook.xlsx.writeBuffer();
-                        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+                        const blob = new Blob([buffer], {
+                            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        });
                         const link = document.createElement("a");
                         link.href = URL.createObjectURL(blob);
                         link.download = "MassUpload_Template.xlsx";
@@ -2419,7 +2457,9 @@ sap.ui.define([
                         oBusy.close();
 
                     } catch (e) {
-                        sap.m.MessageBox.error("Excel generation failed: " + (e.message || "Unknown error"));
+                        sap.m.MessageBox.error(
+                            "Excel generation failed: " + (e.message || "Unknown error")
+                        );
                         oBusy.close();
                     }
                 },
@@ -2429,8 +2469,11 @@ sap.ui.define([
                     try {
                         if (oError?.responseText) {
                             const oResponse = JSON.parse(oError.responseText);
-                            sMessage = oResponse.error?.message?.value || oResponse.error?.message ||
-                                oResponse.error?.innererror?.errordetails?.[0]?.message || sMessage;
+                            sMessage =
+                                oResponse.error?.message?.value ||
+                                oResponse.error?.message ||
+                                oResponse.error?.innererror?.errordetails?.[0]?.message ||
+                                sMessage;
                         } else if (oError?.message) {
                             sMessage = oError.message;
                         }
@@ -2441,85 +2484,90 @@ sap.ui.define([
                 }
             });
         },
+        //++EOC | REQ0032717
 
+        //++BOC | REQ0032717 | Deprecated: Spreadsheet Export Implementation – Sharath
         /*
-                onDownloadTemplate: function () {
-                    const oModel = this.getView().getModel();
-                    const oBusy = new sap.m.BusyDialog();
-                    oBusy.open();
+        onDownloadTemplate: function () {
+            const oModel = this.getView().getModel();
+            const oBusy = new sap.m.BusyDialog();
+            oBusy.open();
         
-                    oModel.read("/UploadTemplateSet", {
-                        success: (oData) => {
-                            try {
-                                const aResults = oData.results || [];
+            oModel.read("/UploadTemplateSet", {
+                success: (oData) => {
+                    try {
+                        const aResults = oData.results || [];
         
-                                if (!aResults.length || !aResults[0].JSON) {
-                                    sap.m.MessageToast.show("No template data found.");
-                                    oBusy.close();
-                                    return;
-                                }
-        
-                                const aRows = JSON.parse(aResults[0].JSON);
-        
-                                if (!Array.isArray(aRows) || !aRows.length) {
-                                    sap.m.MessageBox.error("Invalid Excel data.");
-                                    oBusy.close();
-                                    return;
-                                }
-        
-                                const aColumns = Object.keys(aRows[0]).map((sKey) => ({
-                                    label: sKey,
-                                    property: sKey,
-                                    width: 25
-                                }));
-        
-                                const oSettings = {
-                                    workbook: {
-                                        columns: aColumns,
-                                        context: {
-                                            sheetName: "MassUpload_Template"
-                                        }
-                                    },
-                                    dataSource: aRows,
-                                    fileName: "MassUpload_Template.xlsx"
-                                };
-        
-                                const oSheet = new sap.ui.export.Spreadsheet(oSettings);
-        
-                                oSheet.build()
-                                    .then(() => {
-                                        oSheet.destroy();
-                                        oBusy.close();
-                                    })
-                                    .catch((err) => {
-                                        console.error(err);
-                                        sap.m.MessageBox.error("Excel generation failed.");
-                                        oBusy.close();
-                                    });
-        
-                            } catch (e) {
-                                console.error(e);
-                                sap.m.MessageBox.error("Error while creating Excel.");
-                                oBusy.close();
-                            }
-                        },
-                        error: (err) => {
-                            console.error(err);
-                            sap.m.MessageBox.error("Failed to fetch data.");
+                        if (!aResults.length || !aResults[0].JSON) {
+                            sap.m.MessageToast.show("No template data found.");
                             oBusy.close();
+                            return;
                         }
-                    });
+        
+                        const aRows = JSON.parse(aResults[0].JSON);
+        
+                        if (!Array.isArray(aRows) || !aRows.length) {
+                            sap.m.MessageBox.error("Invalid Excel data.");
+                            oBusy.close();
+                            return;
+                        }
+        
+                        const aColumns = Object.keys(aRows[0]).map((sKey) => ({
+                            label: sKey,
+                            property: sKey,
+                            width: 25
+                        }));
+        
+                        const oSettings = {
+                            workbook: {
+                                columns: aColumns,
+                                context: {
+                                    sheetName: "MassUpload_Template"
+                                }
+                            },
+                            dataSource: aRows,
+                            fileName: "MassUpload_Template.xlsx"
+                        };
+        
+                        const oSheet = new sap.ui.export.Spreadsheet(oSettings);
+        
+                        oSheet.build()
+                            .then(() => {
+                                oSheet.destroy();
+                                oBusy.close();
+                            })
+                            .catch((err) => {
+                                console.error(err);
+                                sap.m.MessageBox.error("Excel generation failed.");
+                                oBusy.close();
+                            });
+        
+                    } catch (e) {
+                        console.error(e);
+                        sap.m.MessageBox.error("Error while creating Excel.");
+                        oBusy.close();
+                    }
                 },
-                */
+                error: (err) => {
+                    console.error(err);
+                    sap.m.MessageBox.error("Failed to fetch data.");
+                    oBusy.close();
+                }
+            });
+        },
+        */
+        //++EOC | REQ0032717
 
-        //Mass Upload of Inspection Lot - Sharath
+        //++BOC | REQ0032717 | Mass Upload of Inspection Lot – Configuration and State Variables – Sharath
         MAX_FILE_SIZE_MB: 20,
         _oUploadDialog: null,
         _selectedFile: null,
         _fileBuffer: null,
         _jsonPayload: null,
         _selectedOperations: [],
+        //++EOC | REQ0032717
 
+        //++BOC | REQ0032717 | Open Mass Upload Dialog – Sharath
         onOpenUploadDialog: function () {
             var oView = this.getView();
 
@@ -2541,8 +2589,9 @@ sap.ui.define([
                 this._oUploadDialog.open();
             }
         },
+        //++EOC | REQ0032717
 
-        // Function to display the operation details in a checkbox – Sharath
+        //++BOC | REQ0032717 | Function to display the operation details in a checkbox – Sharath
         getOperation: async function () {
             var oVBox = this.byId("operationCheckBoxVBox");
             if (!oVBox) {
@@ -2584,9 +2633,10 @@ sap.ui.define([
                 );
             });
         },
+        //++EOC | REQ0032717
 
 
-        // Handle the file size in MB for display – Sharath
+        //++BOC | REQ0032717 | Handle the file size in MB for display – Sharath
         onFileChange: function (oEvent) {
             const oFile = oEvent.getParameter("files")?.[0];
             this._resetFileState();
@@ -2616,8 +2666,9 @@ sap.ui.define([
             };
             reader.readAsArrayBuffer(oFile);
         },
+        //++EOC | REQ0032717
 
-        // Validation and restriction on the number of InspLot/line items uploaded at one time – Sharath
+        //++BOC | REQ0032717 | Validation and restriction on the number of InspLot/line items uploaded at one time – Sharath
         _validateUniqueMaterialBatch: function (data) {
             const header = data[0];
 
@@ -2651,9 +2702,11 @@ sap.ui.define([
 
             return true;
         },
+        //++EOC | REQ0032717
 
 
-        // Mass upload functionality – Sharath
+
+        //++BOC | REQ0032717 | Mass upload functionality – Sharath
         onMassUpload: function () {
             try {
                 if (!this._selectedFile || !this._fileBuffer) {
@@ -2669,7 +2722,6 @@ sap.ui.define([
                     return;
                 }
 
-
                 this._buildPayloadFromExcel();
                 this._sendPayloadToBackend();
 
@@ -2677,7 +2729,9 @@ sap.ui.define([
                 MessageBox.error("Processing failed: " + e.message);
             }
         },
+        //++EOC | REQ0032717
 
+        //++BOC | REQ0032717 | Get selected operations from checkbox – Sharath
         _getSelectedOperations: function () {
             var oVBox = this.byId("operationCheckBoxVBox");
             if (!oVBox) {
@@ -2685,7 +2739,6 @@ sap.ui.define([
             }
 
             var aItems = oVBox.getItems();
-
             var aSelectedOps = [];
 
             aItems.forEach(function (oCheckBox) {
@@ -2700,7 +2753,9 @@ sap.ui.define([
 
             return aSelectedOps;
         },
+        //++EOC | REQ0032717
 
+        //++BOC | REQ0032717 | Build payload from Excel based on selected operations – Sharath
         _buildPayloadFromExcel: function () {
 
             const aSelectedOps = this._getSelectedOperations();
@@ -2755,8 +2810,10 @@ sap.ui.define([
                 })
             };
         },
+        //++EOC | REQ0032717
 
-        // Handle the mass upload success and display the dynamic response table – Sharath
+
+        //++BOC | REQ0032717 | Send payload to backend – Fetch CSRF token – Sharath
         _sendPayloadToBackend: function () {
             var appId = this.getOwnerComponent().getManifestEntry("sap.app").id;
             var appPath = appId.replaceAll(".", "/");
@@ -2785,7 +2842,9 @@ sap.ui.define([
                 }
             });
         },
+        //++EOC | REQ0032717
 
+        //++BOC | REQ0032717 | Post mass upload payload to backend – Sharath
         _postUploadPayload: function () {
             if (!this._jsonPayload) {
                 BusyIndicator.hide();
@@ -2824,7 +2883,9 @@ sap.ui.define([
                 }
             });
         },
+        //++EOC | REQ0032717
 
+        //++BOC | REQ0032717 | Extract OData backend error message – Sharath
         _extractODataError: function (err) {
             try {
                 const body = err?.responseText || "";
@@ -2838,11 +2899,15 @@ sap.ui.define([
                 return "backend issue.";
             }
         },
+        //++EOC | REQ0032717
 
+        //++BOC | REQ0032717 | Close mass upload dialog – Sharath
         onCloseDialog: function () {
             this.byId("uploadDialog")?.close();
         },
+        //++EOC | REQ0032717
 
+        //++BOC | REQ0032717 | Display backend success response table – Sharath
         _showSuccessTable: function (jsonRes) {
             try {
                 if (typeof jsonRes === "string") jsonRes = JSON.parse(jsonRes);
@@ -2896,14 +2961,18 @@ sap.ui.define([
                 MessageBox.error("Unable to display backend table.");
             }
         },
+        //++EOC | REQ0032717
 
+        //++BOC | REQ0032717 | Download upload summary as Excel – Sharath
         _downloadExcel: function (data) {
             const ws = XLSX.utils.json_to_sheet(data);
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "Upload Summary");
             XLSX.writeFile(wb, "Upload_Summary.xlsx");
         },
+        //++EOC | REQ0032717
 
+        //++BOC | REQ0032717 | Reset dialog state after upload – Sharath
         _resetDialogState: function () {
             this._selectedFile = null;
             this._fileBuffer = null;
@@ -2912,18 +2981,16 @@ sap.ui.define([
             this.byId("fileUploader")?.clear();
             this.byId("fileSizeText")?.setText("File Size: 0 MB");
         },
+        //++EOC | REQ0032717
 
+        //++BOC | REQ0032717 | Reset file state on file change/error – Sharath
         _resetFileState: function () {
             this._selectedFile = null;
             this._fileBuffer = null;
         },
+        //++EOC | REQ0032717
 
-
-        onCloseDialog: function () {
-            this.byId("uploadDialog")?.close();
-        },
-
-        // Handle sort order for table – Sharath
+        //++BOC | REQ0032723 | Handle sort button press – Sharath
         handleSortButtonPressed: function () {
             this.getViewSettingsDialog(
                 "com.monsterenergy.qm.me.qm.qateam.fragment.SortDialog"
@@ -2932,7 +2999,9 @@ sap.ui.define([
                 oDialog.open();
             }.bind(this));
         },
+        //++EOC | REQ0032723
 
+        //++BOC | REQ0032723 | Load and cache ViewSettings (Sort) dialog – Sharath
         getViewSettingsDialog: function (sDialogFragmentName) {
             this._mViewSettingsDialogs = this._mViewSettingsDialogs || {};
 
@@ -2951,7 +3020,9 @@ sap.ui.define([
             }
             return this._mViewSettingsDialogs[sDialogFragmentName];
         },
+        //++EOC | REQ0032723
 
+        //++BOC | REQ0032723 | Handle sort dialog confirm action – Sharath
         handleSortDialogConfirm: function (oEvent) {
             var oTable = this.byId("table");
             var oBinding = oTable.getBinding("items");
@@ -2985,7 +3056,9 @@ sap.ui.define([
                 this.oSmartVariantManagement.currentVariantSetModified(true);
             }
         },
+        //++EOC | REQ0032723
 
+        //++BOC | REQ0032723 | Handle sort change from table column menu – Sharath
         onSortChange: function (oEvent) {
             var oTable = this.byId("table");
             var oBinding = oTable.getBinding("items");
@@ -3006,7 +3079,9 @@ sap.ui.define([
                 this.oSmartVariantManagement.currentVariantSetModified(true);
             }
         },
+        //++EOC | REQ0032723
 
+        //++BOC | REQ0032723 | Cleanup ViewSettings dialogs on exit – Sharath
         onExit: function () {
             if (this._oViewSettingsDialog) {
                 this._oViewSettingsDialog.destroy();
@@ -3014,6 +3089,7 @@ sap.ui.define([
             }
             this._mViewSettingsDialogs = {};
         }
+        //++EOC | REQ0032723
 
     });
 });
