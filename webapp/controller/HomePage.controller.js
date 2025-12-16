@@ -21,7 +21,7 @@ Modification History:
 
 1) Request#          : REQ0032724
    Developer         : Sharath H N
-   Date              : 02/12/2025
+   Date              : 16/12/2025
    Incident          : N/A
    CMS               :
    Description       :
@@ -33,7 +33,7 @@ Modification History:
 
 2) Request#          : REQ0032723
    Developer         : Sharath H N
-   Date              : 05/12/2025
+   Date              : 16/12/2025
    Incident          : N/A
    CMS               :
    Description       :
@@ -44,7 +44,7 @@ Modification History:
 
 3) Request#          : REQ0032717
    Developer         : Sharath H N
-   Date              : 12/12/2025
+   Date              : 16/12/2025
    Incident          : N/A
    CMS               :
    Description       :
@@ -2720,8 +2720,8 @@ sap.ui.define([
 
                 unique.add(material + "__" + batch);
 
-                if (unique.size > 50) {
-                    const excess = unique.size - 50;
+                if (unique.size > 25) {
+                    const excess = unique.size - 25;
 
                     sap.m.MessageBox.warning(
                         `Only up to 50 unique Material – Batch combinations are allowed.\n` +
