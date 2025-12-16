@@ -92,40 +92,40 @@ sap.ui.define([
         async onInit() {
             try {
 
-                // const oPlantDetails = await this._getIasDetails();
-                // this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
+                const oPlantDetails = await this._getIasDetails();
+                this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
 
-                // let rawEmail = oPlantDetails.email;
-                // if (Array.isArray(rawEmail)) {
-                //     this._userEmail = rawEmail.find(email => email) || "";
-                // } else {
-                //     this._userEmail = rawEmail || "";
-                // }
+                let rawEmail = oPlantDetails.email;
+                if (Array.isArray(rawEmail)) {
+                    this._userEmail = rawEmail.find(email => email) || "";
+                } else {
+                    this._userEmail = rawEmail || "";
+                }
 
-                // this._isQMUser = String(oPlantDetails.isQMUser).toLowerCase() === "true";
+                this._isQMUser = String(oPlantDetails.isQMUser).toLowerCase() === "true";
 
-                // this.sPlant = "";
-                // this.sPlantName = "";
+                this.sPlant = "";
+                this.sPlantName = "";
 
                 // /*Sharath--BOC - Logic to run the app locally in the absence of IAS
-                  this.sPlant = "3011";
-                  this.sPlantName = "";
+                //   this.sPlant = "3011";
+                //   this.sPlantName = "";
                 // EOC */
 
-                // if (!this._isQMUser) {
-                //     this.sPlant = oPlantDetails.Plant;
-                //     this.sPlantName = oPlantDetails.PlantName;
+                if (!this._isQMUser) {
+                    this.sPlant = oPlantDetails.Plant;
+                    this.sPlantName = oPlantDetails.PlantName;
 
-                //     const oPlantInput = this.byId("plantInputname");
-                //     if (oPlantInput) {
-                //         oPlantInput.setValue(this.sPlant);
-                //     }
-                // } else {
-                //     this.waitForCondition(
-                //         () => this._userEmail.trim() !== "",
-                //         () => this.PlantF4()
-                //     );
-                // }
+                    const oPlantInput = this.byId("plantInputname");
+                    if (oPlantInput) {
+                        oPlantInput.setValue(this.sPlant);
+                    }
+                } else {
+                    this.waitForCondition(
+                        () => this._userEmail.trim() !== "",
+                        () => this.PlantF4()
+                    );
+                }
 
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
