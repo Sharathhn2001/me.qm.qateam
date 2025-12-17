@@ -116,7 +116,7 @@ sap.ui.define(
           busy: false,
           delay: 0,
           screenMode: "view",
-          // isQMUser: false,
+          //isQMUser: false,
           rrEditable: true,
           CharEditable: true,
           InspPointFlag: "A",
