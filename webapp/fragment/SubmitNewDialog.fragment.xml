@@ -56,7 +56,7 @@
                     />
 
                     <Label
-                        text="{i18n>BATCH}"
+                        text="{i18n>INVENTORYBATCH}"
                         required="true"
                     />
                     <Input
