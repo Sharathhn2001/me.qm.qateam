@@ -81,8 +81,8 @@ sap.ui.define([
     "sap/ui/core/BusyIndicator",
     "sap/m/MessageToast",
     "sap/ui/core/Fragment",
-    "sap/m/MessageBox",
-    "sap/ui/Device"
+    "sap/m/MessageBox",//++Added by sharath on 17/12/2025
+    "sap/ui/Device" //++Added by sharath on 17/12/2025
 
 ], (BaseController, Formatter, JSONModel, Filter, FilterOperator, Token, BusyIndicator, MessageToast, Fragment, MessageBox, Device) => {
     "use strict";
@@ -93,7 +93,7 @@ sap.ui.define([
             try {
 
                 const oPlantDetails = await this._getIasDetails();
-                this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim();
+                this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim(); //++Added by sharath on 17/12/2025 to get the User details from IAS
 
                 let rawEmail = oPlantDetails.email;
                 if (Array.isArray(rawEmail)) {
@@ -130,8 +130,8 @@ sap.ui.define([
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
                     tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
-                    SubmitterName: "",
-                    SubmitterEmail: "",
+                    //  SubmitterName: "", - by sharath on 17/12/2025 - Not in use due to chnage in user details handlong from IAS
+                    //SubmitterEmail: "",
                     Plant: this.sPlant,
                     PlantName: this.sPlantName,
                     isQMUser: this._isQMUser,
@@ -186,6 +186,7 @@ sap.ui.define([
                     this.getPurchaseOrderF4(); //Added by Sharath for REQ0032724 on 01/12/2025
                     this.getSampleTypeF4(); //Added by Sharath for REQ0032724 on 01/12/2025
                     this.getSyrupBatchF4(); //Added by Sharath for REQ0032724 on 01/12/2025
+                    // this.getSubmitterInfo(); //Deprecated by Sharath on 17/12/2025
                 }
 
             } catch (oError) {
@@ -425,19 +426,20 @@ sap.ui.define([
             var aTableFilters = [];
             var oViewModel = this.getModel("ViewModel");
             //var oPlantMInput = this.getView().byId("plantMIput");
-            var oPurchaseOrderMI = this.byId("PurchaseOrderInput");
-            var oSampleTypeMI = this.byId("sampleTypeMInput");
+            var oPurchaseOrderMI = this.byId("PurchaseOrderInput"); //++Added by Sharath on 02/12/2025 
+            var oSampleTypeMI = this.byId("sampleTypeMInput");//++Added by Sharath on 02/12/2025 
             var oMaterialMInput = this.getView().byId("materialMInput");
             var oBatchMInput = this.getView().byId("batchMInput");
             var oFormulaMInput = this.getView().byId("formulaMInput");
             var oDateRange = this.getView().byId("dateRangeSelection");
+            // var oStatusSelect = this.getView().byId("statusCombo");
             // var sSelectedKey = oStatusSelect.getSelectedKey();
             //var oMsgStrip = this.getView().byId("msgstrip");
             var dStartDate = oDateRange.getDateValue();
             var dEndDate = oDateRange.getSecondDateValue();
             //var aPlantTokens = oPlantMInput.getTokens();
-            var aPurchaseOrderTokens = oPurchaseOrderMI.getTokens();
-            var aSampleTypeTokens = oSampleTypeMI.getTokens();
+            var aPurchaseOrderTokens = oPurchaseOrderMI.getTokens(); //++Added by sharath on 02/12/2025 - to get the tokens
+            var aSampleTypeTokens = oSampleTypeMI.getTokens(); //++Added by sharath on 02/12/2025 - to get the tokens
             var aMaterialTokens = oMaterialMInput.getTokens();
             var aBatchTokens = oBatchMInput.getTokens();
             var aFormulaTokens = oFormulaMInput.getTokens();
@@ -572,26 +574,32 @@ sap.ui.define([
                     aTableFilters.push(new Filter({ filters: aFormulaFilters, and: false }));
                 }
             }
+            /* BOC - Deprecated by sharath on 02/12/2025
+            if (sSelectedKey) {
+                          aTableFilters.push(new Filter({ path: "Status", operator: FilterOperator.EQ, value1: sSelectedKey }));
+                      }
+                         */ //EOC 
 
             return aTableFilters;
 
         },
+
         /**
          * Internal Function to add Items, Filters and Sort to Header Table
          * @param {sap.ui.model.Filter[]} aTableFilters Array of Filters
          * @private
          */
         _filterHeaderTable: function (aTableFilters) {
-
+            // Checks wether Table already having Items, if Items found add Filters to that.
             if (this.oTable.getBinding("items")) {
                 this.oTable.getBinding("items").filter(aTableFilters);
             } else {
-
+                // Binds Items Aggregation to Header Table
                 this.oTable.bindAggregation("items", {
                     path: "/InspectionHeaderSet",
                     template: this.getView().byId("clmlistitem").clone().setVisible(true)
                 });
-
+                // Adding Filters and Sort to Items.
                 this.oTable.getBinding("items").filter(aTableFilters);
             }
         },
@@ -792,9 +800,10 @@ sap.ui.define([
 
             this._oMaterialValueHelpDialog.open();
         },
+        //++BOC - Added by Sharath on 17/12/2025
         onMaterialLiveChange: function (oEvent) {
             this.getMaterialF4();
-        },
+        },//++EOC
         onMaterialSearch: function (oEvent) {
             var sSearchQuery = oEvent.getParameter("value");
             var oBinding = oEvent.getSource().getBinding("items");
@@ -868,7 +877,7 @@ sap.ui.define([
                 aFilters.push(new Filter({ filters: aMaterialFilters, and: false }));
             }
             try {
-                oBatchF4 = await this.readDataFromODataModel("/BatchAll_F4Set", aFilters);
+                oBatchF4 = await this.readDataFromODataModel("/BatchAll_F4Set", aFilters); //Changes in enity set - by Sharath on 12/12/2025
             } catch (error) { }
 
             if (oBatchF4Model) {
@@ -925,7 +934,7 @@ sap.ui.define([
                 });
             }
 
-            await this.getBatchF4(aMaterials);
+            await this.getBatchF4(aMaterials); //++Added by Sharath
 
             this._oBatchSourceIp = oEvent.getSource();
 
@@ -990,7 +999,7 @@ sap.ui.define([
 
             oEvent.getSource().getBinding("items").filter([]);
         },
-
+        //++BOC - Added by sharath on 15/12/2025 - to handle refresh on enter
         onBatchLiveChange: async function (oEvent) {
 
             var aMaterials = [];
@@ -1004,7 +1013,7 @@ sap.ui.define([
             // const sValue = oEvent.getParameter("value") || "";
 
             await this.getBatchF4(aMaterials);
-        },
+        },//++EOC
 
         onBatchCancel: function (oEvent) {
             oEvent.getSource().getBinding("items").filter([]);
@@ -1682,6 +1691,7 @@ sap.ui.define([
         },
 
         onCancelPress: function () {
+            // this.getBatchF4(); 
             if (this._oSubmitNewDialog) {
                 this._oSubmitNewDialog.close();
             }
@@ -1838,6 +1848,108 @@ sap.ui.define([
         },
 
         //++EOC | REQ0032723
+
+
+        // ++BOC – Deprecated by Sharath on 04/12/2025
+        // Reason: Functionality replaced by IAS-based user handling
+        /*  onSubmitterNameChange: function (oEvent) {
+                    var oSource = oEvent.getSource();
+                    var sName = oSource.getValue();
+        
+                    if (!sName) {
+                        oSource.setValueState("Error");
+                        oSource.setValueStateText(this.getResourceBundle().getText("enterSubName"));
+                    } else {
+                        oSource.setValueState("None");
+                    }
+                },
+                onEmailChange: function (oEvent) {
+                    var oSource = oEvent.getSource();
+                    var sMail = oSource.getValue();
+                    var regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        
+                    if (!regex.test(sMail)) {
+                        oSource.setValue("");
+                        oSource.setValueState("Error");
+                        oSource.setValueStateText(this.getResourceBundle().getText("invalidEmail"));
+                    } else {
+                        oSource.setValueState("None");
+                    }
+                },
+                _setSubmitDialogDefaultvalues: function () {
+                    var oSumbitModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
+                    oSumbitModel.setProperty("/Zzhbcformula", "");
+                    oSumbitModel.setProperty("/Atwrt", "");
+                    oSumbitModel.setProperty("/Hsdat", "");
+                },
+                */
+        //++EOC
+
+        // ++BOC – Deprecated by Sharath on 04/12/2025
+        // Reason: Functionality replaced by Adding PO , Material and Multi-Formula combination
+        /*_getInspectionDetails: async function () {
+                    var oSumbitModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
+                    var oData = oSumbitModel.getData();
+                    var aFilters = [new Filter({ path: "Werk", operator: FilterOperator.EQ, value1: oData.Werk }),
+                    new Filter({ path: "Matnr", operator: FilterOperator.EQ, value1: oData.Matnr }),
+                    new Filter({ path: "Charg", operator: FilterOperator.EQ, value1: oData.Charg })];
+                    var oInspDetails = { results: [] };
+        
+        
+                    try {
+                        oInspDetails = await this.readDataFromODataModel("/InspectionDetailsSet", aFilters);
+                    } catch (error) { }
+        
+                    if (oInspDetails && oInspDetails.results.length > 0) {
+                        oSumbitModel.setProperty("/Zzhbcformula", oInspDetails.results[0].Zzhbcformula);
+                        oSumbitModel.setProperty("/Atwrt", oInspDetails.results[0].Atwrt);
+                        oSumbitModel.setProperty("/Hsdat", oInspDetails.results[0].Hsdat);
+                    }
+                    return new Promise(resolve => resolve(oInspDetails));
+                },
+                onItemPress: async function (oEvent) {
+                    var oViewModelData = this.getView().getModel("ViewModel").getData();
+                    var oSelectedContext = oEvent.getSource().getSelectedItem().getBindingContext();
+                    var oSelcetedObject = oSelectedContext.getObject();
+                    this._navToInspChars(oSelcetedObject.Werk, oSelcetedObject.Matnr, oSelcetedObject.Charg, oViewModelData.SubmitterName, oViewModelData.SubmitterEmail, false);
+                },
+                _navToInspChars: function (sPlant, sMaterial, sBatch, sSubmitterName, sSubmitterEmail, bIsSubmitNew) {
+                    var oObj = {
+                        Plant: window.encodeURIComponent(sPlant),
+                        Material: window.encodeURIComponent(sMaterial),
+                        Batch: window.encodeURIComponent(sBatch),
+                        SubmitterName: window.encodeURIComponent(sSubmitterName),
+                        SubmitterEmail: window.encodeURIComponent(sSubmitterEmail),
+                        IsSubmitNew: window.encodeURIComponent(bIsSubmitNew),
+                    }
+                    this.getRouter().navTo("RouteCharacteristicOverview", oObj);
+                },
+              
+                onItemPress: async function (oEvent) {
+                    var oViewModelData = this.getView().getModel("ViewModel").getData();
+                    var oSelectedContext = oEvent.getSource().getSelectedItem().getBindingContext();
+                    var oSelcetedObject = oSelectedContext.getObject();
+        
+                    var sSubmitterName = this._isQMUser ? "none" : oViewModelData.SubmitterName || "none";
+                    var sSubmitterEmail = this._isQMUser ? "none" : oViewModelData.SubmitterEmail || "none";
+        
+                    this._navToInspChars(oSelcetedObject.Werk, oSelcetedObject.Matnr, oSelcetedObject.Charg, sSubmitterName, sSubmitterEmail, false);
+                },
+                _navToInspChars: function (sPlant, sMaterial, sBatch, sSubmitterName, sSubmitterEmail, bIsSubmitNew) {
+                    var oObj = {
+                        Plant: window.encodeURIComponent(sPlant),
+                        Material: window.encodeURIComponent(sMaterial),
+                        Batch: window.encodeURIComponent(sBatch),
+                        SubmitterName: window.encodeURIComponent(sSubmitterName),
+                        SubmitterEmail: window.encodeURIComponent(sSubmitterEmail),
+                        IsSubmitNew: window.encodeURIComponent(bIsSubmitNew),
+                        IsQMUser: encodeURIComponent(this._isQMUser === true ? "true" : "false")
+                    }
+                    this.getRouter().navTo("RouteCharacteristicOverview", oObj);
+                },
+          */
+        //++EOC
+
 
         //++BOC | REQ0032729 | Export to Excel Feature – by PANKAJ MISHRA on 16/12/2025
 
@@ -2702,7 +2814,6 @@ sap.ui.define([
         //++BOC | REQ0032717 | Validation and restriction on the number of InspLot/line items uploaded at one time – by Sharath on 11/12/2025
         _validateUniqueMaterialBatch: function (data) {
             const header = data[0];
-
             const matIndex = header.indexOf("HDR|QALS-MATNR");
             const batchIndex = header.indexOf("HDR|QALS-CHARG");
 
@@ -2719,20 +2830,21 @@ sap.ui.define([
                 }
 
                 unique.add(material + "__" + batch);
+            }
 
-                if (unique.size > 25) {
-                    const excess = unique.size - 25;
+            if (unique.size > 50) {
+                const excess = unique.size - 50;
 
-                    sap.m.MessageBox.warning(
-                        `Only up to 50 unique Material – Batch combinations are allowed.\n` +
-                        `You have added ${unique.size} combinations (${excess} more than allowed).`
-                    );
-                    return false;
-                }
+                sap.m.MessageBox.warning(
+                    `Only up to 50 unique Material – Batch combinations are allowed.\n` +
+                    `You have added ${unique.size} combinations (${excess} more than allowed).`
+                );
+                return false;
             }
 
             return true;
         },
+
         //++EOC | REQ0032717
 
 

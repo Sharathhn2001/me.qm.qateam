@@ -7,42 +7,42 @@
         id="Sort"
         confirm="handleSortDialogConfirm"
     >
-        <sortItems>
+           <sortItems>
             <ViewSettingsItem
-                text="None"
+                text="{i18n>SORT_NONE}"
                 key="None"
                 selected="true"
             />
             <ViewSettingsItem
-                text="Date Created"
+                text="{i18n>SORT_DATE_CREATED}"
                 key="CreateDt"
             />
-             <ViewSettingsItem
-                text="Purchase Order"
+            <ViewSettingsItem
+                text="{i18n>SORT_PURCHASE_ORDER}"
                 key="Ebeln"
             />
-             <ViewSettingsItem
-                text=" Inventory Batch"
+            <ViewSettingsItem
+                text="{i18n>SORT_INVENTORY_BATCH}"
                 key="Charg"
             />
             <ViewSettingsItem
-                text="Material"
+                text="{i18n>SORT_MATERIAL}"
                 key="Matnr"
             />
-             <ViewSettingsItem
-                text="Formula"
+            <ViewSettingsItem
+                text="{i18n>SORT_FORMULA}"
                 key="Zzhbcformula"
             />
             <ViewSettingsItem
-                text="Sample Type"
+                text="{i18n>SORT_SAMPLE_TYPE}"
                 key="Userc2"
             />
             <ViewSettingsItem
-                text="Syrup Batch"
+                text="{i18n>SORT_SYRUP_BATCH}"
                 key="Userc1"
             />
             <ViewSettingsItem
-                text="UD Status"
+                text="{i18n>SORT_UD_STATUS}"
                 key="Vbewertung"
             />
            

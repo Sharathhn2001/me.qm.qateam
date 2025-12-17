@@ -22,12 +22,12 @@
         * Misc. Notes       : NA
         *-----------------------------------------------------------------------*
         * Modification History
-        * 1) Request#       : 
-        *    Developer      : 
-        *    Date           : 
+        * 1) Request#       : REQ0032723
+        *    Developer      : Sharath
+        *    Date           :17/12/2025
         *    Incident       : N/A
         *    CMS            :
-        *    Description    : 
+        *    Description    : Added logic to get user details from IAS 
         *-----------------------------------------------------------------------*
         */
 
@@ -118,10 +118,11 @@ sap.ui.define([
                     contentType: 'application/json',
                     success: function (data) {
                         const oView = this.getView();
+                        //++BOC- chnages to extract the User details from IAS - Changes done on 17/12/2025 by Sharath
                         const firstName = data.firstname || "";
                         const lastName = data.lastname || "";
                         const email = Array.isArray(data.email) ? data.email[0] : data.email;
-
+                        //++EOC
                         const groupList = Array.isArray(data.Groups)
                             ? data.Groups
                             : typeof data.Groups === "string"
@@ -145,9 +146,9 @@ sap.ui.define([
                                 Plant: null,
                                 PlantName: null,
                                 email: data.email,
-                                email: email,
-                                firstName: firstName,
-                                lastName: lastName
+                                email: email, //++Added 
+                                firstName: firstName,// ++Added 
+                                lastName: lastName//++Added
                             });
                             return;
                         }
@@ -170,9 +171,11 @@ sap.ui.define([
                                 Plant: PlantCode,
                                 PlantName: PlantName,
                                 email: data.email,
-                                email: email,
-                                firstName: firstName,
-                                lastName: lastName
+                                email: email,//++Added 
+                                firstName: firstName,//++Added 
+                                lastName: lastName//++Added 
+                      
+               
                             });
                         } else {
                             reject();
@@ -189,6 +192,11 @@ sap.ui.define([
          * Event handler when the share by E-Mail button has been clicked
          * @public
          */
+
+        //Deprecated – not in use
+        //  Reason: Email sharing functionality is no longer required
+        //Deprecated by Sharath on 17/12/2025
+        /*
         onShareEmailPress: function () {
             var oViewModel = (this.getModel("objectView") || this.getModel("worklistView"));
             URLHelper.triggerEmail(
@@ -197,6 +205,7 @@ sap.ui.define([
                 oViewModel.getProperty("/shareSendEmailMessage")
             );
         },
+        */
         readDataFromODataModel: function (sPath, aFilters) {
             var oThis = this;
             return new Promise(function (resolve, reject) {

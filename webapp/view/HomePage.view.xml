@@ -106,7 +106,7 @@
                                         showValueHelp="true"
                                         showSuggestion="true"
                                         valueHelpRequest=".onMaterialValueHelpRequested"
-                                        liveChange=".onMaterialLiveChange"
+                                        liveChange=".onMaterialLiveChange"         
                                         tokenUpdate=".onMaterialTokenChange"
                                         suggestionItems="{
 				                            path: 'MaterialF4Model>/results',
@@ -124,7 +124,7 @@
                             <fb:FilterGroupItem
                                 id="batchFilterGroupItem"
                                 name="Charg"
-                                label="{i18n>batch}"
+                                label="{i18n>Inventorybatch}"
                                 groupName="Group1"
                                 visibleInFilterBar="true"
                             >
@@ -188,8 +188,9 @@
                                     <DateRangeSelection
                                         id="dateRangeSelection"
                                         change=".onFilterGroupItemChange"
-                                        displayFormat="dd.MM.yyyy"
+                                        displayFormat="dd.MM.yyyy" 
                                     />
+                                    <!-- Added by Sharath on 17/12/2025 - change in date format -->
                                 </fb:control>
                             </fb:FilterGroupItem>
                             <!--++BOC REQ0032724 - Sample Type Filter Start - 01/12/2025-->
@@ -253,6 +254,33 @@
                                 </fb:control>
                             </fb:FilterGroupItem>
                             <!--++EOC REQ0032724 - Syrup Batch Filter End - Sharath-->
+<!--
+++BOC – Not in use | Commented by Sharath on 04/12/2025
+
+<fb:FilterGroupItem
+    id="statusFilterGroupItem"
+    name="Status"
+    visible="false"
+    label="{i18n>status}"
+    groupName="Group1"
+    visibleInFilterBar="true"
+>
+    <fb:control>
+        <ComboBox
+            id="statusCombo"
+            items="{path:'/UserStatusF4Set'}"
+            change=".onFilterGroupItemChange"
+        >
+            <core:ListItem
+                key="{Status}"
+                text="{Statusdesc}"
+            />
+        </ComboBox>
+    </fb:control>
+</fb:FilterGroupItem>
+
+++EOC
+-->
 
                             <!--++BOC REQ0032724 - UD Status Filter Start - 02/12/2025-->
                             <fb:FilterGroupItem
@@ -343,7 +371,7 @@
                             press=".onSubmitNewPress"
                             type="Emphasized"
                         />
-
+<!-- ++BOC | Added Sort button | by Sharath on 16/12/2025 -->
                         <Button
                             id="sortbutton"
                             tooltip="Sort"
@@ -351,6 +379,7 @@
                             press="handleSortButtonPressed"
                             type="Emphasized"
                         />
+                        <!-- ++EOC -->
                     </OverflowToolbar>
                 </headerToolbar>
                 <columns>
@@ -399,7 +428,7 @@
                     >
                         <Label
                             id="batchColumnLabel"
-                            text="{i18n>batch}"
+                            text="{i18n>Inventorybatch}"
                         />
                     </Column>
                     <Column
@@ -459,6 +488,12 @@
                             <Text text="{Matnr} - {Maktx}" />
                             <Text text="{Charg}" />
                             <Text text="{Zzhbcformula}" />
+                            <!--
+++BOC – Not in use | Commented by Sharath on 04/12/2025
+<Text text="{Statusdesc}" />
+++EOC
+-->
+
                             <Text text="{SampleSyrup}" /> <!--++Added Sample Type/Syrup Batch display-->
                             <Text text="{CodeValText}" />  <!--++Added CodeValText display-->
                     

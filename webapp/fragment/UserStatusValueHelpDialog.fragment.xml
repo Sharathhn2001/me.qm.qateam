@@ -4,8 +4,8 @@
     xmlns:core="sap.ui.core"
 >
     <SelectDialog
-        noDataText="{i18n>nouserStatusFoundMessage}"
-        title="{i18n>userStatus}"
+       noDataText="{i18n>NO_USER_STATUS_FOUND}"
+        title="{i18n>USER_STATUS}"
         search="onUserStatusSearch"
         confirm="onUserStatusClose"
         cancel="onUserStatusCancel"

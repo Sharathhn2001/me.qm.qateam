@@ -6,7 +6,7 @@
 >
     <Dialog
         id="uploadDialog"
-        title="Mass Upload"
+        title="{i18n>massUploadTitle}"
         draggable="true"
         resizable="true"
         contentWidth="500px"
@@ -18,7 +18,7 @@
             renderType="Bare"
         >
             <Title
-                text="Select Operations"
+                text="{i18n>selectOperations}"
                 level="H4"
                 class="sapUiTinyMarginBottom"
             />
@@ -33,24 +33,24 @@
                 name="uploadFile"
                 fileType="xlsx,xls"
                 change="onFileChange"
-                placeholder="Choose Excel file"
+                placeholder="{i18n>chooseExcelFile}"
                 width="100%"
             />
 
             <Text
                 id="fileSizeText"
-                text="File Size: 0 MB"
+                text="{i18n>fileSizeDefault}"
                 class="sapUiTinyMarginTop"
             />
         </VBox>
 
         <buttons>
             <Button
-                text="Cancel"
+                text="{i18n>cancel}"
                 press="onCloseDialog"
             />
             <Button
-                text="Upload"
+                text="{i18n>upload}"
                 type="Emphasized"
                 press="onMassUpload"
             />

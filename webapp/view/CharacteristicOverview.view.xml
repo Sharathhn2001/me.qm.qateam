@@ -138,6 +138,7 @@ visible="{= ${ViewModel>/isQMUser} === true || ${ViewModel>/isQMUser} === 'true'
                             text="{InspectionDetailsModel>/Matnr} - {InspectionDetailsModel>/Maktx}"
                             class="sapUiTinyMarginBottom"
                         />
+                        
                         <ObjectStatus
                             id="objStatusBatch"
                             title="{i18n>Inventorybatch}"

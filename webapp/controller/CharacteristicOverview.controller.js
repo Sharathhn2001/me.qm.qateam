@@ -67,7 +67,7 @@ sap.ui.define(
     "sap/m/Column",
     "sap/m/plugins/UploadSetwithTable",
     "sap/ui/core/BusyIndicator",
-    "sap/ui/core/Icon",
+    "sap/ui/core/Icon",//++Added by sharath on 12/12/2025
     "sap/m/HBox",
     "sap/m/CheckBox",
     "sap/m/SegmentedButtonItem",
@@ -97,7 +97,7 @@ sap.ui.define(
         // Model used to manipulate control states. The chosen values make sure,
         // detail page shows busy indication immediately so there is no break in
         // between the busy indication for loading the view's meta data
-
+        // Added - logic to craete the Insp Lot and data binding
         var oDataModel = new JSONModel({
           Plant: "",
           Ebeln: "",
@@ -116,11 +116,11 @@ sap.ui.define(
           busy: false,
           delay: 0,
           screenMode: "view",
-          isQMUser: false,
+          // isQMUser: false,
           rrEditable: true,
           CharEditable: true,
           InspPointFlag: "A",
-          UdstatusEdit: false
+          UdstatusEdit: false //++Added to handele the edit based on UD by sharath on 17/12/2025
 
         });
         oViewModel.setSizeLimit(100000);
@@ -147,8 +147,6 @@ sap.ui.define(
         }))
 
         this.fetchStatus();
-
-
         // this._getInspectionDetails();
       },
 
@@ -221,18 +219,20 @@ sap.ui.define(
         var oAttachmentModel = oAttachmentTable.getModel("AttachementModel");
 
         this.sPlant = window.decodeURIComponent(oArguments.Plant);
-        this.sEbeln = window.decodeURIComponent(oArguments.Ebeln);
-        this.sEbelp = window.decodeURIComponent(oArguments.Ebelp);
+        this.sEbeln = window.decodeURIComponent(oArguments.Ebeln); //++Added by Sharath on 04/12/2025
+        this.sEbelp = window.decodeURIComponent(oArguments.Ebelp); //++Added by Sharath on 04/12/2025
         this.sMaterial = window.decodeURIComponent(oArguments.Material);
         this.sBatch = window.decodeURIComponent(oArguments.Batch);
-        this.sFormula = window.decodeURIComponent(oArguments.Formula);
-        // this.sSubmitterName = window.decodeURIComponent(oArguments.SubmitterName);
-        //this.sSubmitterEmail = window.decodeURIComponent(oArguments.SubmitterEmail);
+        this.sFormula = window.decodeURIComponent(oArguments.Formula); //++Added by Sharath on 04/12/2025
+        // ++BOC – Deprecated: User details are now fetched from IAS | by Sharath on 04/12/2025
+        // this.sSubmitterName  = window.decodeURIComponent(oArguments.SubmitterName);
+        // this.sSubmitterEmail = window.decodeURIComponent(oArguments.SubmitterEmail);
+        // ++EOC
         this.bIsSubmitNew = window.decodeURIComponent(oArguments.IsSubmitNew);
         const isQMUserString = decodeURIComponent(oArguments.IsQMUser || "");
         const isQMUser = isQMUserString.toLowerCase() === "true";
         this.getModel("ViewModel").setProperty("/isQMUser", isQMUser);
-
+        // ++BOC REQ0032723 – DataModel payload creation | by Sharath on 04/12/2025
         const oData = {
           Plant: this.sPlant,
           Ebeln: this.sEbeln,
@@ -246,7 +246,7 @@ sap.ui.define(
 
         const oDataModel = this.getModel("DataModel");
         oDataModel.setData(oData);
-
+        // ++EOC
 
         if (this.bIsSubmitNew === "true") {
           this.getModel("ViewModel").setProperty("/screenMode", "edit");
@@ -267,9 +267,20 @@ sap.ui.define(
         this.setDirtyState(false);
 
         await this._getInspectionDetails();
-        await this._getIasDetails();
 
+        //++BOC - Get IAS to get User Details - by sharath on 17/12/2025
+        this._getIasDetails()
+          .then(function (oUserData) {
+            this.sFirstName = oUserData.firstName || "";
+            this.sLastName = oUserData.lastName || "";
+            this.sFullName = (this.sFirstName + " " + this.sLastName).trim();
+            this.sEmail = oUserData.email || "";
 
+          }.bind(this))
+          .catch(function () {
+          });//++EOC
+          
+       
         if (oAttachmentModel) {
           oAttachmentModel.setData({});
           this.deselectAllItems();
@@ -282,49 +293,6 @@ sap.ui.define(
           InspCharResults: [],
         });
       },
-
-      //++BOC REQ0032723 - Function to get email and name (User details from IAS) | by Sharath on 28/11/2025
-      _getIasDetails: function () {
-        const appId = this.getOwnerComponent().getManifestEntry("/sap.app/id");
-        const appPath = appId.replaceAll(".", "/");
-        const appModulePath = jQuery.sap.getModulePath(appPath);
-        const url = appModulePath + "/user-api/attributes";
-
-        return new Promise((resolve, reject) => {
-          $.ajax({
-            url: url,
-            type: 'GET',
-            contentType: 'application/json',
-            success: function (data) {
-              const oView = this.getView();
-
-              this.sFirstName = data.firstname || "";
-              this.sLastName = data.lastname || "";
-              this.sFullName = `${this.sFirstName} ${this.sLastName}`.trim();
-
-              if (Array.isArray(data.email)) {
-                this.sEmail = data.email[0] || "";
-              } else if (typeof data.email === "string") {
-                this.sEmail = data.email;
-              } else {
-                this.sEmail = "";
-              }
-
-              resolve({
-                firstName: this.sFirstName,
-                lastName: this.sLastName,
-                fullName: this.sFullName,
-                email: this.sEmail
-              });
-
-            }.bind(this),
-            error: function (err) {
-              reject(err);
-            }
-          });
-        });
-      },
-      //++EOC REQ0032723
 
       fetchStatus: async function () {
         BusyIndicator.show();
@@ -371,7 +339,6 @@ sap.ui.define(
       getDirtyState: function () {
         return sap.ushell.Container.getDirtyFlag();
       },
-
 
       _getInspectionDetails: async function () {
         var aFilters = [new Filter({ path: "Werk", operator: FilterOperator.EQ, value1: this.sPlant }),
@@ -750,8 +717,8 @@ sap.ui.define(
             var iIndex = aValidOpearations.findIndex(oValidOper => oValidOper.Inspoper === oThis.sOperation);
             if (iIndex === 0) {
               oColumn7 = new Input({
-                editable: (oCharDetails.MstrChar === "SUB_NAME" || oCharDetails.MstrChar === "SUB_MAIL") ? false :
-                  "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true : false }", value: "{Remark}", maxLength: 40, change: function (oEvent) {
+                editable: (oCharDetails.MstrChar === "SUB_NAME" || oCharDetails.MstrChar === "SUB_MAIL") ? false : //++Added to make submitter Name and submitter email non-editable
+                  "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true : false }", value: "{Remark}", maxLength: 40, change: function (oEvent) {            //++Added to make submitter Name and submitter email non-editable
                     //  editable: "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true ? true : false : false}", /*value: "{Longtext}" */value: "{Remark}", maxLength:"40", change: function (oEvent) {
                     var oSource = oEvent.getSource();
                     var oContext = oEvent.getSource().getBindingContext();
@@ -778,10 +745,11 @@ sap.ui.define(
                     }
                   }
               });
-              if (oCharDetails.MstrChar === "SUB_NAME" && /* !oCharac.Longtext */ !oCharac.Remark && this.sFullName) {
-                oCharModel.setProperty(context.getPath() + "/Remark", this.sFullName);
+              if (oCharDetails.MstrChar === "SUB_NAME" && /* !oCharac.Longtext */ !oCharac.Remark && /*oThis.sSubmitterName*/ this.sFullName) { //++Added to bring the User details from IAS - by sharath on 17/12/2025
+                oCharModel.setProperty(context.getPath() + "/Remark", /*oThis.sSubmitterName*/ this.sFullName);//++Added to bring the User details from IAS - by sharath on 17/12/2025
                 //oCharModel.setProperty(context.getPath() + "/Longtext", oThis.sSubmitterName);
                 oCharac.IsModified = true;
+                //++Added to make user email and user name non-editable in dynamic operation
                 if (oColumn7 && oColumn7.setEditable) {
                   oColumn7.setEditable(false);
                 }
@@ -793,8 +761,8 @@ sap.ui.define(
                   oThis.onCountryOfSaleValueHelpRequested(oEvent);
                 });
               }
-              if (oCharDetails.MstrChar === "SUB_MAIL" && /* !oCharac.Longtext */ !oCharac.Remark && this.sEmail) {
-                oCharModel.setProperty(context.getPath() + "/Remark", this.sEmail);
+              if (oCharDetails.MstrChar === "SUB_MAIL" && /* !oCharac.Longtext */ !oCharac.Remark && /* oThis.sSubmitterEmail*/this.sEmail) { //++Added to bring the User details from IAS - by sharath on 17/12/2025
+                oCharModel.setProperty(context.getPath() + "/Remark", /* oThis.sSubmitterEmail*/ this.sEmail); //++Added to bring the User details from IAS - by sharath on 17/12/2025
                 //oCharModel.setProperty(context.getPath() + "/Longtext", oThis.sSubmitterEmail);
                 oCharac.IsModified = true;
                 //oThis.setDirtyState(true);
@@ -810,7 +778,7 @@ sap.ui.define(
 
               if (oCharDetails && oCharDetails.CharDescr.toLowerCase().includes("date") === true) {
                 oColumn7 = new DatePicker({
-                  value: /*"{Longtext}" */"{Remark}", displayFormat: "dd.MM.yyyy", valueFormat: "MM.dd.yyyy",
+                  value: /*"{Longtext}" */"{Remark}", displayFormat: "dd.MM.yyyy", valueFormat: "MM.dd.yyyy", // Change in Date format from MM/DD/YYYY to MM.DD.YYYY
                   editable: "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true ? true : false : false}", change: function (oEvent) {
                     var oContext = oEvent.getSource().getBindingContext();
                     var oSelectedObj = oContext.getObject();
@@ -1759,7 +1727,7 @@ sap.ui.define(
             }
             if (oCharac.MstrChar === "COMMENTS") {
               var oCopyChar = Object.assign({}, oCharac);
-              var sLongText = oThis.sFullName + " " + oThis.formatter.dateFormatter(new Date()) +
+              var sLongText = /*oThis.sSubmitterName*/ oThis.sFullName + " " + oThis.formatter.dateFormatter(new Date()) + //++ Added - Change to get user details from IAS data - by Sharath on 17/12/2025
                 " " + oThis.formatter.formatTime(new Date()) + " - " +
                 oThis.getView().byId("commentsedit").getValue();
               oCopyChar.Longtext = sLongText;
@@ -1850,7 +1818,7 @@ sap.ui.define(
                 }
               } else {
                 var oCopyChar = Object.assign({}, oCharac);
-                var sLongText = this.sFullName + " " + oThis.formatter.dateFormatter(new Date()) +
+                var sLongText = /* oThis.sSubmitterName*/ this.sFullName + " " + oThis.formatter.dateFormatter(new Date()) + //++ Added - Change to get user details from IAS data - by Sharath on 17/12/2025
                   " " + oThis.formatter.formatTime(new Date()) + " - " +
                   oThis.getView().byId("commentsedit").getValue();
                 oCopyChar.Longtext = sLongText;
@@ -1868,7 +1836,7 @@ sap.ui.define(
                 oInspPointCopy.InspLotSampleResultsSet.push(oCopyChar);
               }
               if (oCharac.MstrChar === "COMMENTS") {
-                var sLongText = this.sFullName + " " + oThis.formatter.dateFormatter(new Date()) +
+                var sLongText = /* oThis.sSubmitterName*/ this.sFullName + " " + oThis.formatter.dateFormatter(new Date()) + //++ Added - Change to get user details from IAS data - by Sharath on 17/12/2025
                   " " + oThis.formatter.formatTime(new Date()) + " - " +
                   oThis.getView().byId("commentsedit").getValue();
                 var oCopyChar = Object.assign({}, oCharac);
@@ -2469,7 +2437,7 @@ sap.ui.define(
         }
         //oForm.setToolbar(oToolbar);
         this.InspPointCreateDialog = new Dialog({
-          title: oThis.getResourceBundle().getText("Select Sample"),
+          title: oThis.getResourceBundle().getText("selectSample"), //fix done in Name display by Sharath on 17/12/2025
           content: oForm,
           beginButton: new Button({
             type: "Emphasized",
@@ -2914,7 +2882,10 @@ sap.ui.define(
                     //++BOC | REQ0032723 | Select Button – by Sharath on 28/11/2025
                     new sap.m.Button({
                       icon: "sap-icon://accept",
-                      text: "Select",
+                      text: this.getView()
+                        .getModel("i18n")
+                        .getResourceBundle()
+                        .getText("SELECT"),
                       type: "Emphasized",
                       press: function (oEvent) {
                         var oRow = oEvent.getSource();
@@ -3006,7 +2977,7 @@ sap.ui.define(
             oThis._setAttachmentModel();
           },
           error: function (oError) {
-
+            //TODO
           }
         })
       },
