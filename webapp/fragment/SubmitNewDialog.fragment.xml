@@ -37,7 +37,7 @@
                         change="onPurchaseOrderChangeInsp"
                         showSuggestion="true"
                         liveChange=".onBlockManualPOInput"
-                        placeholder="Click on value help option to select PO"
+                        placeholder="Click on search option to select PO"
                         suggestionItems="{ path: 'POModel>/results' }"
                     >
                         <core:ListItem

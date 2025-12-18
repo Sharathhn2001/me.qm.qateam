@@ -23,7 +23,7 @@ Modification History:
    Developer         : Sharath H N
    Date              : 16/12/2025
    Incident          : N/A
-   CMS               :
+   CMS               :26044
    Description       :
    - Move submitted records from the “Submit New” section to the “Previously Submitted Records” section
    - Added Purchase Order and Multiple Formula dropdowns for inspection lot creation
@@ -36,7 +36,7 @@ Modification History:
    Developer         : Sharath H N
    Date              : 16/12/2025
    Incident          : N/A
-   CMS               :
+   CMS               :26044
    Description       :
    - Display of Syrup Batch, Sample Type, and UD Status as columns in BTP
    - Added Purchase Order, Syrup Batch, Sample Type, and UD Status in the filter header
@@ -47,7 +47,7 @@ Modification History:
    Developer         : Sharath H N
    Date              : 16/12/2025
    Incident          : N/A
-   CMS               :
+   CMS               :26044
    Description       :
    - Mass upload of inspection results for ZCO in BTP, with manual creation of inspection lots
    - Implemented Excel template download with color coding to differentiate operations
@@ -62,7 +62,7 @@ Modification History:
    Developer         : PANKAJ MISHRA
    Date              : 16/12/2025
    Incident          : N/A
-   CMS               :
+   CMS               :26044
    Description       :
    - Implemented Export to Excel feature for inspection results
    - Added functionality to export selected records to Excel format
@@ -1593,7 +1593,7 @@ sap.ui.define([
                 oPurchaseOrderF4 = await this.readDataFromODataModel("/PO_F4Set",
                     [
                         new Filter({ path: "Werks", operator: FilterOperator.EQ, value1: this.sPlant }),
-                        // new Filter({ path: "Distinct", operator: FilterOperator.EQ, value1: "X" })
+                        new Filter({ path: "Distinct", operator: FilterOperator.EQ, value1: "X" })
                     ]);
 
             } catch (Error) {
@@ -3024,8 +3024,8 @@ sap.ui.define([
                 unique.add(POno + "__" + POItem + "__" + material + "__" + batch + "__" + Formula);
             }
 
-            if (unique.size > 50) {
-                const excess = unique.size - 50;
+            if (unique.size > 25) {
+                const excess = unique.size - 25;
 
                 sap.m.MessageBox.warning(
                     `Only up to 50 unique POno, POItem, Material, Batch, Formula combinations are allowed.\n` +
