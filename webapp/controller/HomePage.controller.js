@@ -9,10 +9,10 @@
  *   - Handling value help dialogs and user interactions with the table
  *   - Providing inspection lot creation and display functionality
  *
- * ObjectID           :
+ * ObjectID           : Production Data Submission
  * Author             : Sharath H N
- * Date               :
- * Business Contact   : 
+ * Date               : 
+ * Business Contact   : Ajinkya Kharade
  *-----------------------------------------------------------------------*
  * Misc. Notes        : NA
  *-----------------------------------------------------------------------*
@@ -28,6 +28,7 @@ Modification History:
    - Move submitted records from the “Submit New” section to the “Previously Submitted Records” section
    - Added Purchase Order and Multiple Formula dropdowns for inspection lot creation
    - Implemented sorting for table data
+   - Implemented live refresh for PO, batch, and material fields.
   
 *-----------------------------------------------------------------------*
 
@@ -53,6 +54,7 @@ Modification History:
    - Added checkboxes to select operations during upload
    - Implemented restriction on the number of inspection lots uploaded at one time
    - Display of file size and processing of data based on selected operations
+   - Added user detail retrieval through IAS instead of manual entry
 
 *-----------------------------------------------------------------------*
 
@@ -81,8 +83,8 @@ sap.ui.define([
     "sap/ui/core/BusyIndicator",
     "sap/m/MessageToast",
     "sap/ui/core/Fragment",
-    "sap/m/MessageBox",//++Added by sharath on 17/12/2025
-    "sap/ui/Device" //++Added by sharath on 17/12/2025
+    "sap/m/MessageBox",//++Added by sharath on 17/12/2025(REQ0032717)
+    "sap/ui/Device" //++Added by sharath on 17/12/2025(REQ0032717)
 
 ], (BaseController, Formatter, JSONModel, Filter, FilterOperator, Token, BusyIndicator, MessageToast, Fragment, MessageBox, Device) => {
     "use strict";
@@ -93,7 +95,7 @@ sap.ui.define([
             try {
 
                 const oPlantDetails = await this._getIasDetails();
-                this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim(); //++Added by sharath on 17/12/2025 to get the User details from IAS
+                this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim(); //++Added by sharath on 17/12/2025 to get the User details from IAS- (REQ0032717)
 
                 let rawEmail = oPlantDetails.email;
                 if (Array.isArray(rawEmail)) {
@@ -107,10 +109,10 @@ sap.ui.define([
                 this.sPlant = "";
                 this.sPlantName = "";
 
-                // /*Sharath--BOC - Logic to run the app locally in the absence of IAS
-                //   this.sPlant = "3011";
+                // /*Sharath ++BOC - Logic to run the app locally in the absence of IAS
+                //this.sPlant = "3011";
                 //   this.sPlantName = "";
-                // EOC */
+                // ++EOC */
 
                 if (!this._isQMUser) {
                     this.sPlant = oPlantDetails.Plant;
@@ -130,8 +132,8 @@ sap.ui.define([
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
                     tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
-                    //  SubmitterName: "", - by sharath on 17/12/2025 - Not in use due to chnage in user details handlong from IAS
-                    //SubmitterEmail: "",
+                    //  SubmitterName: "", --by sharath on 17/12/2025 - Not in use due to change in user details handling from IAS (REQ0032717)
+                    //SubmitterEmail: "", --by sharath on 17/12/2025 - Not in use due to change in user details handling from IAS (REQ0032717)
                     Plant: this.sPlant,
                     PlantName: this.sPlantName,
                     isQMUser: this._isQMUser,
@@ -186,7 +188,7 @@ sap.ui.define([
                     this.getPurchaseOrderF4(); //Added by Sharath for REQ0032724 on 01/12/2025
                     this.getSampleTypeF4(); //Added by Sharath for REQ0032724 on 01/12/2025
                     this.getSyrupBatchF4(); //Added by Sharath for REQ0032724 on 01/12/2025
-                    // this.getSubmitterInfo(); //Deprecated by Sharath on 17/12/2025
+                    // this.getSubmitterInfo(); //Deprecated by Sharath for REQ0032717 on 17/12/2025
                 }
 
             } catch (oError) {
@@ -209,7 +211,7 @@ sap.ui.define([
             wait();
         },
 
-        /*--BOC REQ0032724 - Deprecated Submitter Info Dialog Logic (Not in Use)-- Sharath
+        /*--BOC REQ0032717 - Deprecated Submitter Info Dialog Logic (Not in Use)-- Sharath 
          getSubmitterInfo: async function () {
              BusyIndicator.show();
  
@@ -253,7 +255,7 @@ sap.ui.define([
          onSubmitterEscape: function (oPromise) {
              oPromise.reject();
          },
-        /*--EOC REQ0032724 - Deprecated Submitter Info Dialog Logic End--*/
+        /*--EOC REQ0032717 - Deprecated Submitter Info Dialog Logic End--*/
 
         _onMultiInputValidate: function (oArgs) {
             if (oArgs.suggestionObject) {
@@ -426,20 +428,20 @@ sap.ui.define([
             var aTableFilters = [];
             var oViewModel = this.getModel("ViewModel");
             //var oPlantMInput = this.getView().byId("plantMIput");
-            var oPurchaseOrderMI = this.byId("PurchaseOrderInput"); //++Added by Sharath on 02/12/2025 
-            var oSampleTypeMI = this.byId("sampleTypeMInput");//++Added by Sharath on 02/12/2025 
+            var oPurchaseOrderMI = this.byId("PurchaseOrderInput"); //++Added by Sharath on 02/12/2025 (REQ0032724)
+            var oSampleTypeMI = this.byId("sampleTypeMInput");//++Added by Sharath on 02/12/2025 (REQ0032724)
             var oMaterialMInput = this.getView().byId("materialMInput");
             var oBatchMInput = this.getView().byId("batchMInput");
             var oFormulaMInput = this.getView().byId("formulaMInput");
             var oDateRange = this.getView().byId("dateRangeSelection");
-            // var oStatusSelect = this.getView().byId("statusCombo");
-            // var sSelectedKey = oStatusSelect.getSelectedKey();
+            // var oStatusSelect = this.getView().byId("statusCombo"); //--Commented by sharath on 02/12/2025 (REQ0032724)
+            // var sSelectedKey = oStatusSelect.getSelectedKey(); //--Commented by sharath on 02/12/2025 (REQ0032724)
             //var oMsgStrip = this.getView().byId("msgstrip");
             var dStartDate = oDateRange.getDateValue();
             var dEndDate = oDateRange.getSecondDateValue();
             //var aPlantTokens = oPlantMInput.getTokens();
-            var aPurchaseOrderTokens = oPurchaseOrderMI.getTokens(); //++Added by sharath on 02/12/2025 - to get the tokens
-            var aSampleTypeTokens = oSampleTypeMI.getTokens(); //++Added by sharath on 02/12/2025 - to get the tokens
+            var aPurchaseOrderTokens = oPurchaseOrderMI.getTokens(); //++Added by sharath on 02/12/2025 - to get the tokens (REQ0032724)
+            var aSampleTypeTokens = oSampleTypeMI.getTokens(); //++Added by sharath on 02/12/2025 - to get the tokens (REQ0032724)
             var aMaterialTokens = oMaterialMInput.getTokens();
             var aBatchTokens = oBatchMInput.getTokens();
             var aFormulaTokens = oFormulaMInput.getTokens();
@@ -462,29 +464,47 @@ sap.ui.define([
                     and: true
                 }));
             }
-            //++BOC REQ0032724 - Added Filter Tokens|by Sharath on on 02/12/2025
+            //++BOC REQ0032724 - Added Filter Tokens | Sharath | 02/12/2025
             if (aPurchaseOrderTokens.length > 0) {
-                let aPOFilters = [];
+                var POdetails = [];
+                var aPOFilters = [];
 
-                aPurchaseOrderTokens.forEach(function (oToken) {
-                    if (oToken.getKey()) {
+                for (var i = 0; i < aPurchaseOrderTokens.length; i++) {
 
-                        const sEbeln = oToken.getKey();
+                    var oToken = aPurchaseOrderTokens[i];
+                    var sEbeln = oToken.getKey();
 
-                        //const sEbelp = oToken.getCustomData()[0]?.getValue() || "";
+                    if (!sEbeln) {
+                        continue;
+                    }
 
-                        aPOFilters.push(new sap.ui.model.Filter({
+                    var sText = oToken.getText() || "";
+                    var aParts = sText.split("-");
+
+                    if (aParts.length < 2) {
+                        continue;
+                    }
+
+                    var sEbelp = aParts[1].trim();
+
+                    aPOFilters.push(
+                        new sap.ui.model.Filter({
                             filters: [
                                 new sap.ui.model.Filter("Ebeln", sap.ui.model.FilterOperator.EQ, sEbeln),
-                                // new sap.ui.model.Filter("Ebelp", sap.ui.model.FilterOperator.EQ, sEbelp)
+                                new sap.ui.model.Filter("Ebelp", sap.ui.model.FilterOperator.EQ, sEbelp)
                             ],
                             and: true
-                        }));
-                    }
-                });
-
+                        })
+                    );
+                }
+                POdetails.push({ "Ebeln": sEbeln, "Ebelp": sEbelp });
                 if (aPOFilters.length > 0) {
-                    aTableFilters.push(new sap.ui.model.Filter({ filters: aPOFilters, and: false }));
+                    aTableFilters.push(
+                        new sap.ui.model.Filter({
+                            filters: aPOFilters,
+                            and: false
+                        })
+                    );
                 }
             }
 
@@ -537,7 +557,7 @@ sap.ui.define([
                     new sap.ui.model.Filter("Vbewertung", sap.ui.model.FilterOperator.EQ, sStatusKey)
                 );
             }
-            //++EOC REQ0032724 - Added Token-based Table Filters
+            //++EOC REQ0032724 - Added Filter Tokens | Sharath | 02/12/2025
 
             if (aMaterialTokens.length > 0) {
                 for (var i = 0; i < aMaterialTokens.length; i++) {
@@ -574,11 +594,11 @@ sap.ui.define([
                     aTableFilters.push(new Filter({ filters: aFormulaFilters, and: false }));
                 }
             }
-            /* BOC - Deprecated by sharath on 02/12/2025
+            /* BOC - Deprecated by sharath on 02/12/2025 (REQ0032724)
             if (sSelectedKey) {
                           aTableFilters.push(new Filter({ path: "Status", operator: FilterOperator.EQ, value1: sSelectedKey }));
                       }
-                         */ //EOC 
+                         */ //--EOC by sharath on 02/12/2025 (REQ0032724)
 
             return aTableFilters;
 
@@ -781,7 +801,7 @@ sap.ui.define([
             */
         onMaterialValueHelpRequested: async function (oEvent) {
             this._oMaterialSourceIp = oEvent.getSource();
-            this.getMaterialF4();
+            this.getMaterialF4(); //++Added by sharath on 02/12/2025 for the REQ0032724
 
             try {
                 if (!this._oMaterialValueHelpDialog) {
@@ -800,10 +820,10 @@ sap.ui.define([
 
             this._oMaterialValueHelpDialog.open();
         },
-        //++BOC - Added by Sharath on 17/12/2025
+        //++BOC - Added by Sharath on 17/12/2025 for the REQ0032724
         onMaterialLiveChange: function (oEvent) {
             this.getMaterialF4();
-        },//++EOC
+        },//++EOC by Sharath on 17/12/2025 for the REQ0032724
         onMaterialSearch: function (oEvent) {
             var sSearchQuery = oEvent.getParameter("value");
             var oBinding = oEvent.getSource().getBinding("items");
@@ -877,7 +897,8 @@ sap.ui.define([
                 aFilters.push(new Filter({ filters: aMaterialFilters, and: false }));
             }
             try {
-                oBatchF4 = await this.readDataFromODataModel("/BatchAll_F4Set", aFilters); //Changes in enity set - by Sharath on 12/12/2025
+                //  oBatchF4 = await this.readDataFromODataModel("/Batch_F4Set", aFilters); //--Commented by Sharath on 12/12/2025 for the REQ0032724
+                oBatchF4 = await this.readDataFromODataModel("/BatchAll_F4Set", aFilters); //++Added Changes in enity set - by Sharath on 12/12/2025 for the REQ0032724
             } catch (error) { }
 
             if (oBatchF4Model) {
@@ -924,6 +945,29 @@ sap.ui.define([
         * Opens Material Valuehelp Dialog
         * @public
         */
+        //--Commented by Sharath on 02/12/2025 (REQ0032724)
+        // onBatchValueHelpRequested: async function (oEvent) {
+        //     this._oBatchSourceIp = oEvent.getSource();
+        //
+        //     try {
+        //         if (!this._oBatchValueHelpDialog) {
+        //             this._oBatchValueHelpDialog = await this.loadFragment({
+        //                 name: "com.monsterenergy.qm.me.qm.qateam.fragment.BatchValueHelpDialog"
+        //             });
+        //         }
+        //     } catch (error) {
+        //         return;
+        //     }
+        //
+        //     if (this._oBatchSourceIp instanceof sap.m.MultiInput) {
+        //         this._oBatchValueHelpDialog.setMultiSelect(true);
+        //     } else {
+        //         this._oBatchValueHelpDialog.setMultiSelect(false);
+        //     }
+        //
+        //     this._oBatchValueHelpDialog.open();
+        // },
+
         onBatchValueHelpRequested: async function (oEvent) {
             var aMaterials = [];
 
@@ -934,7 +978,7 @@ sap.ui.define([
                 });
             }
 
-            await this.getBatchF4(aMaterials); //++Added by Sharath
+            await this.getBatchF4(aMaterials); //++Added by Sharath on 02/12/2025 for REQ0032724
 
             this._oBatchSourceIp = oEvent.getSource();
 
@@ -999,7 +1043,7 @@ sap.ui.define([
 
             oEvent.getSource().getBinding("items").filter([]);
         },
-        //++BOC - Added by sharath on 15/12/2025 - to handle refresh on enter
+        //++BOC - Added by sharath on 15/12/2025 for (REQ0032724) - to handle refresh on enter
         onBatchLiveChange: async function (oEvent) {
 
             var aMaterials = [];
@@ -1013,7 +1057,7 @@ sap.ui.define([
             // const sValue = oEvent.getParameter("value") || "";
 
             await this.getBatchF4(aMaterials);
-        },//++EOC
+        },//++EOC by sharath on 15/12/2025 for (REQ0032724) - to handle refresh on enter
 
         onBatchCancel: function (oEvent) {
             oEvent.getSource().getBinding("items").filter([]);
@@ -1124,8 +1168,262 @@ sap.ui.define([
             oEvent.getSource().getBinding("items").filter([]);
         },
 
-        //++BOC | REQ0032724 | Syrup Batch, Sample Type & Purchase Order Value Helps | by Sharath on 01/12/2025
 
+        //--Commented by Sharath for this requirement- REQ0032723 on 02/12/2025
+        //Reason: Functionality replaced by adding PO, newly entered batch and Multi-Formula to create Insp Lot
+        /*
+         onSubmitNewPress: async function () {
+            var oViewModelData = this.getView().getModel("ViewModel").getData();
+            BusyIndicator.show();
+
+            try {
+                if (!this._oSubmitNewDialog) {
+                    this._oSubmitNewDialog = await this.loadFragment({
+                        name: "com.monsterenergy.qm.me.qm.qateam.fragment.SubmitNewDialog"
+                    });
+                    this._oSubmitNewDialog.setModel(new JSONModel({}), "SubmitNewModel");
+                }
+            } catch (error) {
+                return;
+            }
+
+            this.getView().byId("create_batch").setEditable(false);
+            this.getView().byId("create_material").setValueState("None");
+            this.getView().byId("create_batch").setValueState("None");
+            this.getView().byId("submitter_name").setValueState("None");
+            this.getView().byId("submitter_email").setValueState("None");
+
+            this._oSubmitNewDialog.getModel("SubmitNewModel").setData({
+                Matnr: "",
+                Werk: this.sPlant,
+                Charg: "",
+                Userc2: "",
+                Zzhbcformula: "",
+                Atwrt: "",
+                Hsdat: "",
+                SubmitterName: oViewModelData.SubmitterName,
+                SubmitterEmail: oViewModelData.SubmitterEmail,
+            });
+            this._oSubmitNewDialog.open();
+            BusyIndicator.hide();
+        },
+        /*getBatchForFilterArea: function () {
+            var aTokens = this._oMaterialMultiInput.getTokens();
+            var oBatchModel = this.getView().getModel("BatchF4Model");
+            var sMaterial = [];
+            if (aTokens.length === 0) {
+                if (oBatchModel) {
+                    oBatchModel.setData({ results: [] });
+                }
+                return;
+            }
+            aTokens.forEach(oToken => sMaterial.push(oToken.getKey()));
+            this.getBatchF4(sMaterial);
+        },
+          onSubmitPress: async function () {
+            var oSubmitNewModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
+            var oCreateObject = oSubmitNewModel.getData();
+            var oMaterialIp = this.getView().byId("create_material");
+            var oBatchIp = this.getView().byId("create_batch");
+            var oSubmitterNameIp = this.getView().byId("submitter_name");
+            var oSubmitterEmailIp = this.getView().byId("submitter_email");
+            var bIsValid = true;
+
+            if (!oCreateObject.Matnr) {
+                oMaterialIp.setValueState("Error");
+                oMaterialIp.setValueStateText(this.getResourceBundle().getText("enterMaterial"));
+                bIsValid = false;
+            }
+
+            if (!oCreateObject.Charg) {
+                oBatchIp.setValueState("Error");
+                oBatchIp.setValueStateText(this.getResourceBundle().getText("enterBatch"));
+                bIsValid = false;
+            }
+
+            if (!bIsValid) {
+                MessageToast.show(this.getResourceBundle().getText("fillMandatory"));
+                return;
+            }
+            BusyIndicator.show();
+            var oInspectionDetails = await this._getInspectionDetails();
+            if (oInspectionDetails.results.length > 0) {
+                this.getBatchF4();
+                //this.getBatchForFilterArea();
+                this._navToInspChars(oCreateObject.Werk, oCreateObject.Matnr, oCreateObject.Charg,
+                    oCreateObject.SubmitterName, oCreateObject.SubmitterEmail, true);
+                this._oSubmitNewDialog.close();
+            } else {
+                MessageToast.show(this.getResourceBundle().getText("inspDetNotFound"));
+            }
+            BusyIndicator.hide();
+        },
+        onCancelPress: function () {
+            this.getBatchF4();
+            this._oSubmitNewDialog.getModel("SubmitNewModel").setData({});
+            this._oSubmitNewDialog.close();
+        },
+        onMaterialValueChange: async function (oEvent) {
+            var oSource = oEvent.getSource();
+            var sValue = oSource.getValue();
+            var oBatchIp = this.getView().byId("create_batch");
+            var oMaterialF4Model = this.getView().getModel("MaterialF4Model");
+
+            oBatchIp.setValue("");
+            oBatchIp.setEditable(false);
+            this._setSubmitDialogDefaultvalues();
+
+            if (!sValue) {
+                oSource.setValueState("Error");
+                oSource.setValueStateText(this.getResourceBundle().getText("enterMaterial"));
+                return;
+            }
+
+            var oFound = oMaterialF4Model.getProperty("/results").find((oResult) => sValue === oResult.Matnr);
+            if (!oFound) {
+                oSource.setValue("");
+                oSource.setValueState("Error");
+                oSource.setValueStateText(this.getResourceBundle().getText("invalidMaterial"));
+                return;
+            } else {
+                oSource.setValueState("None");
+            }
+
+            oBatchIp.setEditable(true);
+
+            this.getBatchF4([sValue]);
+        },
+        onBatchValueChange: async function (oEvent) {
+            var oSource = oEvent.getSource();
+            var sValue = oSource.getValue();
+            var oBatchF4Model = this.getView().getModel("BatchF4Model");
+
+            this._setSubmitDialogDefaultvalues();
+
+            if (!sValue) {
+                oSource.setValueState("Error");
+                oSource.setValueStateText(this.getResourceBundle().getText("enterBatch"));
+                return;
+            }
+
+            var oFound = oBatchF4Model.getProperty("/results").find((oResult) => sValue === oResult.Charg);
+            if (!oFound) {
+                oSource.setValue("");
+                oSource.setValueState("Error");
+                oSource.setValueStateText(this.getResourceBundle().getText("invalidBatch"));
+                return;
+            } else {
+                oSource.setValueState("None");
+            }
+
+            //this._getInspectionDetails();
+        },
+        */
+        //--EOC commented by Sharath for this requirement- REQ0032723 on 02/12/2025
+
+        // --BOC – Deprecated by Sharath on 04/12/2025 (REQ0032723)
+        // Reason: Functionality replaced by IAS-based user handling
+        /*  onSubmitterNameChange: function (oEvent) {
+                    var oSource = oEvent.getSource();
+                    var sName = oSource.getValue();
+        
+                    if (!sName) {
+                        oSource.setValueState("Error");
+                        oSource.setValueStateText(this.getResourceBundle().getText("enterSubName"));
+                    } else {
+                        oSource.setValueState("None");
+                    }
+                },
+                onEmailChange: function (oEvent) {
+                    var oSource = oEvent.getSource();
+                    var sMail = oSource.getValue();
+                    var regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        
+                    if (!regex.test(sMail)) {
+                        oSource.setValue("");
+                        oSource.setValueState("Error");
+                        oSource.setValueStateText(this.getResourceBundle().getText("invalidEmail"));
+                    } else {
+                        oSource.setValueState("None");
+                    }
+                },
+                _setSubmitDialogDefaultvalues: function () {
+                    var oSumbitModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
+                    oSumbitModel.setProperty("/Zzhbcformula", "");
+                    oSumbitModel.setProperty("/Atwrt", "");
+                    oSumbitModel.setProperty("/Hsdat", "");
+                },
+                */
+        //--EOC by Sharath on 04/12/2025 (REQ0032723)
+
+        // --BOC – Deprecated by Sharath on 04/12/2025  by Sharath on 04/12/2025 (REQ0032723)
+        // Reason: Functionality replaced by Adding PO , Material and Multi-Formula combination
+        /*_getInspectionDetails: async function () {
+                    var oSumbitModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
+                    var oData = oSumbitModel.getData();
+                    var aFilters = [new Filter({ path: "Werk", operator: FilterOperator.EQ, value1: oData.Werk }),
+                    new Filter({ path: "Matnr", operator: FilterOperator.EQ, value1: oData.Matnr }),
+                    new Filter({ path: "Charg", operator: FilterOperator.EQ, value1: oData.Charg })];
+                    var oInspDetails = { results: [] };
+        
+        
+                    try {
+                        oInspDetails = await this.readDataFromODataModel("/InspectionDetailsSet", aFilters);
+                    } catch (error) { }
+        
+                    if (oInspDetails && oInspDetails.results.length > 0) {
+                        oSumbitModel.setProperty("/Zzhbcformula", oInspDetails.results[0].Zzhbcformula);
+                        oSumbitModel.setProperty("/Atwrt", oInspDetails.results[0].Atwrt);
+                        oSumbitModel.setProperty("/Hsdat", oInspDetails.results[0].Hsdat);
+                    }
+                    return new Promise(resolve => resolve(oInspDetails));
+                },
+/*
+               onItemPress: async function (oEvent) {
+            var oViewModelData = this.getView().getModel("ViewModel").getData();
+            var oSelectedContext = oEvent.getSource().getSelectedItem().getBindingContext();
+            var oSelcetedObject = oSelectedContext.getObject();
+            this._navToInspChars(oSelcetedObject.Werk, oSelcetedObject.Matnr, oSelcetedObject.Charg, oViewModelData.SubmitterName, oViewModelData.SubmitterEmail, false);
+        },
+        _navToInspChars: function (sPlant, sMaterial, sBatch, sSubmitterName, sSubmitterEmail, bIsSubmitNew) {
+            var oObj = {
+                Plant: window.encodeURIComponent(sPlant),
+                Material: window.encodeURIComponent(sMaterial),
+                Batch: window.encodeURIComponent(sBatch),
+                SubmitterName: window.encodeURIComponent(sSubmitterName),
+                SubmitterEmail: window.encodeURIComponent(sSubmitterEmail),
+                IsSubmitNew: window.encodeURIComponent(bIsSubmitNew),
+            }
+            this.getRouter().navTo("RouteCharacteristicOverview", oObj);
+        },
+        */
+        /*
+                onItemPress: async function (oEvent) {
+                    var oViewModelData = this.getView().getModel("ViewModel").getData();
+                    var oSelectedContext = oEvent.getSource().getSelectedItem().getBindingContext();
+                    var oSelcetedObject = oSelectedContext.getObject();
+        
+                    var sSubmitterName = this._isQMUser ? "none" : oViewModelData.SubmitterName || "none";
+                    var sSubmitterEmail = this._isQMUser ? "none" : oViewModelData.SubmitterEmail || "none";
+        
+                    this._navToInspChars(oSelcetedObject.Werk, oSelcetedObject.Matnr, oSelcetedObject.Charg, sSubmitterName, sSubmitterEmail, false);
+                },
+                _navToInspChars: function (sPlant, sMaterial, sBatch, sSubmitterName, sSubmitterEmail, bIsSubmitNew) {
+                    var oObj = {
+                        Plant: window.encodeURIComponent(sPlant),
+                        Material: window.encodeURIComponent(sMaterial),
+                        Batch: window.encodeURIComponent(sBatch),
+                        SubmitterName: window.encodeURIComponent(sSubmitterName),
+                        SubmitterEmail: window.encodeURIComponent(sSubmitterEmail),
+                        IsSubmitNew: window.encodeURIComponent(bIsSubmitNew),
+                        IsQMUser: encodeURIComponent(this._isQMUser === true ? "true" : "false")
+                    }
+                    this.getRouter().navTo("RouteCharacteristicOverview", oObj);
+                },  
+                  */
+        //--EOC by Sharath on 04/12/2025 (REQ0032723)
+
+        //++BOC | REQ0032724 | Syrup Batch, Sample Type & Purchase Order Value Helps | by Sharath on 01/12/2025
         SyrupBatchValueHelp: function (oEvent) {
             this.getSyrupBatchF4();
 
@@ -1296,7 +1594,7 @@ sap.ui.define([
                 oPurchaseOrderF4 = await this.readDataFromODataModel("/PO_F4Set",
                     [
                         new Filter({ path: "Werks", operator: FilterOperator.EQ, value1: this.sPlant }),
-                        new Filter({ path: "Distinct", operator: FilterOperator.EQ, value1: "X" })
+                        // new Filter({ path: "Distinct", operator: FilterOperator.EQ, value1: "X" })
                     ]);
 
             } catch (Error) {
@@ -1371,7 +1669,7 @@ sap.ui.define([
         },
 
         onPOLiveChange: function (oEvent) {
-            this.getPurchaseOrderF4();
+            oEvent.getSource().setValue("");
         },
 
         onPurchaseOrderClose: function (oEvent) {
@@ -1437,7 +1735,7 @@ sap.ui.define([
             }
         },
 
-        //++EOC | REQ0032724
+        //++EOC | REQ0032724 by Sharath on 04/12/2025
 
         //++BOC | REQ0032723 | Purchase Order Selection & Movement Logic – by Sharath on 04/12/2025
 
@@ -1459,18 +1757,21 @@ sap.ui.define([
         },
 
         loadPOList: function () {
-            const oModel = this.getView().getModel();
             const oView = this.getView();
+            const oODataModel = oView.getModel();
             let oPOModel = oView.getModel("POModel");
+
             if (!oPOModel) {
                 oPOModel = new sap.ui.model.json.JSONModel();
                 oPOModel.setSizeLimit(50000);
                 oView.setModel(oPOModel, "POModel");
             }
+
             const aFilters = [
                 new sap.ui.model.Filter("Werks", sap.ui.model.FilterOperator.EQ, this.sPlant)
             ];
-            oModel.read("/PO_F4Set", {
+
+            oODataModel.read("/PO_F4Set", {
                 filters: aFilters,
                 success: function (oData) {
                     oPOModel.setData(oData);
@@ -1480,6 +1781,7 @@ sap.ui.define([
                 }
             });
         },
+
 
         onPOSearch: function (oEvent) {
             const sQuery = oEvent.getParameter("value").trim();
@@ -1532,6 +1834,9 @@ sap.ui.define([
 
             oSubmitModel.setProperty("/Charg", oSelected.Charg);
             oEvent.getSource().getBinding("items").filter([]);
+        },
+        onBlockManualPOInput: function (oEvent) {
+            oEvent.getSource().setValue("");
         },
 
         onPurchaseOrderChangeInsp: function (oEvent) {
@@ -1590,7 +1895,7 @@ sap.ui.define([
             this.POFormulaF4(sBatch);
         },
 
-        //++EOC | REQ0032723
+        //++EOC | REQ0032723 by sharath on 04/12/2025
 
         //++BOC | REQ0032723 | PO Formula F4 & Submit New Handling – by Sharath on 04/12/2025
 
@@ -1673,6 +1978,7 @@ sap.ui.define([
 
         onSubmitNewPress: function () {
             const oView = this.getView();
+            this.loadPOList();
             if (!this._oSubmitNewDialog) {
                 this._oSubmitNewDialog = sap.ui.xmlfragment(
                     oView.getId(),
@@ -1719,7 +2025,7 @@ sap.ui.define([
             this._setFormulaDetails(oFormula);
         },
 
-        //++EOC | REQ0032723
+        //++EOC | REQ0032723 by Sharath on 04/12/2025
         //++BOC | REQ0032723 | Submit New & Navigation Handling – by Sharath on 04/12/2025
 
         onSubmitPress: async function () {
@@ -1731,7 +2037,7 @@ sap.ui.define([
             // const oData = oModel.getData();
             BusyIndicator.show();
 
-            //--BOC | REQ0032723 | Old Inspection Details Logic (Commented)
+            //--BOC | REQ0032723 | Commented by sharath on 04/12/2025
             /*
                 // const oInspectionResult = await this._getInspectionDetails();
         
@@ -1758,7 +2064,7 @@ sap.ui.define([
         
                 BusyIndicator.hide();
             */
-            //--EOC | REQ0032723
+            //--EOC | REQ0032723 by Sharath on 04/12/2025
 
             const sFormula =
                 this.sSelectedFormula ||
@@ -1847,108 +2153,7 @@ sap.ui.define([
             this.getRouter().navTo("RouteCharacteristicOverview", oParams);
         },
 
-        //++EOC | REQ0032723
-
-
-        // ++BOC – Deprecated by Sharath on 04/12/2025
-        // Reason: Functionality replaced by IAS-based user handling
-        /*  onSubmitterNameChange: function (oEvent) {
-                    var oSource = oEvent.getSource();
-                    var sName = oSource.getValue();
-        
-                    if (!sName) {
-                        oSource.setValueState("Error");
-                        oSource.setValueStateText(this.getResourceBundle().getText("enterSubName"));
-                    } else {
-                        oSource.setValueState("None");
-                    }
-                },
-                onEmailChange: function (oEvent) {
-                    var oSource = oEvent.getSource();
-                    var sMail = oSource.getValue();
-                    var regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        
-                    if (!regex.test(sMail)) {
-                        oSource.setValue("");
-                        oSource.setValueState("Error");
-                        oSource.setValueStateText(this.getResourceBundle().getText("invalidEmail"));
-                    } else {
-                        oSource.setValueState("None");
-                    }
-                },
-                _setSubmitDialogDefaultvalues: function () {
-                    var oSumbitModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
-                    oSumbitModel.setProperty("/Zzhbcformula", "");
-                    oSumbitModel.setProperty("/Atwrt", "");
-                    oSumbitModel.setProperty("/Hsdat", "");
-                },
-                */
-        //++EOC
-
-        // ++BOC – Deprecated by Sharath on 04/12/2025
-        // Reason: Functionality replaced by Adding PO , Material and Multi-Formula combination
-        /*_getInspectionDetails: async function () {
-                    var oSumbitModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
-                    var oData = oSumbitModel.getData();
-                    var aFilters = [new Filter({ path: "Werk", operator: FilterOperator.EQ, value1: oData.Werk }),
-                    new Filter({ path: "Matnr", operator: FilterOperator.EQ, value1: oData.Matnr }),
-                    new Filter({ path: "Charg", operator: FilterOperator.EQ, value1: oData.Charg })];
-                    var oInspDetails = { results: [] };
-        
-        
-                    try {
-                        oInspDetails = await this.readDataFromODataModel("/InspectionDetailsSet", aFilters);
-                    } catch (error) { }
-        
-                    if (oInspDetails && oInspDetails.results.length > 0) {
-                        oSumbitModel.setProperty("/Zzhbcformula", oInspDetails.results[0].Zzhbcformula);
-                        oSumbitModel.setProperty("/Atwrt", oInspDetails.results[0].Atwrt);
-                        oSumbitModel.setProperty("/Hsdat", oInspDetails.results[0].Hsdat);
-                    }
-                    return new Promise(resolve => resolve(oInspDetails));
-                },
-                onItemPress: async function (oEvent) {
-                    var oViewModelData = this.getView().getModel("ViewModel").getData();
-                    var oSelectedContext = oEvent.getSource().getSelectedItem().getBindingContext();
-                    var oSelcetedObject = oSelectedContext.getObject();
-                    this._navToInspChars(oSelcetedObject.Werk, oSelcetedObject.Matnr, oSelcetedObject.Charg, oViewModelData.SubmitterName, oViewModelData.SubmitterEmail, false);
-                },
-                _navToInspChars: function (sPlant, sMaterial, sBatch, sSubmitterName, sSubmitterEmail, bIsSubmitNew) {
-                    var oObj = {
-                        Plant: window.encodeURIComponent(sPlant),
-                        Material: window.encodeURIComponent(sMaterial),
-                        Batch: window.encodeURIComponent(sBatch),
-                        SubmitterName: window.encodeURIComponent(sSubmitterName),
-                        SubmitterEmail: window.encodeURIComponent(sSubmitterEmail),
-                        IsSubmitNew: window.encodeURIComponent(bIsSubmitNew),
-                    }
-                    this.getRouter().navTo("RouteCharacteristicOverview", oObj);
-                },
-              
-                onItemPress: async function (oEvent) {
-                    var oViewModelData = this.getView().getModel("ViewModel").getData();
-                    var oSelectedContext = oEvent.getSource().getSelectedItem().getBindingContext();
-                    var oSelcetedObject = oSelectedContext.getObject();
-        
-                    var sSubmitterName = this._isQMUser ? "none" : oViewModelData.SubmitterName || "none";
-                    var sSubmitterEmail = this._isQMUser ? "none" : oViewModelData.SubmitterEmail || "none";
-        
-                    this._navToInspChars(oSelcetedObject.Werk, oSelcetedObject.Matnr, oSelcetedObject.Charg, sSubmitterName, sSubmitterEmail, false);
-                },
-                _navToInspChars: function (sPlant, sMaterial, sBatch, sSubmitterName, sSubmitterEmail, bIsSubmitNew) {
-                    var oObj = {
-                        Plant: window.encodeURIComponent(sPlant),
-                        Material: window.encodeURIComponent(sMaterial),
-                        Batch: window.encodeURIComponent(sBatch),
-                        SubmitterName: window.encodeURIComponent(sSubmitterName),
-                        SubmitterEmail: window.encodeURIComponent(sSubmitterEmail),
-                        IsSubmitNew: window.encodeURIComponent(bIsSubmitNew),
-                        IsQMUser: encodeURIComponent(this._isQMUser === true ? "true" : "false")
-                    }
-                    this.getRouter().navTo("RouteCharacteristicOverview", oObj);
-                },
-          */
-        //++EOC
+        //++EOC | REQ0032723 by Sharath on 04/12/2025
 
 
         //++BOC | REQ0032729 | Export to Excel Feature – by PANKAJ MISHRA on 16/12/2025
@@ -2037,7 +2242,7 @@ sap.ui.define([
                 oThis.onExportExcel(null, aBatchInputSet);
             }
         },
-        //++EOC | REQ0032729 | Export to Excel Button Press Handler – PANKAJ MISHRA
+        //++EOC | REQ0032729 | Export to Excel Button Press Handler – PANKAJ MISHRA on 16/12/2025
 
         /**
          * Loads ExcelJS library dynamically if not already loaded
@@ -2074,7 +2279,7 @@ sap.ui.define([
                 });
             });
         },
-        //++EOC | REQ0032729 | Load ExcelJS Library Dynamically – PANKAJ MISHRA
+        //++EOC | REQ0032729 | Load ExcelJS Library Dynamically – PANKAJ MISHRA on 16/12/2025
 
         /**
          * Generates a sanitized and unique sheet name from Material and Batch.
@@ -2312,7 +2517,7 @@ sap.ui.define([
                 col.width = maxLength + 2;
             });
         },
-        //++EOC | REQ0032729 | Create Excel Sheet from Response Data – PANKAJ MISHRA
+        //++EOC | REQ0032729 | Create Excel Sheet from Response Data – PANKAJ MISHRA on 16/12/2025
 
         /**
          * Unified function to export inspection data to Excel file.
@@ -2506,9 +2711,9 @@ sap.ui.define([
                 console.error("Export error:", oError);
             }
         },
-        //++EOC | REQ0032729 | Unified Export to Excel Function – PANKAJ MISHRA
+        //++EOC | REQ0032729 | Unified Export to Excel Function – PANKAJ MISHRA on 16/12/2025
 
-        //++EOC | REQ0032729 | Export to Excel Feature – PANKAJ MISHRA
+        //++EOC | REQ0032729 | Export to Excel Feature – PANKAJ MISHRA on 16/12/2025
 
         //++BOC | REQ0032717 | Download Mass Upload Template – by Sharath on 05/12/2025
         onDownloadTemplate: function () {
@@ -2627,7 +2832,7 @@ sap.ui.define([
                 }
             });
         },
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
         //++BOC | REQ0032717 | Deprecated: Spreadsheet Export Implementation –  by Sharath on 05/12/2025
         /*
@@ -2708,7 +2913,7 @@ sap.ui.define([
         _fileBuffer: null,
         _jsonPayload: null,
         _selectedOperations: [],
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
         //++BOC | REQ0032717 | Open Mass Upload Dialog –  by Sharath on 08/12/2025
         onOpenUploadDialog: function () {
@@ -2732,7 +2937,7 @@ sap.ui.define([
                 this._oUploadDialog.open();
             }
         },
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
         //++BOC | REQ0032717 | Function to display the operation details in a checkbox – by Sharath on 09/12/2025
         getOperation: async function () {
@@ -2776,7 +2981,7 @@ sap.ui.define([
                 );
             });
         },
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
 
         //++BOC | REQ0032717 | Handle the file size in MB for display – by Sharath on 08/12/2025
@@ -2809,11 +3014,14 @@ sap.ui.define([
             };
             reader.readAsArrayBuffer(oFile);
         },
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
         //++BOC | REQ0032717 | Validation and restriction on the number of InspLot/line items uploaded at one time – by Sharath on 11/12/2025
         _validateUniqueMaterialBatch: function (data) {
             const header = data[0];
+            const POnoIndex = header.indexOf("HDR|QALS-EBELN");
+            const POItemIndex = header.indexOf("HDR|QALS-EBELP");
+            const FormulaIndex = header.indexOf("HDR|MAPL-SUCHFELD");
             const matIndex = header.indexOf("HDR|QALS-MATNR");
             const batchIndex = header.indexOf("HDR|QALS-CHARG");
 
@@ -2822,21 +3030,24 @@ sap.ui.define([
             for (let i = 4; i < data.length; i++) {
                 const row = data[i] || [];
 
+                const POno = String(row[POnoIndex] || "").trim();
+                const POItem = String(row[POItemIndex] || "").trim();
+                const Formula = String(row[FormulaIndex] || "").trim();
                 const material = String(row[matIndex] || "").trim();
                 const batch = String(row[batchIndex] || "").trim();
 
-                if (!material && !batch) {
+                if (!material && !batch && !POno && !POItem && !Formula) {
                     continue;
                 }
 
-                unique.add(material + "__" + batch);
+                unique.add(POno + "__" + POItem + "__" + material + "__" + batch + "__" + Formula);
             }
 
             if (unique.size > 50) {
                 const excess = unique.size - 50;
 
                 sap.m.MessageBox.warning(
-                    `Only up to 50 unique Material – Batch combinations are allowed.\n` +
+                    `Only up to 50 unique POno, POItem, Material, Batch, Formula combinations are allowed.\n` +
                     `You have added ${unique.size} combinations (${excess} more than allowed).`
                 );
                 return false;
@@ -2845,7 +3056,7 @@ sap.ui.define([
             return true;
         },
 
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
 
 
@@ -2872,7 +3083,7 @@ sap.ui.define([
                 MessageBox.error("Processing failed: " + e.message);
             }
         },
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
         //++BOC | REQ0032717 | Get selected operations from checkbox – by Sharath on 09/12/2025
         _getSelectedOperations: function () {
@@ -2896,7 +3107,7 @@ sap.ui.define([
 
             return aSelectedOps;
         },
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
         //++BOC | REQ0032717 | Build payload from Excel based on selected operations –by Sharath on 10/12/2025
         _buildPayloadFromExcel: function () {
@@ -2953,7 +3164,7 @@ sap.ui.define([
                 })
             };
         },
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
 
         //++BOC | REQ0032717 | Send payload to backend – Fetch CSRF token – by Sharath on 10/12/2025
@@ -2985,7 +3196,7 @@ sap.ui.define([
                 }
             });
         },
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
         //++BOC | REQ0032717 | Post mass upload payload to backend – by Sharath on 10/12/2025
         _postUploadPayload: function () {
@@ -3026,7 +3237,7 @@ sap.ui.define([
                 }
             });
         },
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
         //++BOC | REQ0032717 | Extract OData backend error message – by Sharath on 10/12/2025
         _extractODataError: function (err) {
@@ -3042,13 +3253,13 @@ sap.ui.define([
                 return "backend issue.";
             }
         },
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
         //++BOC | REQ0032717 | Close mass upload dialog – by Sharath on 11/12/2025
         onCloseDialog: function () {
             this.byId("uploadDialog")?.close();
         },
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
         //++BOC | REQ0032717 | Display backend success response table – by Sharath on 12/12/2025
         _showSuccessTable: function (jsonRes) {
@@ -3104,7 +3315,7 @@ sap.ui.define([
                 MessageBox.error("Unable to display backend table.");
             }
         },
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
         //++BOC | REQ0032717 | Download upload summary as Excel – by Sharath on 12/12/2025
         _downloadExcel: function (data) {
@@ -3113,7 +3324,7 @@ sap.ui.define([
             XLSX.utils.book_append_sheet(wb, ws, "Upload Summary");
             XLSX.writeFile(wb, "Upload_Summary.xlsx");
         },
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
         //++BOC | REQ0032717 | Reset dialog state after upload – by Sharath on 11/12/2025
         _resetDialogState: function () {
@@ -3124,14 +3335,14 @@ sap.ui.define([
             this.byId("fileUploader")?.clear();
             this.byId("fileSizeText")?.setText("File Size: 0 MB");
         },
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
         //++BOC | REQ0032717 | Reset file state on file change/error – by Sharath on 11/12/2025
         _resetFileState: function () {
             this._selectedFile = null;
             this._fileBuffer = null;
         },
-        //++EOC | REQ0032717
+        //++EOC | REQ0032717 by Sharath on 05/12/2025
 
         //++BOC | REQ0032723 | Handle sort button press – by Sharath on 15/12/2025
         handleSortButtonPressed: function () {
@@ -3142,7 +3353,7 @@ sap.ui.define([
                 oDialog.open();
             }.bind(this));
         },
-        //++EOC | REQ0032723
+        //++EOC | REQ0032723 by Sharath on 05/12/2025
 
         //++BOC | REQ0032723 | Load and cache ViewSettings (Sort) dialog – by Sharath on 15/12/2025
         getViewSettingsDialog: function (sDialogFragmentName) {
@@ -3163,7 +3374,7 @@ sap.ui.define([
             }
             return this._mViewSettingsDialogs[sDialogFragmentName];
         },
-        //++EOC | REQ0032723
+        //++EOC | REQ0032723 by Sharath on 05/12/2025
 
         //++BOC | REQ0032723 | Handle sort dialog confirm action – by Sharath on 15/12/2025
         handleSortDialogConfirm: function (oEvent) {
@@ -3199,7 +3410,7 @@ sap.ui.define([
                 this.oSmartVariantManagement.currentVariantSetModified(true);
             }
         },
-        //++EOC | REQ0032723
+        //++EOC | REQ0032723 by Sharath on 05/12/2025
 
         //++BOC | REQ0032723 | Handle sort change from table column menu – by Sharath on 15/12/2025
         onSortChange: function (oEvent) {
@@ -3222,7 +3433,7 @@ sap.ui.define([
                 this.oSmartVariantManagement.currentVariantSetModified(true);
             }
         },
-        //++EOC | REQ0032723
+        //++EOC | REQ0032723 by Sharath on 05/12/2025
 
         //++BOC | REQ0032723 | Cleanup ViewSettings dialogs on exit – by Sharath on 15/12/2025
         onExit: function () {
@@ -3232,7 +3443,7 @@ sap.ui.define([
             }
             this._mViewSettingsDialogs = {};
         }
-        //++EOC | REQ0032723
+        //++EOC | REQ0032723 by Sharath on 05/12/2025
 
     });
 });

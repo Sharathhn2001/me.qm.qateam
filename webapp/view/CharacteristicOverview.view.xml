@@ -61,7 +61,7 @@
                             selectionChange="onSegButtonSelectionChange"
                         />
                     </HBox>
-
+<!-- ++BOC REQ0032724 - Edit button visibility logic | Sharath | 02/12/2025 -->
                     <Button
                         text="{i18n>edit}"
                         type="Emphasized"
@@ -75,6 +75,7 @@ visible="{= ${ViewModel>/isQMUser} === true || ${ViewModel>/isQMUser} === 'true'
         : false) }"
                         press=".onEditPress"
                     />
+                    <!-- ++EOC REQ0032724 | Sharath | 02/12/2025 -->
                 </uxap:actions>
             </uxap:ObjectPageDynamicHeaderTitle>
         </uxap:headerTitle>
@@ -131,7 +132,7 @@ visible="{= ${ViewModel>/isQMUser} === true || ${ViewModel>/isQMUser} === 'true'
                             text="{InspectionDetailsModel>/Ebeln} - {InspectionDetailsModel>/Ebelp}"
                             class="sapUiTinyMarginBottom"
                         />
-                        <!--++EOC REQ0032723 - End of ObjectStatus for Purchase Order - -->
+                        <!--++EOC REQ0032723 - End of ObjectStatus for Purchase Order - by Sharath on 05/12/2025 - -->
                         <ObjectStatus
                             id="objStatusMaterial"
                             title="{i18n>material}"
@@ -184,7 +185,7 @@ visible="{= ${ViewModel>/isQMUser} === true || ${ViewModel>/isQMUser} === 'true'
                             text="{InspectionDetailsModel>/CodeValText}"
                             class="sapUiTinyMarginBottom"
                         />
-                        <!--++EOC REQ0032723 - End of ObjectStatus for UD Status -->
+                        <!--++EOC REQ0032723 - End of ObjectStatus for UD Status - by Sharath on 05/12/2025 -->
                     </VBox>
                 </grid:items>
             </grid:CSSGrid>

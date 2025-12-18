@@ -14,10 +14,10 @@
         *     • Providing generic value help (F4) dialog initialization and handling.
         *     
         *     
-        * ObjectID          : 
+        * ObjectID          : Production Data Submission APP
         * Author            : Sharath H N
         * Date              : 
-        * Business Contact  :
+        * Business Contact  :Ajinkya Kharade
         *-----------------------------------------------------------------------*
         * Misc. Notes       : NA
         *-----------------------------------------------------------------------*
@@ -118,7 +118,7 @@ sap.ui.define([
                     contentType: 'application/json',
                     success: function (data) {
                         const oView = this.getView();
-                        //++BOC- chnages to extract the User details from IAS - Changes done on 17/12/2025 by Sharath
+                        //++BOC- (REQ0032717)changes to extract the User details from IAS - Changes done on 17/12/2025 by Sharath
                         const firstName = data.firstname || "";
                         const lastName = data.lastname || "";
                         const email = Array.isArray(data.email) ? data.email[0] : data.email;
@@ -146,9 +146,9 @@ sap.ui.define([
                                 Plant: null,
                                 PlantName: null,
                                 email: data.email,
-                                email: email, //++Added 
-                                firstName: firstName,// ++Added 
-                                lastName: lastName//++Added
+                                email: email, //++Added by sharath(REQ0032717)
+                                firstName: firstName,// ++Added by sharath(REQ0032717)
+                                lastName: lastName//++Added by sharath(REQ0032717)
                             });
                             return;
                         }
@@ -171,9 +171,9 @@ sap.ui.define([
                                 Plant: PlantCode,
                                 PlantName: PlantName,
                                 email: data.email,
-                                email: email,//++Added 
-                                firstName: firstName,//++Added 
-                                lastName: lastName//++Added 
+                                email: email,//++Added by sharath on 17/12/2025 (REQ0032717)
+                                firstName: firstName,//++Added by sharath on  17/12/2025 (REQ0032717)
+                                lastName: lastName//++Added by Sharath on 17/12/2025 (REQ0032717)
                       
                
                             });
@@ -195,7 +195,7 @@ sap.ui.define([
 
         //Deprecated – not in use
         //  Reason: Email sharing functionality is no longer required
-        //Deprecated by Sharath on 17/12/2025
+        //Deprecated by Sharath on 17/12/2025 (REQ0032717)
         /*
         onShareEmailPress: function () {
             var oViewModel = (this.getModel("objectView") || this.getModel("worklistView"));

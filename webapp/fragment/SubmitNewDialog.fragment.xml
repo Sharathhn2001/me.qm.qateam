@@ -4,7 +4,7 @@
     xmlns:f="sap.ui.layout.form"
     xmlns:core="sap.ui.core"
 >
-     <Dialog title="{i18n>SUBMIT_NEW_TITLE}">
+    <Dialog title="{i18n>SUBMIT_NEW_TITLE}">
         <content>
             <f:SimpleForm
                 id="SimpleFormsubmitnew"
@@ -20,7 +20,7 @@
             >
                 <f:content>
                     <Label
-                          text="{i18n>PURCHASE_ORDER}"
+                        text="{i18n>PURCHASE_ORDER}"
                         required="true"
                     />
                     <Input
@@ -36,6 +36,7 @@
                         valueHelpRequest=".onPurchaseOrderValueHelpRequested"
                         change="onPurchaseOrderChangeInsp"
                         showSuggestion="true"
+                        liveChange=".onBlockManualPOInput"
                         placeholder="Select Purchase Order"
                         suggestionItems="{ path: 'POModel>/results' }"
                     >
@@ -46,7 +47,7 @@
                         />
                     </Input>
                     <Label
-                         text="{i18n>MATERIAL}"
+                        text="{i18n>MATERIAL}"
                         required="true"
                     />
                     <Input
@@ -103,4 +104,4 @@
         </endButton>
     </Dialog>
 </core:FragmentDefinition>
-<!--++EOC REQ0032723 Change to add PO and multi-formula / creation of inspection lot – Sharath -->
+<!--++EOC REQ0032723 Change to add PO and multi-formula / creation of inspection lot - by Sharath on 04/12/2025 -->

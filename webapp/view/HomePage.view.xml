@@ -62,7 +62,7 @@
                                         tokenUpdate=".onFilterGroupItemChange" /> -->
                                 </fb:control>
                             </fb:FilterGroupItem>
-                            <!--++BOC REQ0032724 - Purchase Order Filter Start - 01/12/2025 -->
+                            <!--++BOC REQ0032724 - Purchase Order Filter Start - 01/12/2025 - Sharath -->
                             <fb:FilterGroupItem
                                 id="PurchaseOrderFilterGroupItem"
                                 name="Ebeln"
@@ -106,7 +106,7 @@
                                         showValueHelp="true"
                                         showSuggestion="true"
                                         valueHelpRequest=".onMaterialValueHelpRequested"
-                                        liveChange=".onMaterialLiveChange"         
+                                        liveChange=".onMaterialLiveChange"
                                         tokenUpdate=".onMaterialTokenChange"
                                         suggestionItems="{
 				                            path: 'MaterialF4Model>/results',
@@ -188,12 +188,12 @@
                                     <DateRangeSelection
                                         id="dateRangeSelection"
                                         change=".onFilterGroupItemChange"
-                                        displayFormat="dd.MM.yyyy" 
+                                        displayFormat="dd.MM.yyyy"
                                     />
-                                    <!-- Added by Sharath on 17/12/2025 - change in date format -->
+                                    <!-- REQ0032717 - Added by Sharath on 17/12/2025 - change in date format -->
                                 </fb:control>
                             </fb:FilterGroupItem>
-                            <!--++BOC REQ0032724 - Sample Type Filter Start - 01/12/2025-->
+                            <!--++BOC REQ0032724 - Sample Type Filter Start - 01/12/2025 - Sharath -->
                             <fb:FilterGroupItem
                                 id="sampleFilterGroupItem"
                                 name="SampleType"
@@ -224,7 +224,7 @@
                             </fb:FilterGroupItem>
                             <!--++EOC REQ0032724 - Sample Type Filter End - by Sharath on 01/12/2025-->
 
-                            <!--++BOC REQ0032724 - Syrup Batch Filter Start - 01/12/2025 -->
+                            <!--++BOC REQ0032724 - Syrup Batch Filter Start - 01/12/2025 - Sharath -->
                             <fb:FilterGroupItem
                                 id="syrupBatchFilterGroupItem"
                                 name="SyrupBatch"
@@ -254,15 +254,14 @@
                                 </fb:control>
                             </fb:FilterGroupItem>
                             <!--++EOC REQ0032724 - Syrup Batch Filter End - Sharath-->
-<!--
-++BOC – Not in use | Commented by Sharath on 04/12/2025
+                            <!-- ++BOC REQ0032724 - Not in use | Commented by Sharath on 04/12/2025
 
 <fb:FilterGroupItem
     id="statusFilterGroupItem"
     name="Status"
-    visible="false"
     label="{i18n>status}"
     groupName="Group1"
+    visible="false"
     visibleInFilterBar="true"
 >
     <fb:control>
@@ -279,10 +278,10 @@
     </fb:control>
 </fb:FilterGroupItem>
 
-++EOC
--->
+++EOC REQ0032724 - Commented by Sharath on 04/12/2025 -->
 
-                            <!--++BOC REQ0032724 - UD Status Filter Start - 02/12/2025-->
+                            <!--++BOC REQ0032724 - UD Status Filter Start - 02/12/2025 - Sharath -->
+
                             <fb:FilterGroupItem
                                 id="statusFilterGroupItem"
                                 name="Status"
@@ -371,7 +370,7 @@
                             press=".onSubmitNewPress"
                             type="Emphasized"
                         />
-<!-- ++BOC | Added Sort button | by Sharath on 16/12/2025 -->
+                        <!-- ++BOC | Added Sort button | by Sharath on 16/12/2025 (REQ0032723)-->
                         <Button
                             id="sortbutton"
                             tooltip="Sort"
@@ -379,7 +378,7 @@
                             press="handleSortButtonPressed"
                             type="Emphasized"
                         />
-                        <!-- ++EOC -->
+                        <!-- ++EOC | by Sharath on 16/12/2025 (REQ0032723) -->
                     </OverflowToolbar>
                 </headerToolbar>
                 <columns>
@@ -457,8 +456,8 @@
                             text="{i18n>Syrup Batch : Sample Type}"
                         />
                     </Column>
-                    <!--++EOC REQ0032724 - Sample Type Column End - by Sharath on 01/12/2025-->
-                    <!--++BOC REQ0032724 - User Status Column Start - by Sharath on 01/12/2025 -->
+                    <!--++EOC REQ0032724 - Sample Type Column End - by Sharath on 02/12/2025-->
+                    <!--++BOC REQ0032724 - User Status Column Start - by Sharath on 02/12/2025 -->
                     <Column
                         id="userstatusColumn"
                         hAlign="Begin"
@@ -469,7 +468,7 @@
                             text="{i18n>udstatus}"
                         />
                     </Column>
-                    <!--++EOC REQ0032724 - User Status Column End - by Sharath on 01/12/2025 -->
+                    <!--++EOC REQ0032724 - User Status Column End - by Sharath on 02/12/2025 -->
                 </columns>
                 <items>
                     <ColumnListItem
@@ -484,19 +483,20 @@
                             <!--++BOC REQ0032724 - Display PO/Item, Material, Batch, Formula, Sample Type, CodeValText Start - Sharath -->
                             <Text
                                 text="{Ebeln} - {= ${Ebelp} === '00000' ? '' : parseInt(${Ebelp}, 10) }"
-                            /> <!--++Added PO & Item display-->
+                            />
+                            <!--++Added = REQ0032724 - PO & Item display-->
                             <Text text="{Matnr} - {Maktx}" />
                             <Text text="{Charg}" />
                             <Text text="{Zzhbcformula}" />
-                            <!--
-++BOC – Not in use | Commented by Sharath on 04/12/2025
+                            <!-- ++BOC REQ0032724 - Not in use | Commented by Sharath on 04/12/2025
 <Text text="{Statusdesc}" />
-++EOC
--->
+++EOC REQ0032724 - Not in use | Commented by Sharath on 04/12/2025 -->
 
-                            <Text text="{SampleSyrup}" /> <!--++Added Sample Type/Syrup Batch display-->
-                            <Text text="{CodeValText}" />  <!--++Added CodeValText display-->
-                    
+                            <Text text="{SampleSyrup}" />
+                            <!--++Added Sample Type/Syrup Batch display (REQ0032724)-->
+                            <Text text="{CodeValText}" />
+                            <!--++Added CodeValText display (REQ0032724)-->
+
                             <!--++EOC REQ0032724 - End of added display fields - Sharath-->
                         </cells>
                     </ColumnListItem>
