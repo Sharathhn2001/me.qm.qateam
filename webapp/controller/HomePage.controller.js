@@ -93,7 +93,7 @@ sap.ui.define([
         formatter: Formatter,
         async onInit() {
             try {
-
+/*
                 const oPlantDetails = await this._getIasDetails();
                 this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim(); //++Added by sharath on 17/12/2025 to get the User details from IAS- (REQ0032717)
 
@@ -108,12 +108,12 @@ sap.ui.define([
 
                 this.sPlant = "";
                 this.sPlantName = "";
-
+*/
                 // /*Sharath ++BOC - Logic to run the app locally in the absence of IAS
-                //this.sPlant = "3011";
+                this.sPlant = "3011";
                 //   this.sPlantName = "";
                 // ++EOC */
-
+/*
                 if (!this._isQMUser) {
                     this.sPlant = oPlantDetails.Plant;
                     this.sPlantName = oPlantDetails.PlantName;
@@ -128,7 +128,7 @@ sap.ui.define([
                         () => this.PlantF4()
                     );
                 }
-
+*/
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
                     tableNoDataText: this.getResourceBundle().getText("tableNoDataText"),
@@ -1956,24 +1956,6 @@ sap.ui.define([
             oSubmitModel.setProperty("/ZAEHL", oFormulaData.ZAEHL || "");
             oSubmitModel.setProperty("/ZKRIZ", oFormulaData.ZKRIZ || "");
             oSubmitModel.setProperty("/Zzhbcformula", oFormulaData.Zzhbcformula || "");
-        },
-
-        onFormulaChange: function (oEvent) {
-            const oCB = oEvent.getSource();
-            const sKey = oCB.getSelectedKey();
-            const oSubmitModel = this.getView().getModel("SubmitNewModel");
-
-            if (!sKey) {
-                oSubmitModel.setProperty("/Zzhbcformula", "");
-                return;
-            }
-
-            const oFormula = oCB.getSelectedItem()
-                .getBindingContext("FormulaModel")
-                .getObject();
-
-            oSubmitModel.setProperty("/Zzhbcformula", oFormula.Zzhbcformula);
-            this._setFormulaDetails(oFormula);
         },
 
         onSubmitNewPress: function () {

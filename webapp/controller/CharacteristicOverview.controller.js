@@ -790,7 +790,7 @@ sap.ui.define(
 
               if (oCharDetails && oCharDetails.CharDescr.toLowerCase().includes("date") === true) {
                 oColumn7 = new DatePicker({
-                  value: /*"{Longtext}" */"{Remark}", displayFormat: "dd.MM.yyyy", valueFormat: "MM.dd.yyyy", // Change in Date format from MM/DD/YYYY to MM.DD.YYYY by sharath on 17/12/2025 (REQ0032717)
+                  value: /*"{Longtext}" */"{Remark}", displayFormat: "dd.MM.yyyy", valueFormat: "dd.MM.yyyy", // Change in Date format from MM/DD/YYYY to MM.DD.YYYY by sharath on 17/12/2025 (REQ0032717)
                   editable: "{= ${ViewModel>/screenMode} === 'edit' ? ${ViewModel>/CharEditable} === true ? true : false : false}", change: function (oEvent) {
                     var oContext = oEvent.getSource().getBindingContext();
                     var oSelectedObj = oContext.getObject();
