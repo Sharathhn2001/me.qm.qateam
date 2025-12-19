@@ -3028,7 +3028,7 @@ sap.ui.define([
                 const excess = unique.size - 25;
 
                 sap.m.MessageBox.warning(
-                    `Only up to 50 unique POno, POItem, Material, Batch, Formula combinations are allowed.\n` +
+                    `Only up to 25 unique POno, POItem, Material, Batch, Formula combinations are allowed.\n` +
                     `You have added ${unique.size} combinations (${excess} more than allowed).`
                 );
                 return false;
