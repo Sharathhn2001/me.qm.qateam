@@ -109,8 +109,8 @@ sap.ui.define([
                 this.sPlantName = "";
 
                 // /*Sharath ++BOC - Logic to run the app locally in the absence of IAS
-               // this.sPlant = "3011";
-                //   this.sPlantName = "";
+            //    this.sPlant = "3011";
+            //       this.sPlantName = "";
                 // ++EOC */
 
                 if (!this._isQMUser) {
@@ -2012,9 +2012,21 @@ sap.ui.define([
         onSubmitPress: async function () {
             const oSubmitModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
             const oSubmit = oSubmitModel.getData();
-            if (!oSubmit.Ebeln || !oSubmit.Ebelp || !oSubmit.Matnr) {
-                return MessageToast.show("Please select a valid PO with Item and Material");
+            
+            // Validate all 4 mandatory fields with specific error messages
+            if (!oSubmit.Ebeln || !oSubmit.Ebelp) {
+                return MessageToast.show(this.getResourceBundle().getText("enterPurchaseOrder"));
             }
+            if (!oSubmit.Matnr) {
+                return MessageToast.show(this.getResourceBundle().getText("enterMaterial"));
+            }
+            if (!oSubmit.Charg) {
+                return MessageToast.show(this.getResourceBundle().getText("enterBatch"));
+            }
+            if (!oSubmit.Zzhbcformula) {
+                return MessageToast.show(this.getResourceBundle().getText("enterFormula"));
+            }
+            
             // const oData = oModel.getData();
             BusyIndicator.show();
 

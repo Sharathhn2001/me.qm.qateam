@@ -72,10 +72,9 @@
                         text="{i18n>FORMULA}"
                         required="true"
                     />
-                    <ComboBox
+                    <Select
                         id="idFormulaCB"
                         selectedKey="{SubmitNewModel>/Zzhbcformula}"
-                        placeholder="Select Formula"
                         items="{FormulaModel>/results}"
                         change=".onFormulaChange"
                     >
@@ -83,7 +82,7 @@
                             key="{FormulaModel>Zzhbcformula}"
                             text="{FormulaModel>Zzhbcformula}"
                         />
-                    </ComboBox>
+                    </Select>
                 </f:content>
             </f:SimpleForm>
         </content>
