@@ -39,6 +39,14 @@ Modification History:
    - Implemented a Select button
    - Fixed issues in the Inspection Point edit and display screens
 
+3) Request#          : REQ00445334
+   Developer         : Anand Krishna
+   Date              : 19/02/2026
+   Incident          : N/A
+   CMS               : 
+   Description       :
+   - Mapped current login user's full name to Uname field in Inspoints Entity 
+
 *-----------------------------------------------------------------------*
 */
 
@@ -1551,6 +1559,11 @@ sap.ui.define(
         var oThis = this;
         var oCommentsTA = oThis.getView().byId("commentsta");
         var oCharModel = this._oResultsTable.getModel();
+        //++ BOC by ANAND.KRISHN for REQ00445334
+        if (sap.ushell && oCharModel.oData && oCharModel.oData.InspPoint){
+          oCharModel.oData.InspPoint.Uname = sap.ushell.Container.getUser().getFullName();
+        }
+        //++ EOC by ANAND.KRISHN for REQ0044533
         var aCharReq = oCharModel.getProperty("/InspLotCharReq");
         var aCharResults = oCharModel.getProperty("/InspPoint/InspLotSampleResultsSet/results");
         var oCommentsTA = this.getView().byId("commentsedit");
@@ -1584,6 +1597,11 @@ sap.ui.define(
       _ValidateOtherOpeartions: function () {
         var oThis = this;
         var oCharModel = this._oResultsTable.getModel();
+        //++ BOC by ANAND.KRISHN for REQ00445334
+        if (sap.ushell && oCharModel.oData && oCharModel.oData.InspPoint){
+          oCharModel.oData.InspPoint.Uname = sap.ushell.Container.getUser().getFullName();
+        }
+        //++ EOC by ANAND.KRISHN for REQ0044533
         var aCharReq = oCharModel.getProperty("/InspLotCharReq");
         //var aCharResSpec = oCharModel.getProperty("/CharResultSpec");
         var aCharResults = oCharModel.getProperty("/InspPoint/InspLotSampleResultsSet/results");
@@ -1681,6 +1699,11 @@ sap.ui.define(
         oThis.submitSelectedStatus();
         var oViewModel = this.getView().getModel("ViewModel");
         var oCharModel = this._oResultsTable.getModel();
+        //++ BOC by ANAND.KRISHN for REQ00445334
+        if (sap.ushell && oCharModel.oData && oCharModel.oData.InspPoint){
+          oCharModel.oData.InspPoint.Uname = sap.ushell.Container.getUser().getFullName();
+        }
+        //++ EOC by ANAND.KRISHN for REQ0044533
         var oInspPoint = oCharModel.getProperty("/InspPoint");
         var aCharReq = oCharModel.getProperty("/InspLotCharReq");
         var oBusyDialog = new BusyDialog({ title: oThis.getResourceBundle().getText("charResultSaving"), text: oThis.getResourceBundle().getText("wait") });
@@ -1781,6 +1804,11 @@ sap.ui.define(
         oThis.submitSelectedStatus();
         var oViewModel = this.getView().getModel("ViewModel");
         var oCharModel = this._oResultsTable.getModel();
+        //++ BOC by ANAND.KRISHN for REQ00445334
+        if (sap.ushell && oCharModel.oData && oCharModel.oData.InspPoint){
+          oCharModel.oData.InspPoint.Uname = sap.ushell.Container.getUser().getFullName();
+        }
+        //++ EOC by ANAND.KRISHN for REQ0044533
         var oInspPoint = oCharModel.getProperty("/InspPoint");
         var aCharReq = oCharModel.getProperty("/InspLotCharReq");
         var oBusyDialog = new BusyDialog({ title: oThis.getResourceBundle().getText("charResultSaving"), text: oThis.getResourceBundle().getText("wait") });
@@ -3059,6 +3087,11 @@ sap.ui.define(
       onMICCommentsChange: function (oEvent) {
         var sValue = oEvent.getSource().getValue();
         var oCharModel = this._oResultsTable.getModel();
+        //++ BOC by ANAND.KRISHN for REQ00445334
+        if (sap.ushell && oCharModel.oData && oCharModel.oData.InspPoint){
+          oCharModel.oData.InspPoint.Uname = sap.ushell.Container.getUser().getFullName();
+        }
+        //++ EOC by ANAND.KRISHN for REQ0044533
         var aCharReq = oCharModel.getProperty("/InspLotCharReq");
         var aCharResults = oCharModel.getProperty("/InspPoint/InspLotSampleResultsSet/results");
         var oCommentsTA = this.getView().byId("commentsedit");
