@@ -93,40 +93,40 @@ sap.ui.define([
         formatter: Formatter,
         async onInit() {
             try {
-                const oPlantDetails = await this._getIasDetails();
-                this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim(); //++Added by sharath on 17/12/2025 to get the User details from IAS- (REQ0032717)
+                // const oPlantDetails = await this._getIasDetails();
+                // this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim(); //++Added by sharath on 17/12/2025 to get the User details from IAS- (REQ0032717)
 
-                let rawEmail = oPlantDetails.email;
-                if (Array.isArray(rawEmail)) {
-                    this._userEmail = rawEmail.find(email => email) || "";
-                } else {
-                    this._userEmail = rawEmail || "";
-                }
+                // let rawEmail = oPlantDetails.email;
+                // if (Array.isArray(rawEmail)) {
+                //     this._userEmail = rawEmail.find(email => email) || "";
+                // } else {
+                //     this._userEmail = rawEmail || "";
+                // }
 
-                this._isQMUser = String(oPlantDetails.isQMUser).toLowerCase() === "true";
+                // this._isQMUser = String(oPlantDetails.isQMUser).toLowerCase() === "true";
 
-                this.sPlant = "";
-                this.sPlantName = "";
+                // this.sPlant = "";
+                // this.sPlantName = "";
 
-                // /*Sharath ++BOC - Logic to run the app locally in the absence of IAS
-            //    this.sPlant = "3011";
-            //       this.sPlantName = "";
-                // ++EOC */
+            //     /*Sharath ++BOC - Logic to run the app locally in the absence of IAS
+               this.sPlant = "3011";
+                  this.sPlantName = "";
+            //     ++EOC */
 
-                if (!this._isQMUser) {
-                    this.sPlant = oPlantDetails.Plant;
-                    this.sPlantName = oPlantDetails.PlantName;
+                // if (!this._isQMUser) {
+                //     this.sPlant = oPlantDetails.Plant;
+                //     this.sPlantName = oPlantDetails.PlantName;
 
-                    const oPlantInput = this.byId("plantInputname");
-                    if (oPlantInput) {
-                        oPlantInput.setValue(this.sPlant);
-                    }
-                } else {
-                    this.waitForCondition(
-                        () => this._userEmail.trim() !== "",
-                        () => this.PlantF4()
-                    );
-                }
+                //     const oPlantInput = this.byId("plantInputname");
+                //     if (oPlantInput) {
+                //         oPlantInput.setValue(this.sPlant);
+                //     }
+                // } else {
+                //     this.waitForCondition(
+                //         () => this._userEmail.trim() !== "",
+                //         () => this.PlantF4()
+                //     );
+                // }
 
                 var oViewModel = new JSONModel({
                     worklistTableTitle: this.getResourceBundle().getText("worklistTableTitle"),
@@ -2381,10 +2381,12 @@ sap.ui.define([
             ws.addRow([]);
             ws.addRow([]);
 
-            // Header title row: "Header Details"
-            var oHeaderTitleRow = ws.addRow(["", "Header Details"]);
-            var iHeaderRowNum = oHeaderTitleRow.number; // should be 3
+            //++BOC | INC0218645 | Add Legends Section to Excel Export – by PANKAJ MISHRA on 09/03/2026
+            // Header title row: "Header Details" and "Legends"
+            var oHeaderTitleRow = ws.addRow(["", "Header Details", "", "", "Legends"]);
+            var iHeaderRowNum = oHeaderTitleRow.number; 
             ws.mergeCells("B" + iHeaderRowNum + ":D" + iHeaderRowNum);
+            ws.mergeCells("E" + iHeaderRowNum + ":F" + iHeaderRowNum);
 
             var oHeaderCell = ws.getCell("B" + iHeaderRowNum);
             oHeaderCell.font = { bold: true };
@@ -2392,7 +2394,16 @@ sap.ui.define([
             oHeaderCell.fill = {
                 type: "pattern",
                 pattern: "solid",
-                fgColor: { argb: "FFFF00" }
+                fgColor: { argb: "FF90EE90" } // Light green
+            };
+
+            var oLegendsHeaderCell = ws.getCell("E" + iHeaderRowNum);
+            oLegendsHeaderCell.font = { bold: true };
+            oLegendsHeaderCell.alignment = { horizontal: "center", vertical: "middle" };
+            oLegendsHeaderCell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FF90EE90" } // Light green
             };
 
             var sPOItem = oData["PO & Item"] || oData["POItem"] || oData["PO_Item"] || oData.POItem || "";
@@ -2405,7 +2416,52 @@ sap.ui.define([
             var sGlobalMarketRegion = oData["Global Market Region"] || oData.GlobalMarketRegion || "";
             var sMarket = oData.Market || "";
             var sUDStatus = oData["UD Status"] || oData["UDStatus"] || oData["UD_Status"] || oData.UDStatus || oData.Vbewertung || "";
+            var sInspectionLotNo = oData["Inspection Lot No."]  || "";
+            var sDefectNotificationNo = oData["Defect Notification No."] || "";
 
+            // Add Header Details rows with Legends in parallel
+            var iCurrentRow = iHeaderRowNum + 1;
+            
+            // Row 1: PO & Item and Critical OOS
+            var oRow1 = ws.addRow(["", "PO & Item", sPOItem, "", "Critical OOS"]);
+            var oCriticalCell = ws.getCell("E" + oRow1.number);
+            oCriticalCell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFFF0000" } // Red
+            };
+            oCriticalCell.font = { bold: true };
+            oCriticalCell.alignment = { horizontal: "center", vertical: "middle" };
+            ws.mergeCells("E" + oRow1.number + ":F" + oRow1.number);
+            iCurrentRow = oRow1.number;
+
+            // Row 2: Plant and Major OOS
+            var oRow2 = ws.addRow(["", "Plant", sPlant, "", "Major OOS"]);
+            var oMajorCell = ws.getCell("E" + oRow2.number);
+            oMajorCell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFFFA500" } // Orange
+            };
+            oMajorCell.font = { bold: true };
+            oMajorCell.alignment = { horizontal: "center", vertical: "middle" };
+            ws.mergeCells("E" + oRow2.number + ":F" + oRow2.number);
+            iCurrentRow = oRow2.number;
+
+            // Row 3: Monster Material and Minor OOS
+            var oRow3 = ws.addRow(["", "Monster Material", sMaterial, "", "Minor OOS"]);
+            var oMinorCell = ws.getCell("E" + oRow3.number);
+            oMinorCell.fill = {
+                type: "pattern",
+                pattern: "solid",
+                fgColor: { argb: "FFFFFF00" } // Yellow
+            };
+            oMinorCell.font = { bold: true };
+            oMinorCell.alignment = { horizontal: "center", vertical: "middle" };
+            ws.mergeCells("E" + oRow3.number + ":F" + oRow3.number);
+            iCurrentRow = oRow3.number;
+
+            // Continue with remaining Header Details rows (without legends)
             ws.addRow(["", "PO & Item", sPOItem]);
             ws.addRow(["", "Plant", sPlant]);
             ws.addRow(["", "Monster Material", sMaterial]);
@@ -2415,6 +2471,12 @@ sap.ui.define([
             ws.addRow(["", "Global Market Region", sGlobalMarketRegion]);
             ws.addRow(["", "Market", sMarket]);
             ws.addRow(["", "UD Status", sUDStatus]);
+            var oInspectionLotRow = ws.addRow(["", "Inspection Lot No.", sInspectionLotNo]);
+            var oInspectionLotValueCell = ws.getCell("C" + oInspectionLotRow.number);
+            oInspectionLotValueCell.numFmt = "@"; 
+            oInspectionLotValueCell.alignment = { horizontal: "left" };
+            ws.addRow(["", "Defect Notification No.", sDefectNotificationNo]);
+            //++EOC | INC0218645 | Add Legends Section to Excel Export – by PANKAJ MISHRA on 09/03/2026
 
             // Blank row between header and first operation block
             ws.addRow([]);
@@ -2457,7 +2519,7 @@ sap.ui.define([
                         cell.fill = {
                             type: "pattern",
                             pattern: "solid",
-                            fgColor: { argb: "FFFF00" }
+                            fgColor: { argb: "FF90EE90" }
                         };
                     }
                 });
@@ -2482,9 +2544,12 @@ sap.ui.define([
                 });
                 var aMicNames = Array.from(oMicNameSet);
 
+                 //++BOC | INC0218645 | Color Code MIC Cells Based on Defect Type – by PANKAJ MISHRA on 09/03/2026
+
                 // For each MIC name create one row
                 aMicNames.forEach(function (sMicName) {
                     var aRow = ["", sMicName];
+                    var aDefectTypes = [];
 
                     aInspectionPoints.forEach(function (ip) {
                         var aMicList = ip.MICs || ip.mics || ip.Mics || [];
@@ -2492,10 +2557,45 @@ sap.ui.define([
                             return (m["MIC Name"] || m.MICName || m.MicName) === sMicName;
                         });
                         aRow.push(oFound ? (oFound["MIC Value"] || oFound.MICValue || oFound.MicValue || "") : "");
+                       var sDefectType = oFound ? (oFound["Defect Type"] || oFound.DefectType || oFound.defectType || "") : "";
+                        aDefectTypes.push(sDefectType);
                     });
 
-                    ws.addRow(aRow);
+                    var oMicRow = ws.addRow(aRow);
+                    var iRowNum = oMicRow.number;
+                    
+                    // Apply colors to cells based on Defect Type
+                    aDefectTypes.forEach(function (sDefectType, iIndex) {
+                        var iColNum = 3 + iIndex; // Column 3, 4, 5, etc. (1-based)
+                        var oCell = ws.getRow(iRowNum).getCell(iColNum);
+                        
+                        
+                        if (sDefectType) {
+                            var sDefectTypeUpper = sDefectType.trim().toUpperCase();
+                            if (sDefectTypeUpper === "CRITICAL") {
+                                oCell.fill = {
+                                    type: "pattern",
+                                    pattern: "solid",
+                                    fgColor: { argb: "FFFF0000" } // Red
+                                };
+                            } else if (sDefectTypeUpper === "MAJOR") {
+                                oCell.fill = {
+                                    type: "pattern",
+                                    pattern: "solid",
+                                    fgColor: { argb: "FFFFA500" } // Orange
+                                };
+                            } else if (sDefectTypeUpper === "MINOR") {
+                                oCell.fill = {
+                                    type: "pattern",
+                                    pattern: "solid",
+                                    fgColor: { argb: "FFFFFF00" } // Yellow
+                                };
+                            }
+                            // If Defect Type is blank/null, no color is applied (default)
+                        }
+                    });
                 });
+                 //++EOC | INC0218645 | Color Code MIC Cells Based on Defect Type – by PANKAJ MISHRA on 09/03/2026
             });
 
             // Auto column widths
