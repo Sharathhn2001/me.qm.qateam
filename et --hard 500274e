@@ -1,0 +1,53 @@
+[33m64b7c28[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m Changes done to make solid green and solid red for defect indicator
+[33m7d86c9c[m Feature Color Code MIC Cells Based on Defect Type
+[33m25023e1[m Defect indicator Dropdown, Table Display, Filter Logic.
+[33m9dd39f2[m Added Legends in excel report
+[33m500274e[m latest
+[33m27556dc[m Added Validations
+[33m9caeb95[m Correction in messagebox text
+[33m60c67d6[m Restiction on Insp upload 50 to 25
+[33m2731f14[m Uncommented the IAS logic to get Plant
+[33m7e44dd0[m Removed duplicate onFormulaChange
+[33m4565510[m Comment Log
+[33mac345b3[m Renmae Batch to Inventory Batch
+[33mb4c4622[m Batch rename
+[33m07315ef[m Batch rename
+[33m613f27e[m Comment log for code chnages
+[33m826ba31[m Restriction on no. og Insp Lot uploaded at one time
+[33m7f98cf5[m Plant fix
+[33ma8b17f9[m Added Modification Logs
+[33mdfc31ac[m Comment Log and Change history for code changes
+[33m65aba39[m Comment log for the code changes
+[33m54a232b[m Comment log for Code Changes
+[33m11e75e0[m fix on restriction on Material_Batch
+[33md5b185c[m changes for batchf4
+[33m36b829c[m Code changes for Sorting
+[33mfc62c91[m Fix to restrict No.of InspLot to be uplaoded at one time
+[33m5c56423[m Changed payload for excel download
+[33mc957916[m chnages to refresh the F4
+[33m145d4db[m Changes to handle Mass upload Result
+[33mae1a0ae[m Code Changes tp handle and display error table
+[33m5f75401[m Error Handline deelopment
+[33mb699fb0[m Resolved merge conflict in HomePage.controller.js
+[33m625d110[m Changes for Mass upload Error and Success handle
+[33m8443a3d[m Fixed date format
+[33md0fa148[m change to handle Mass Uplaod Dialog
+[33m2483afc[m OnPochange fix
+[33m069b32f[m Changes for Insppoint logic
+[33mc89fed9[m Changes for Mass Upload Payload
+[33m2984457[m code fix for Library
+[33m737691d[m Mass upload message box fix
+[33mbac45fb[m fixed material
+[33md969467[m changes for comment
+[33m0e176c5[m chnages to handle Insplot
+[33m6705abe[m[33m ([m[1;32mfeature/mass-upload-enhancement[m[33m)[m added UD Status
+[33ma5107b7[m plant hardcoding removal
+[33m76e62a5[m Excel fix
+[33m7518d2f[m[33m ([m[1;31morigin/feature/mass-upload-enhancement[m[33m)[m Landing Page Enhancement
+[33m7becbaf[m Landing Page Changes
+[33m50f3e07[m Mass Upload and Landing Page Changes
+[33m4c62055[m Removed plant hardcoding
+[33maf7a587[m[33m ([m[1;31morigin/feature/exceldownload[m[33m)[m last
+[33m0a465de[m LAST
+[33m557c9b7[m limitation on download
+[33m978ec88[m Changed button style

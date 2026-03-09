@@ -599,6 +599,15 @@ sap.ui.define([
                       }
                          */ //--EOC by sharath on 02/12/2025 (REQ0032724)
 
+            // ++BOC Added by Sharath (INC0218645) - Defect indicator filter logic on 16/02/2026
+            var sDefectValue = this.byId("defectCombo").getSelectedKey();
+            aTableFilters.push(
+
+                new Filter("Decision", FilterOperator.EQ, sDefectValue)
+
+            );
+            // ++EOC Added by Sharath (INC0218645) - Defect indicator filter logic on 16/02/2026
+
             return aTableFilters;
 
         },
