@@ -319,7 +319,7 @@
     <fb:control>
         <ComboBox
             id="defectCombo"
-            items="{path:'/DispDefectSet'}"
+            items="{path:'/DispDefectsF4Set'}"
             filterSecondaryValues="true"
             change=".onFilterGroupItemChange"
             value="{Decision}"
