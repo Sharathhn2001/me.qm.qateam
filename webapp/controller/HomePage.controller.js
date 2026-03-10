@@ -71,6 +71,39 @@ Modification History:
    - Added date formatting and sheet name generation utilities
 
 *-----------------------------------------------------------------------*
+
+5) Request#          : INC0218645
+   Developer         : SHARATH H N
+   Date              : 16/02/2026
+   Incident          : INC0218645
+   CMS               : N/A
+   Description       :
+   - Implemented Defect Indicator functionality in landing page
+   - Added Defect Indicator dropdown in search filter bar to filter records based on defect status
+   - Implemented logic to determine defect status based on QMNUM value
+   - Displayed visual defect indicator in table using colored icon
+   - Green and Red indicator shown based on Defect Qmnum
+   - Added new column in table to display defect indicator
+   - Updated search and filter logic to support defect-based filtering
+
+*-----------------------------------------------------------------------*
+
+6) Request#          : INC0253045
+   Developer         : SHARATH H N
+   Date              : 10/03/2026
+   Incident          : INC0253045
+   CMS               : N/A
+   Description       :
+   - Modified Formula handling logic by replacing Zzhbcformula usage with SuchFeld field from PO data
+   - Removed Formula dropdown (ComboBox) and replaced it with non-editable Input field
+   - Implemented auto-population of Formula from PO selection
+   - Added Formula column in PO SelectDialog table for better visibility
+   - Added column width adjustments to improve table alignment
+   - Updated filter logic to pass SuchFeld value for formula-based filtering
+   - Commented obsolete Formula dropdown related logic and functions
+   - Improved UI behavior by making formula field non-editable as it is system derived
+
+   *-----------------------------------------------------------------------*
 */
 
 sap.ui.define([
@@ -93,7 +126,7 @@ sap.ui.define([
         formatter: Formatter,
         async onInit() {
             try {
-                const oPlantDetails = await this._getIasDetails();
+               const oPlantDetails = await this._getIasDetails();
                 this.name = [oPlantDetails.firstName, oPlantDetails.lastName].filter(Boolean).join(" ").trim(); //++Added by sharath on 17/12/2025 to get the User details from IAS- (REQ0032717)
 
                 let rawEmail = oPlantDetails.email;
@@ -108,10 +141,10 @@ sap.ui.define([
                 this.sPlant = "";
                 this.sPlantName = "";
 
-            //     /*Sharath ++BOC - Logic to run the app locally in the absence of IAS
-            //    this.sPlant = "3011";
-            //       this.sPlantName = "";
-            //     ++EOC */
+            // /*Sharath ++BOC - Logic to run the app locally in the absence of IAS
+            // this.sPlant = "3011";
+            //   this.sPlantName = "";
+            // ++EOC */
 
                 if (!this._isQMUser) {
                     this.sPlant = oPlantDetails.Plant;
@@ -1804,9 +1837,9 @@ sap.ui.define([
                 oBinding.filter([]);
                 return;
             }
-
-            const aSearchFields = ["Ebeln", "Ebelp", "Matnr", "Charg", "Maktx", "Werks", "Lifnr", "Menge"];
-
+            // ++BOC Added by Sharath (INC0253045) - Added formula search logic to PO table on 10/03/2026
+            const aSearchFields = ["Ebeln", "Ebelp", "Matnr", "Charg", "Maktx", "SuchFeld", "Werks", "Lifnr", "Menge"];
+            // ++BOC Added by Sharath (INC0253045) - Added formula search logic to PO table on 10/03/2026
             const aFilters = aSearchFields.map(field =>
                 new sap.ui.model.Filter(field, sap.ui.model.FilterOperator.Contains, sQuery)
             );
@@ -1837,9 +1870,12 @@ sap.ui.define([
             oSubmitModel.setProperty("/Ebeln", oSelected.Ebeln);
             oSubmitModel.setProperty("/Ebelp", oSelected.Ebelp);
             oSubmitModel.setProperty("/Matnr", oSelected.Matnr);
+            oSubmitModel.setProperty("/SuchFeld", oSelected.SuchFeld);  // ++Added by Sharath (INC0253045) - Added formula logic to PO table on 10/03/2026
 
-            this.POFormulaF4();
-
+            // BOC --Commented by Sharath (INC0253045) on 10/03/2026
+            //  Formula logic added to PO table, therefore POFormulaF4() function is no longer used.
+            // this.POFormulaF4();
+            // EOC --Commented by Sharath (INC0253045) on 10/03/2026
             oSubmitModel.setProperty("/Charg", oSelected.Charg);
             oEvent.getSource().getBinding("items").filter([]);
         },
@@ -1864,7 +1900,12 @@ sap.ui.define([
                 oModel.setProperty("/Ebelp", "");
                 oModel.setProperty("/Matnr", "");
                 oModel.setProperty("/Charg", "");
-                oModel.setProperty("/Zzhbcformula", "");
+                //--BOC INC0253045 - Formula logic moved to PO table, clearing Zzhbcform no longer required - Sharath - 10/03/2026
+                // oModel.setProperty("/Zzhbcform", "");
+                //--EOC INC0253045 - Formula logic moved to PO table, clearing Zzhbcform no longer required - Sharath - 10/03/2026
+                //++BOC INC0253045 - Reset formula field (SuchFeld) after PO selection - Sharath - 10/03/2026
+                oModel.setProperty("/SuchFeld", "");
+                //++EOC INC0253045 - Reset formula field (SuchFeld) after PO selection - Sharath - 10/03/2026
                 return;
             }
 
@@ -1875,21 +1916,33 @@ sap.ui.define([
                 oModel.setProperty("/Ebelp", oFound.Ebelp || "");
                 oModel.setProperty("/Matnr", oFound.Matnr || "");
                 oModel.setProperty("/Charg", oFound.Charg || "");
+                //++BOC INC0253045 - Populate formula from selected PO batch - Sharath - 10/03/2026
+                oModel.setProperty("/SuchFeld", oFound?.Charg || "");
+                //++EOC INC0253045 - Populate formula from selected PO batch - Sharath - 10/03/2026
                 oModel.setProperty("/Werk", this.sPlant);
 
-                this.POFormulaF4();
+                //--BOC INC0253045 - Formula logic added to PO table, POFormulaF4() function no longer required - Sharath - 10/03/2026
+                //  this.POFormulaF4();
+                //--EOC INC0253045 - Formula logic added to PO table, POFormulaF4() function no longer required - Sharath - 10/03/2026
 
             } else {
                 oModel.setProperty("/Ebeln", "");
                 oModel.setProperty("/Ebelp", "");
                 oModel.setProperty("/Matnr", "");
                 oModel.setProperty("/Charg", "");
-                oModel.setProperty("/Zzhbcformula", "");
+                //--BOC INC0253045 - Zzhbcformula reset removed as formula logic moved to PO table - Sharath - 10/03/2026
+                // oModel.setProperty("/Zzhbcformula", "");   
+                //--EOC INC0253045 - Zzhbcformula reset removed as formula logic moved to PO table - Sharath - 10/03/2026
+
+                //++BOC INC0253045 - Reset SuchFeld after PO selection as part of updated formula logic - Sharath - 10/03/2026
+                oModel.setProperty("/SuchFeld", "");
+                //++EOC INC0253045 - Reset SuchFeld after PO selection as part of updated formula logic - Sharath - 10/03/2026
 
                 MessageToast.show("Invalid Purchase Order");
             }
         },
-
+         //--BOC INC0253045 - onBatchChange and POFormulaF4() call removed as formula logic is now handled in PO table - Sharath - 10/03/2026
+         /*
         onBatchChange: function (oEvent) {
             const sBatch = oEvent.getParameter("value")?.trim() || "";
             const oFormulaModel = this.getView().getModel("FormulaModel");
@@ -1899,14 +1952,17 @@ sap.ui.define([
                 this.byId("idFormula").setSelectedKey("");
                 return;
             }
-
-            this.POFormulaF4(sBatch);
+           
+             this.POFormulaF4(sBatch);
         },
-
+        */
+ //--EOC INC0253045 - onBatchChange and POFormulaF4() call removed as formula logic is now handled in PO table - Sharath - 10/03/2026
         //++EOC | REQ0032723 by sharath on 04/12/2025
 
         //++BOC | REQ0032723 | PO Formula F4 & Submit New Handling – by Sharath on 04/12/2025
 
+       // --BOC INC0253045 - POFormulaF4 logic commented as formula handling moved to PO table selection - Sharath - 10/03/2026
+       /*
         POFormulaF4: async function () {
             try {
                 const sEbeln = this.sSelectedPO;
@@ -1965,7 +2021,8 @@ sap.ui.define([
             oSubmitModel.setProperty("/ZKRIZ", oFormulaData.ZKRIZ || "");
             oSubmitModel.setProperty("/Zzhbcformula", oFormulaData.Zzhbcformula || "");
         },
-
+*/
+//--EOC INC0253045 - POFormulaF4 logic commented as formula handling moved to PO table selection - Sharath - 10/03/2026
         onSubmitNewPress: function () {
             const oView = this.getView();
             this.loadPOList();
@@ -1982,7 +2039,8 @@ sap.ui.define([
                 oSubmitModel = new sap.ui.model.json.JSONModel({});
                 this.getView().setModel(oSubmitModel, "SubmitNewModel");
             }
-            oSubmitModel.setData({ Ebeln: "", Ebelp: "", Matnr: "", Charg: "", Zzhbcformula: "" });
+            //--Commented INC0253045 - Zzhbcformula removed as formula logic moved to PO table - Sharath - 10/03/2026
+            oSubmitModel.setData({ Ebeln: "", Ebelp: "", Matnr: "", Charg: "" /*, Zzhbcformula: "" */, SuchFeld: ""}); //++Added INC0253045 - Added SuchFeld for formula in PO table - Sharath - 10/03/2026
             this._oSubmitNewDialog.open();
         },
 
@@ -1992,7 +2050,8 @@ sap.ui.define([
                 this._oSubmitNewDialog.close();
             }
         },
-
+//--BOC INC0253045 - onFormulaChange logic commented as formula selection is now handled via PO table - Sharath - 10/03/2026
+/*
         onFormulaChange: function (oEvent) {
             const oCB = oEvent.getSource();
             const sKey = oCB.getSelectedKey();
@@ -2014,14 +2073,22 @@ sap.ui.define([
 
             this._setFormulaDetails(oFormula);
         },
-
+*/
+//--EOC INC0253045 - onFormulaChange logic commented as formula selection is now handled via PO table - Sharath - 10/03/2026
         //++EOC | REQ0032723 by Sharath on 04/12/2025
         //++BOC | REQ0032723 | Submit New & Navigation Handling – by Sharath on 04/12/2025
 
         onSubmitPress: async function () {
             const oSubmitModel = this._oSubmitNewDialog.getModel("SubmitNewModel");
             const oSubmit = oSubmitModel.getData();
-            
+            //--BOC INC0253045 - PO validation commented - Sharath - 10/03/2026
+            /*
+                          if (!oSubmit.Ebeln || !oSubmit.Ebelp || !oSubmit.Matnr) {
+                            return MessageToast.show("Please select a valid PO with Item and Material");
+                        }
+                            */
+            //--EOC INC0253045 - PO validation commented - Sharath - 10/03/2026
+            //++BOC INC0253045 - Added validation for mandatory fields including Formula (SuchFeld) - Sharath - 10/03/2026
             // Validate all 4 mandatory fields with specific error messages
             if (!oSubmit.Ebeln || !oSubmit.Ebelp) {
                 return MessageToast.show(this.getResourceBundle().getText("enterPurchaseOrder"));
@@ -2032,10 +2099,10 @@ sap.ui.define([
             if (!oSubmit.Charg) {
                 return MessageToast.show(this.getResourceBundle().getText("enterBatch"));
             }
-            if (!oSubmit.Zzhbcformula) {
-                return MessageToast.show(this.getResourceBundle().getText("enterFormula"));
+            if (!oSubmit.SuchFeld) {
+                return MessageToast.show(this.getResourceBundle().getText("enterFormula"));   //++Added INC0253045 BOC Formula 
             }
-            
+            //++EOC INC0253045 - Added validation for mandatory fields including Formula (SuchFeld) - Sharath - 10/03/2026
             // const oData = oModel.getData();
             BusyIndicator.show();
 
@@ -2067,11 +2134,18 @@ sap.ui.define([
                 BusyIndicator.hide();
             */
             //--EOC | REQ0032723 by Sharath on 04/12/2025
-
+            //--BOC INC0253045 - Formula derivation logic removed as formula is now taken from SuchFeld via PO table - Sharath - 10/03/2026
+            /*
+                        const sFormula =
+                            this.sSelectedFormula ||
+                            oSubmit.Zzhbcformula ||
+                            "NA";
+               */
+            //--EOC INC0253045 - Formula derivation logic removed as formula is now taken from SuchFeld via PO table search - Sharath - 10/03/2026
+            //++BOC INC0253045 - Formula value derived from SuchFeld as part of updated PO table formula logic - Sharath - 10/03/2026
             const sFormula =
-                this.sSelectedFormula ||
-                oSubmit.Zzhbcformula ||
-                "NA";
+                oSubmit.SuchFeld;
+            //++EOC INC0253045 - Formula value derived from SuchFeld as part of updated PO table formula logic - Sharath - 10/03/2026
             this._navToInspChars(
                 oSubmit.Werk,
                 oSubmit.Matnr,
@@ -2097,8 +2171,13 @@ sap.ui.define([
             if (oData.Ebelp) aFilters.push(new Filter("Ebelp", FilterOperator.EQ, oData.Ebelp));
             if (oData.Matnr) aFilters.push(new Filter("Matnr", FilterOperator.EQ, oData.Matnr));
             if (oData.Charg) aFilters.push(new Filter("Charg", FilterOperator.EQ, oData.Charg));
-            if (oData.Zzhbcformula) aFilters.push(new Filter("Zzhbcformula", FilterOperator.EQ, oData.Zzhbcformula));
+            //--BOC INC0253045 - Filter using Zzhbcformula removed as formula value now comes from SuchFeld - Sharath - 10/03/2026
+            // if (oData.Zzhbcformula) aFilters.push(new Filter("Zzhbcformula", FilterOperator.EQ, oData.Zzhbcformula));
+            //--EOC INC0253045 - Filter using Zzhbcformula removed as formula value now comes from SuchFeld - Sharath - 10/03/2026
 
+            //++BOC INC0253045 - Added filter to use SuchFeld as formula search parameter - Sharath - 10/03/2026
+            if (oData.Zzhbcformula) aFilters.push(new Filter("Zzhbcformula", FilterOperator.EQ, oData.SuchFeld));
+            //++EOC INC0253045 - Added filter to use SuchFeld as formula search parameter - Sharath - 10/03/2026
             let oResponse = { results: [] };
 
             try {

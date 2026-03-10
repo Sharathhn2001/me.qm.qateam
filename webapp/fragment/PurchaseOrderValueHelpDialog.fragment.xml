@@ -15,7 +15,8 @@
         }"
     >
         <columns>
-            <Column>
+            <!-- ++BOC INC0253045 - Added column width for better alignment and to avoid text wrapping - Sharath - 10/03/2026 -->
+            <Column width="7rem">
                 <header>
                     <Text text="PO No" />
                 </header>
@@ -30,7 +31,8 @@
                     <Text text="Plant" />
                 </header>
             </Column>
-            <Column>
+            <!-- ++BOC INC0253045 - Added column width for better alignment and to avoid text wrapping - Sharath - 10/03/2026 -->
+            <Column width="15rem">
                 <header>
                     <Text text="Plant Name" />
                 </header>
@@ -75,6 +77,13 @@
                     <Text text="Unit" />
                 </header>
             </Column>
+            <!-- ++BOC INC0253045 - Added Formula column with fixed width for PO table - Sharath - 10/03/2026 -->
+            <Column width="8rem">
+                <header>
+                    <Text text="Formula" />
+                </header>
+            </Column>
+            <!-- ++EOC INC0253045 - Added Formula column with fixed width for PO table - Sharath - 10/03/2026 -->
         </columns>
 
         <items>
@@ -92,6 +101,12 @@
                     <Text text="{POModel>LifnrName}" />
                     <Text text="{POModel>Menge}" />
                     <Text text="{POModel>Meins}" />
+                    <!-- ++BOC INC0253045 - Added Formula (SuchFeld) display in PO table - Sharath - 10/03/2026 -->
+                    <Text
+                        text="{POModel>SuchFeld}"
+                        wrapping="true"
+                    />
+                    <!-- ++EOC INC0253045 - Added Formula (SuchFeld) display in PO table - Sharath - 10/03/2026 -->
                 </cells>
             </ColumnListItem>
         </items>

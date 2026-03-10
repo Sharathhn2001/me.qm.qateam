@@ -307,35 +307,32 @@
                             </fb:FilterGroupItem>
                             <!--++EOC REQ0032724 - UD Status Filter End - Sharath-->
 
-                     <!--++BOC Defects - Out of Specs Filter Start -->
-<!-- ++BOC Added by Sharath (INC0218645) - Defect dropdown on 16/02/2026 -->
-<fb:FilterGroupItem
-    id="defectFilterGroupItem"
-    name="Defect"
-    label="Defects - Out of Specs"
-    groupName="Group1"
-    visibleInFilterBar="true"
->
-    <fb:control>
-        <ComboBox
-            id="defectCombo"
-            items="{path:'/DispDefectsF4Set'}"
-            filterSecondaryValues="true"
-            change=".onFilterGroupItemChange"
-            value="{Decision}"
-        >
-            <core:ListItem
-                key="{Decision}"
-                text="{DecisionText}"
-            />
-        </ComboBox>
-    </fb:control>
-</fb:FilterGroupItem>
-<!-- ++EOC Added by Sharath (INC0218645) - Defect dropdown on 16/02/2026 -->
-<!--++EOC Defects - Out of Specs Filter End -->
-
-
-
+                            <!--++BOC Defects - Out of Specs Filter Start -->
+                            <!-- ++BOC Added by Sharath (INC0218645) - Defect dropdown on 16/02/2026 -->
+                            <fb:FilterGroupItem
+                                id="defectFilterGroupItem"
+                                name="Defect"
+                                label="Defects - Out of Specs"
+                                groupName="Group1"
+                                visibleInFilterBar="true"
+                            >
+                                <fb:control>
+                                    <ComboBox
+                                        id="defectCombo"
+                                        items="{path:'/DispDefectsF4Set'}"
+                                        filterSecondaryValues="true"
+                                        change=".onFilterGroupItemChange"
+                                        value="{Decision}"
+                                    >
+                                        <core:ListItem
+                                            key="{Decision}"
+                                            text="{DecisionText}"
+                                        />
+                                    </ComboBox>
+                                </fb:control>
+                            </fb:FilterGroupItem>
+                            <!-- ++EOC Added by Sharath (INC0218645) - Defect dropdown on 16/02/2026 -->
+                            <!--++EOC Defects - Out of Specs Filter End -->
                         </fb:filterGroupItems>
                     </fb:FilterBar>
                 </f:content>
@@ -500,20 +497,20 @@
                         />
                     </Column>
                     <!--++EOC REQ0032724 - User Status Column End - by Sharath on 02/12/2025 -->
-<!-- ++BOC Added by Sharath (INC0218645) - Defect indicator based on Qmnum on 16/02/2026 -->
-<Column
-    id="defectColumn"
-    hAlign="Begin"
-    visible="true"
->
-    <Label
-        id="defectColumnLabel"
-        text="{i18n>Defects - OOS}"
-        wrapping="true"
-    />
-</Column>
-<!-- ++EOC Added by Sharath (INC0218645) - Defect indicator based on Qmnum on 16/02/2026 -->
-
+                    <!-- ++BOC Added by Sharath (INC0218645) - Defect indicator based on Qmnum on 16/02/2026 -->
+                    <Column
+                        id="defectColumn"
+                        hAlign="Center"
+                        visible="true"
+                    >
+                        <Label
+                            id="defectColumnLabel"
+                            text="{i18n>Defects - OOS}"
+                            wrapping="true"
+                            textAlign="Center"
+                        />
+                    </Column>
+                    <!-- ++EOC Added by Sharath (INC0218645) - Defect indicator based on Qmnum on 16/02/2026 -->
                 </columns>
                 <items>
                     <ColumnListItem
@@ -543,8 +540,9 @@
                             <!--++Added CodeValText display (REQ0032724)-->
                             <!-- ++Added by Sharath (INC0218645) - Defect indicator based on Qmnum on 16/02/2026 -->
                             <core:Icon
-                                src="sap-icon://circle-task"
-                                color="{= ${Qmnum} ? '#0f7d0f' : '#d20a0a' }"
+                                src="sap-icon://circle-task-2"
+                                size="0.8rem"
+                                color="{= ${Qmnum} ? '#d20a0a' : '#0f7d0f' }"
                             />
                             <!--++EOC REQ0032724 - End of added display fields - Sharath-->
                         </cells>

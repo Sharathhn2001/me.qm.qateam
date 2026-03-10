@@ -47,13 +47,14 @@
                         />
                     </Input>
                     <Label
-                        text="{i18n>MATERIAL}"
+                        text="{i18n>MATERIAL}" 
                         required="true"
-                    />
+                        />
+                        <!-- ++Added/Changed editable from true to false INC0253045 - Set field as non-editable since value is auto-populated from PO selection - Sharath - 10/03/2026 -->
                     <Input
                         id="create_material"
                         value="{SubmitNewModel>/Matnr}"
-                        editable="true"
+                        editable="false"
                     />
 
                     <Label
@@ -67,14 +68,25 @@
                         liveChange=".onBatchChange"
                         placeholder="Please Enter Batch"
                     />
-
+                     
                     <Label
                         text="{i18n>FORMULA}"
                         required="true"
+                        />
+                        <!-- ++BOC INC0253045 - Replaced Select with Input as formula is auto-populated from PO table (SuchFeld) - Sharath - 10/03/2026 -->
+                      <Input
+                        id="idFormulaCB"
+                        value="{SubmitNewModel>/SuchFeld}"
+                        editable="false"
+                        liveChange=".onFormulaChange"
                     />
-                    <Select
+                    <!-- ++EOC INC0253045 - Replaced Select with Input as formula is auto-populated from PO table (SuchFeld) - Sharath - 10/03/2026 -->
+
+                    <!--BOC INC0253045 - Old Select control commented as formula dropdown is no longer required - Sharath - 10/03/2026 -->
+                    <!-- <ComboBox
                         id="idFormulaCB"
                         selectedKey="{SubmitNewModel>/Zzhbcformula}"
+                        placeholder="Select Formula"
                         items="{FormulaModel>/results}"
                         change=".onFormulaChange"
                     >
@@ -82,7 +94,9 @@
                             key="{FormulaModel>Zzhbcformula}"
                             text="{FormulaModel>Zzhbcformula}"
                         />
-                    </Select>
+                     </ComboBox> -->
+                      <!--EOC INC0253045 - Old ComboBox control commented as formula dropdown no longer required - Sharath - 10/03/2026 -->
+
                 </f:content>
             </f:SimpleForm>
         </content>
