@@ -312,7 +312,7 @@
                             <fb:FilterGroupItem
                                 id="defectFilterGroupItem"
                                 name="Defect"
-                                label="Defects - Out of Specs"
+                                label="{i18n>defectsOutOfSpecs}"
                                 groupName="Group1"
                                 visibleInFilterBar="true"
                             >
@@ -505,7 +505,7 @@
                     >
                         <Label
                             id="defectColumnLabel"
-                            text="{i18n>Defects - OOS}"
+                            text="{i18n>defectsOos}"
                             wrapping="true"
                             textAlign="Center"
                         />
