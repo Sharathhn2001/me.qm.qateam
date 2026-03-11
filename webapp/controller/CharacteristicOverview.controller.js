@@ -1735,7 +1735,15 @@ sap.ui.define(
         oInspPointCopy.InspLotSampleResultsSet = [];
 
         oInspPoint.InspLotSampleResultsSet.results.forEach(function (oCharac) {
-          if (oCharac.IsModified === true) {
+
+          //-- BOC: Commented by Sharath | INC0218645 | 11/03/2026
+          //  if (oCharac.IsModified === true) {
+          // -- EOC: Commented by Sharath | INC0218645 | 11/03/2026
+          // Send MIC data if the characteristic is modified OR if it is obligatory
+          // (Mandatory MICs must be sent even if the value is not modified)
+          // ++BOC: Added by Sharath | INC0218645 | 11/03/2026
+          if (oCharac.IsModified === true || oCharac.Obligatory === "X") {
+          // ++ EOC: Added by Sharath | INC0218645 | 11/03/2026
             bIsModified = true;
             oCharDetails = aCharReq.find(function (oCharReq) {
               return (oCharReq.Insplot === oCharac.Insplot &&
@@ -1842,7 +1850,15 @@ sap.ui.define(
 
         oInspPoint.InspLotSampleResultsSet.results.forEach(function (oCharac) {
           oThis.aCharsCopy.push(Object.assign({}, oCharac));
-          if (oCharac.IsModified === true) {
+
+          //-- BOC: Commented by Sharath | INC0218645 | 11/03/2026
+          //  if (oCharac.IsModified === true) {
+          // -- EOC: Commented by Sharath | INC0218645 | 11/03/2026
+          // Send MIC data if the characteristic is modified OR if it is obligatory
+          // (Mandatory MICs must be sent even if the value is not modified)
+          // ++BOC: Added by Sharath | INC0218645 | 11/03/2026
+          if (oCharac.IsModified === true || oCharac.Obligatory === "X") {
+          // ++ EOC: Added by Sharath | INC0218645 | 11/03/2026 
             oCharDetails = aCharReq.find(function (oCharReq) {
               return (oCharReq.Insplot === oCharac.Insplot &&
                 oCharReq.Inspoper === oCharac.Inspoper &&

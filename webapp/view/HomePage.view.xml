@@ -317,7 +317,8 @@
                                 visibleInFilterBar="true"
                             >
                                 <fb:control>
-                                    <ComboBox
+                                    <!--BOC Commented by Sharath (INC0218645) - Defect dropdown on 11/03/2026 -->
+                                    <!-- <ComboBox
                                         id="defectCombo"
                                         items="{path:'/DispDefectsF4Set'}"
                                         filterSecondaryValues="true"
@@ -328,7 +329,22 @@
                                             key="{Decision}"
                                             text="{DecisionText}"
                                         />
+                                    </ComboBox> -->
+                                    <!--EOC Commented by Sharath (INC0218645) - Defect dropdown on 11/03/2026 -->
+                                    <!-- ++BOC Added by Sharath (INC0218645) - to show Defect dropdown Indicator on 11/03/2026 -->
+                                    <ComboBox
+                                        id="defectCombo"
+                                        items="{/DispDefectsF4Set}"
+                                        selectedKey="{Decision}"
+                                    >
+                                        <core:ListItem
+                                            key="{Decision}"
+                                            text="{= ${Decision} === 'Y' ? '🔴 Yes' :
+                ${Decision} === 'N' ? '🟢 No' :
+                '🔴🟢 All' }"
+                                        />
                                     </ComboBox>
+                                    <!-- ++EOC Addded by Sharath (INC0218645) - to show Defect dropdown Indicator on 11/03/2026 -->
                                 </fb:control>
                             </fb:FilterGroupItem>
                             <!-- ++EOC Added by Sharath (INC0218645) - Defect dropdown on 16/02/2026 -->
