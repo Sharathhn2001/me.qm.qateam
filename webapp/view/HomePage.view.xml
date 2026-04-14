@@ -387,9 +387,15 @@
                         <!--++EOC REQ0032717 - Mass Upload Button End - Sharath -->
 
                         <!--++BOC REQ0032717 - Download Excel Template Button Start - by Sharath on 05/12/2025-->
-                        <Button
+   <!-- <Button
                             text="Download Excel Template"
                             icon="sap-icon://excel-attachment"
+                            type="Emphasized"
+                            press=".onDownloadTemplate"
+                        /> -->
+<!-- ++Addded -->
+                        <Button
+                            text="Download Excel Template"
                             type="Emphasized"
                             press=".onOpenPODialog"
                         />

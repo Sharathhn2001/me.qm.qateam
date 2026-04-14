@@ -2,7 +2,6 @@
     xmlns="sap.m"
     xmlns:core="sap.ui.core"
 >
-
     <Dialog
         id="poDialog"
         contentWidth="95%"
@@ -10,13 +9,17 @@
         draggable="true"
         resizable="true"
     >
-
         <content>
-            <VBox class="sapUiContentPadding" width="100%">
-
+            <VBox
+                class="sapUiContentPadding"
+                width="100%"
+            >
                 <!-- Header -->
                 <Toolbar class="sapUiNoContentPadding">
-                    <Title text="Purchase Order Selection" level="H2" />
+                    <Title
+                        text="Purchase Order Selection"
+                        level="H2"
+                    />
                     <ToolbarSpacer />
                     <Text text="Select one or more POs" />
                 </Toolbar>
@@ -29,7 +32,6 @@
                     class="sapUiTinyMarginTop sapUiTinyMarginBottom"
                     showSearchButton="false"
                 />
-
 
                 <!-- Table -->
                 <Table
@@ -44,91 +46,104 @@
                     width="100%"
                     noDataText="No Purchase Orders found"
                 >
-
                     <!-- Table Header -->
                     <headerToolbar>
                         <Toolbar>
-                            <Title text="Available Purchase Orders" level="H3"/>
-                            <ToolbarSpacer/>
+                            <Title
+                                text="Available Purchase Orders"
+                                level="H3"
+                            />
+                            <ToolbarSpacer />
                         </Toolbar>
                     </headerToolbar>
 
                     <!-- Columns -->
                     <columns>
-                        <Column width="8rem">
-                            <Text text="PO No" />
-                        </Column>
-                        <Column width="6rem">
-                            <Text text="PO Item" />
-                        </Column>
-                        <Column width="6rem">
-                            <Text text="Plant" />
-                        </Column>
-                        <Column width="12rem">
-                            <Text text="Plant Name" />
-                        </Column>
                         <Column width="10rem">
-                            <Text text="Material" />
-                        </Column>
-                        <Column width="8rem">
-                            <Text text="Mat Group" />
+                            <Text text="PO / Item" />
                         </Column>
                         <Column width="14rem">
-                            <Text text="Description" />
+                            <Text text="Plant" />
                         </Column>
-                        <Column width="8rem">
-                            <Text text="Batch" />
+                        <Column width="18rem">
+                            <Text text="Material" />
                         </Column>
                         <Column width="10rem">
                             <Text text="Formula" />
                         </Column>
-                        <Column width="10rem">
-                            <Text text="Vendor" />
+                        <Column width="8rem">
+                            <Text text="Batch" />
                         </Column>
-                        <Column width="14rem">
-                            <Text text="Vendor Name" />
-                        </Column>
-                        <Column hAlign="End" width="8rem">
+                        <Column
+                            hAlign="End"
+                            width="10rem"
+                        >
                             <Text text="Quantity" />
                         </Column>
-                        <!-- <Column width="6rem">
-                            <Text text="Unit" />
-                        </Column> -->
+                        <Column width="10rem">
+                            <Text text="Material Group" />
+                        </Column>
+                        <Column width="16rem">
+                            <Text text="Vendor" />
+                        </Column>
                     </columns>
 
                     <!-- Items -->
                     <items>
-                        <ColumnListItem type="Active" vAlign="Middle">
+                        <ColumnListItem
+                            type="Active"
+                            vAlign="Middle"
+                        >
                             <cells>
-                                <ObjectIdentifier title="{POModel>Ebeln}" />
-                                <Text text="{POModel>Ebelp}" />
-                                <Text text="{POModel>Werks}" />
-                                <Text text="{POModel>Werks_Name}" />
-                                <Text text="{POModel>Matnr}" />
-                                <Text text="{POModel>Matkl}" />
-                                <Text text="{POModel>Maktx}" wrapping="true"/>
+                                <!-- PO + Item -->
+                                <ObjectIdentifier
+                                    title="{= ${POModel>Ebeln} + ' / ' + ${POModel>Ebelp} }"
+                                />
+
+                                <!-- Plant + Name -->
+                                <Text
+                                    text="{= ${POModel>Werks} + ' - ' + ${POModel>Werks_Name} }"
+                                    wrapping="true"
+                                />
+
+                                <!-- Material Code + Name -->
+                                <Text
+                                    text="{= ${POModel>Matnr} + ' - ' + ${POModel>Maktx} }"
+                                    wrapping="true"
+                                />
+
+                                <!-- Formula -->
+                                <Text
+                                    text="{POModel>SuchFeld}"
+                                    wrapping="true"
+                                />
+
+                                <!-- Batch -->
                                 <Text text="{POModel>Charg}" />
-                                <Text text="{POModel>SuchFeld}" wrapping="true"/>
-                                <Text text="{POModel>Lifnr}" />
-                                <Text text="{POModel>LifnrName}" wrapping="true"/>
+
+                                <!-- Quantity -->
                                 <ObjectNumber
                                     number="{POModel>Menge}"
                                     unit="{POModel>Meins}"
-                                     emphasized="false"
                                 />
-                                <!-- <Text text="{POModel>Meins}" /> -->
+
+                                <!-- Material Group -->
+                                <Text text="{POModel>Matkl}" />
+
+                                <!-- Vendor Code + Name -->
+                                <Text
+                                    text="{= ${POModel>Lifnr} + ' - ' + ${POModel>LifnrName} }"
+                                    wrapping="true"
+                                />
                             </cells>
                         </ColumnListItem>
                     </items>
-
                 </Table>
-
             </VBox>
         </content>
 
         <!-- Footer Buttons -->
         <buttons>
-
             <Button
                 text="Cancel"
                 press="onClosePODialog"
@@ -147,9 +162,6 @@
                 type="Emphasized"
                 press="onConfirmPOSelection"
             />
-
         </buttons>
-
     </Dialog>
-
 </core:FragmentDefinition>

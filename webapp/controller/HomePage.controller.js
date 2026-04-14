@@ -3625,246 +3625,248 @@ sap.ui.define([
             this._mViewSettingsDialogs = {};
         },
         //++EOC | REQ0032723 by Sharath on 05/12/2025
-onOpenPODialog: function () {
-    if (!this._oPODialog) {
-        this.loadPOList();
 
-        this._oPODialog = sap.ui.xmlfragment(
-            this.getView().getId(),
-            "com.monsterenergy.qm.me.qm.qateam.fragment.POF4Downlaod",
-            this
-        );
+        //Changes done by shartah on 14-04-2026 for INC0277659
+        onOpenPODialog: function () {
+            if (!this._oPODialog) {
+                this.loadPOList();
 
-        this.getView().addDependent(this._oPODialog);
-    }
+                this._oPODialog = sap.ui.xmlfragment(
+                    this.getView().getId(),
+                    "com.monsterenergy.qm.me.qm.qateam.fragment.POSelectionF4",
+                    this
+                );
 
-    if (this._oPODialog && this._oPODialog.open) {
-        this._oPODialog.open();
-    }
-},
-onClosePODialog: function () {
-    if (this._oPODialog) {
-        this._oPODialog.close();
-    }
-},
+                this.getView().addDependent(this._oPODialog);
+            }
 
-onSearchPO: function (oEvent) {
-   const sValue = oEvent.getParameter("newValue");
-const oTable = this.byId("poTable");
+            if (this._oPODialog && this._oPODialog.open) {
+                this._oPODialog.open();
+            }
+        },
+        onClosePODialog: function () {
+            if (this._oPODialog) {
+                this._oPODialog.close();
+            }
+        },
 
-if (!oTable) return;
+        onSearchPO: function (oEvent) {
+            const sValue = oEvent.getParameter("newValue");
+            const oTable = this.byId("poTable");
 
-const oBinding = oTable.getBinding("items");
+            if (!oTable) return;
 
-if (sValue) {
+            const oBinding = oTable.getBinding("items");
 
-    const aFilters = [
-        new sap.ui.model.Filter("Ebeln", sap.ui.model.FilterOperator.Contains, sValue),
-        new sap.ui.model.Filter("Ebelp", sap.ui.model.FilterOperator.Contains, sValue),
-        new sap.ui.model.Filter("Matnr", sap.ui.model.FilterOperator.Contains, sValue)
-    ];
+            if (sValue) {
 
-    const oFilter = new sap.ui.model.Filter({
-        filters: aFilters,
-        and: false   // OR condition
-    });
+                const aFilters = [
+                    new sap.ui.model.Filter("Ebeln", sap.ui.model.FilterOperator.Contains, sValue),
+                    new sap.ui.model.Filter("Ebelp", sap.ui.model.FilterOperator.Contains, sValue),
+                    new sap.ui.model.Filter("Matnr", sap.ui.model.FilterOperator.Contains, sValue)
+                ];
 
-    oBinding.filter(oFilter);
-
-} else {
-    oBinding.filter([]);
-}
-},
-
-onConfirmPOSelection: function () {
-    const oTable = this.byId("poTable");
-    const aSelectedItems = oTable.getSelectedItems();
-
-    if (!aSelectedItems.length) {
-        sap.m.MessageToast.show("No PO selected");
-        return;
-    }
-
-    const aItems = aSelectedItems.map(function (oItem) {
-        const oData = oItem.getBindingContext("POModel").getObject();
-        return {
-            Ebeln: oData.Ebeln,
-            Ebelp: oData.Ebelp,
-            Werks: oData.Werks,
-            Werks_Name: oData.Werks_Name,
-            Matkl: oData.Matkl,
-            Matnr: oData.Matnr,
-            Maktx: oData.Maktx,
-            Charg: oData.Charg,
-            Lifnr: oData.Lifnr,
-            LifnrName: oData.LifnrName,
-            Menge: oData.Menge,
-            Meins: oData.Meins,
-            SuchFeld: oData.SuchFeld
-        };
-    });
-
-    const oPayload = {
-        Werk: this.sPlant,
-        Name: this.name || "",
-        Email: this._userEmail || "",
-        JSONRes: "",
-        JSON: JSON.stringify({
-            TotalRecords: aItems.length,
-            Items: aItems
-        })
-    };
-
-    this._createTemplate(oPayload);
-},
-
-_createTemplate: async function (oPayload) {
-    const oModel = this.getView().getModel();
-
-    this.getView().setBusy(true);
-    oModel.setUseBatch(false);
-
-    oModel.create("/UploadTmpDataSet", oPayload, {
-        success: async function (oData) {
-            this.getView().setBusy(false);
-
-            try {
-                const sJson = oData?.JSONRes;
-
-                if (!sJson) {
-                    sap.m.MessageToast.show("No template data found");
-                    return;
-                }
-
-                const aRows = JSON.parse(sJson);
-
-                if (!Array.isArray(aRows) || !aRows.length) {
-                    sap.m.MessageBox.error("No valid data");
-                    return;
-                }
-
-                const ExcelJS = await this._loadExcelJSLibrary();
-                const oWorkbook = new ExcelJS.Workbook();
-                const oSheet = oWorkbook.addWorksheet("MassUpload_Template");
-
-                const aHeaders = Object.keys(aRows[0]);
-                oSheet.addRow(aHeaders);
-
-                aRows.forEach(function (oRow) {
-                    oSheet.addRow(aHeaders.map(function (h) {
-                        return oRow[h] || "";
-                    }));
+                const oFilter = new sap.ui.model.Filter({
+                    filters: aFilters,
+                    and: false 
                 });
 
-                oSheet.columns.forEach(function (oCol) {
-                    oCol.width = 25;
-                });
+                oBinding.filter(oFilter);
 
-                const mColors = {
-                    HDR: "FFFFF9C4",
-                    IP: "FFFFF9C4",
-                    "0010": "FFBBDEFB",
-                    "0020": "FFC8E6C9",
-                    "0030": "FFFFE0B2",
-                    "0040": "FFF8BBD0"
+            } else {
+                oBinding.filter([]);
+            }
+        },
+
+        onConfirmPOSelection: function () {
+            const oTable = this.byId("poTable");
+            const aSelectedItems = oTable.getSelectedItems();
+
+            if (!aSelectedItems.length) {
+                sap.m.MessageToast.show("No PO selected");
+                return;
+            }
+
+            const aItems = aSelectedItems.map(function (oItem) {
+                const oData = oItem.getBindingContext("POModel").getObject();
+                return {
+                    Ebeln: oData.Ebeln,
+                    Ebelp: oData.Ebelp,
+                    Werks: oData.Werks,
+                    Werks_Name: oData.Werks_Name,
+                    Matkl: oData.Matkl,
+                    Matnr: oData.Matnr,
+                    Maktx: oData.Maktx,
+                    Charg: oData.Charg,
+                    Lifnr: oData.Lifnr,
+                    LifnrName: oData.LifnrName,
+                    Menge: oData.Menge,
+                    Meins: oData.Meins,
+                    SuchFeld: oData.SuchFeld
                 };
+            });
 
-                aHeaders.forEach(function (_, i) {
-                    const iCol = i + 1;
-                    const sRow1 = String(oSheet.getRow(1).getCell(iCol).value || "").trim();
-                    const sRow2 = String(oSheet.getRow(2).getCell(iCol).value || "").trim();
+            const oPayload = {
+                Werk: this.sPlant,
+                Name: this.name || "",
+                Email: this._userEmail || "",
+                JSONRes: "",
+                JSON: JSON.stringify({
+                    TotalRecords: aItems.length,
+                    Items: aItems
+                })
+            };
 
-                    let sColor = null;
+            this._createTemplate(oPayload);
+        },
 
-                    if (/HDR|Header/i.test(sRow1) || /HDR|Header/i.test(sRow2)) {
-                        sColor = mColors.HDR;
-                    } else if (/IP/i.test(sRow1) || /IP/i.test(sRow2)) {
-                        sColor = mColors.IP;
-                    } else if (/0010|Items List/i.test(sRow1) || /0010|Items List/i.test(sRow2)) {
-                        sColor = mColors["0010"];
-                    } else if (/0020|Syrup/i.test(sRow1) || /0020|Syrup/i.test(sRow2)) {
-                        sColor = mColors["0020"];
-                    } else if (/0030|Final/i.test(sRow1) || /0030|Final/i.test(sRow2)) {
-                        sColor = mColors["0030"];
-                    } else if (/0040|Micros/i.test(sRow1) || /0040|Micros/i.test(sRow2)) {
-                        sColor = mColors["0040"];
-                    }
+        _createTemplate: async function (oPayload) {
+            const oModel = this.getView().getModel();
 
-                    if (sColor) {
-                        oSheet.getColumn(iCol).eachCell({ includeEmpty: true }, function (oCell) {
-                            oCell.fill = {
-                                type: "pattern",
-                                pattern: "solid",
-                                fgColor: { argb: sColor }
-                            };
-                        });
-                    }
-                });
+            this.getView().setBusy(true);
+            oModel.setUseBatch(false);
 
-                const iRows = Math.max(50, oSheet.rowCount);
-                const iCols = oSheet.columns.length;
+            oModel.create("/UploadTmpDataSet", oPayload, {
+                success: async function (oData) {
+                    this.getView().setBusy(false);
 
-                for (let r = 1; r <= iRows; r++) {
-                    const oRow = oSheet.getRow(r);
+                    try {
+                        const sJson = oData?.JSONRes;
 
-                    for (let c = 1; c <= iCols; c++) {
-                        const oCell = oRow.getCell(c);
-
-                        if (r <= 3) {
-                            oCell.font = { bold: true };
+                        if (!sJson) {
+                            sap.m.MessageToast.show("No template data found");
+                            return;
                         }
 
-                        oCell.border = {
-                            top: { style: "thin" },
-                            left: { style: "thin" },
-                            bottom: { style: "thin" },
-                            right: { style: "thin" }
+                        const aRows = JSON.parse(sJson);
+
+                        if (!Array.isArray(aRows) || !aRows.length) {
+                            sap.m.MessageBox.error("No valid data");
+                            return;
+                        }
+
+                        const ExcelJS = await this._loadExcelJSLibrary();
+                        const oWorkbook = new ExcelJS.Workbook();
+                        const oSheet = oWorkbook.addWorksheet("MassUpload_Template");
+
+                        const aHeaders = Object.keys(aRows[0]);
+                        oSheet.addRow(aHeaders);
+
+                        aRows.forEach(function (oRow) {
+                            oSheet.addRow(aHeaders.map(function (h) {
+                                return oRow[h] || "";
+                            }));
+                        });
+
+                        oSheet.columns.forEach(function (oCol) {
+                            oCol.width = 25;
+                        });
+
+                        const mColors = {
+                            HDR: "FFFFF9C4",
+                            IP: "FFFFF9C4",
+                            "0010": "FFBBDEFB",
+                            "0020": "FFC8E6C9",
+                            "0030": "FFFFE0B2",
+                            "0040": "FFF8BBD0"
                         };
+
+                        aHeaders.forEach(function (_, i) {
+                            const iCol = i + 1;
+                            const sRow1 = String(oSheet.getRow(1).getCell(iCol).value || "").trim();
+                            const sRow2 = String(oSheet.getRow(2).getCell(iCol).value || "").trim();
+
+                            let sColor = null;
+
+                            if (/HDR|Header/i.test(sRow1) || /HDR|Header/i.test(sRow2)) {
+                                sColor = mColors.HDR;
+                            } else if (/IP/i.test(sRow1) || /IP/i.test(sRow2)) {
+                                sColor = mColors.IP;
+                            } else if (/0010|Items List/i.test(sRow1) || /0010|Items List/i.test(sRow2)) {
+                                sColor = mColors["0010"];
+                            } else if (/0020|Syrup/i.test(sRow1) || /0020|Syrup/i.test(sRow2)) {
+                                sColor = mColors["0020"];
+                            } else if (/0030|Final/i.test(sRow1) || /0030|Final/i.test(sRow2)) {
+                                sColor = mColors["0030"];
+                            } else if (/0040|Micros/i.test(sRow1) || /0040|Micros/i.test(sRow2)) {
+                                sColor = mColors["0040"];
+                            }
+
+                            if (sColor) {
+                               oSheet.getColumn(iCol).eachCell({ includeEmpty: true }, function (oCell, rowNumber) {
+                               if (rowNumber <= 4) {
+                                    oCell.fill = {
+                                        type: "pattern",
+                                        pattern: "solid",
+                                        fgColor: { argb: sColor }
+                                    };
+                                }
+                                });
+                            }
+                        });
+
+                        const iRows = Math.max(50, oSheet.rowCount);
+                        const iCols = oSheet.columns.length;
+
+                        for (let r = 1; r <= iRows; r++) {
+                            const oRow = oSheet.getRow(r);
+
+                            for (let c = 1; c <= iCols; c++) {
+                                const oCell = oRow.getCell(c);
+
+                                if (r <= 3) {
+                                    oCell.font = { bold: true };
+                                }
+
+                                oCell.border = {
+                                    top: { style: "thin" },
+                                    left: { style: "thin" },
+                                    bottom: { style: "thin" },
+                                    right: { style: "thin" }
+                                };
+                            }
+                        }
+                        const aBuffer = await oWorkbook.xlsx.writeBuffer();
+                        const oBlob = new Blob([aBuffer], {
+                            type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        });
+
+                        const oLink = document.createElement("a");
+                        oLink.href = URL.createObjectURL(oBlob);
+                        oLink.download = "MassUpload_Template.xlsx";
+                        oLink.click();
+
+                        sap.m.MessageToast.show("Excel downloaded successfully");
+
+                    } catch (e) {
+                        sap.m.MessageBox.error("Excel generation failed");
                     }
-                }
 
-                const aBuffer = await oWorkbook.xlsx.writeBuffer();
+                }.bind(this),
 
-                const oBlob = new Blob([aBuffer], {
-                    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-                });
+                error: function (oError) {
+                    this.getView().setBusy(false);
 
-                const oLink = document.createElement("a");
-                oLink.href = URL.createObjectURL(oBlob);
-                oLink.download = "MassUpload_Template.xlsx";
-                oLink.click();
+                    let sMessage = "Backend call failed";
 
-                sap.m.MessageToast.show("Excel downloaded successfully");
+                    try {
+                        if (oError?.responseText) {
+                            const oResponse = JSON.parse(oError.responseText);
+                            sMessage =
+                                oResponse.error?.message?.value ||
+                                oResponse.error?.message ||
+                                oResponse.error?.innererror?.errordetails?.[0]?.message ||
+                                sMessage;
+                        } else if (oError?.message) {
+                            sMessage = oError.message;
+                        }
+                    } catch (e) {
+                        sMessage = "Backend error occurred";
+                    }
 
-            } catch (e) {
-                sap.m.MessageBox.error("Excel generation failed");
-            }
-
-        }.bind(this),
-
-        error: function (oError) {
-            this.getView().setBusy(false);
-
-            let sMessage = "Backend call failed";
-
-            try {
-                if (oError?.responseText) {
-                    const oResponse = JSON.parse(oError.responseText);
-                    sMessage =
-                        oResponse.error?.message?.value ||
-                        oResponse.error?.message ||
-                        oResponse.error?.innererror?.errordetails?.[0]?.message ||
-                        sMessage;
-                } else if (oError?.message) {
-                    sMessage = oError.message;
-                }
-            } catch (e) {
-                sMessage = "Backend error occurred";
-            }
-
-            sap.m.MessageBox.error(sMessage);
-        }.bind(this)
-    });
-}
+                    sap.m.MessageBox.error(sMessage);
+                }.bind(this)
+            });
+        }
     });
 });
