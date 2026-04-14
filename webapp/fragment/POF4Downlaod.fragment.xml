@@ -1,0 +1,155 @@
+<core:FragmentDefinition
+    xmlns="sap.m"
+    xmlns:core="sap.ui.core"
+>
+
+    <Dialog
+        id="poDialog"
+        contentWidth="95%"
+        contentHeight="85%"
+        draggable="true"
+        resizable="true"
+    >
+
+        <content>
+            <VBox class="sapUiContentPadding" width="100%">
+
+                <!-- Header -->
+                <Toolbar class="sapUiNoContentPadding">
+                    <Title text="Purchase Order Selection" level="H2" />
+                    <ToolbarSpacer />
+                    <Text text="Select one or more POs" />
+                </Toolbar>
+
+                <!-- Search -->
+                <SearchField
+                    width="100%"
+                    placeholder="Search by PO, Material, Vendor..."
+                    liveChange="onSearchPO"
+                    class="sapUiTinyMarginTop sapUiTinyMarginBottom"
+                    showSearchButton="false"
+                />
+
+
+                <!-- Table -->
+                <Table
+                    id="poTable"
+                    class="sapUiTinyMarginTop"
+                    mode="MultiSelect"
+                    items="{POModel>/results}"
+                    growing="true"
+                    growingThreshold="50"
+                    growingScrollToLoad="true"
+                    sticky="ColumnHeaders,HeaderToolbar"
+                    width="100%"
+                    noDataText="No Purchase Orders found"
+                >
+
+                    <!-- Table Header -->
+                    <headerToolbar>
+                        <Toolbar>
+                            <Title text="Available Purchase Orders" level="H3"/>
+                            <ToolbarSpacer/>
+                        </Toolbar>
+                    </headerToolbar>
+
+                    <!-- Columns -->
+                    <columns>
+                        <Column width="8rem">
+                            <Text text="PO No" />
+                        </Column>
+                        <Column width="6rem">
+                            <Text text="PO Item" />
+                        </Column>
+                        <Column width="6rem">
+                            <Text text="Plant" />
+                        </Column>
+                        <Column width="12rem">
+                            <Text text="Plant Name" />
+                        </Column>
+                        <Column width="10rem">
+                            <Text text="Material" />
+                        </Column>
+                        <Column width="8rem">
+                            <Text text="Mat Group" />
+                        </Column>
+                        <Column width="14rem">
+                            <Text text="Description" />
+                        </Column>
+                        <Column width="8rem">
+                            <Text text="Batch" />
+                        </Column>
+                        <Column width="10rem">
+                            <Text text="Formula" />
+                        </Column>
+                        <Column width="10rem">
+                            <Text text="Vendor" />
+                        </Column>
+                        <Column width="14rem">
+                            <Text text="Vendor Name" />
+                        </Column>
+                        <Column hAlign="End" width="8rem">
+                            <Text text="Quantity" />
+                        </Column>
+                        <!-- <Column width="6rem">
+                            <Text text="Unit" />
+                        </Column> -->
+                    </columns>
+
+                    <!-- Items -->
+                    <items>
+                        <ColumnListItem type="Active" vAlign="Middle">
+                            <cells>
+                                <ObjectIdentifier title="{POModel>Ebeln}" />
+                                <Text text="{POModel>Ebelp}" />
+                                <Text text="{POModel>Werks}" />
+                                <Text text="{POModel>Werks_Name}" />
+                                <Text text="{POModel>Matnr}" />
+                                <Text text="{POModel>Matkl}" />
+                                <Text text="{POModel>Maktx}" wrapping="true"/>
+                                <Text text="{POModel>Charg}" />
+                                <Text text="{POModel>SuchFeld}" wrapping="true"/>
+                                <Text text="{POModel>Lifnr}" />
+                                <Text text="{POModel>LifnrName}" wrapping="true"/>
+                                <ObjectNumber
+                                    number="{POModel>Menge}"
+                                    unit="{POModel>Meins}"
+                                     emphasized="false"
+                                />
+                                <!-- <Text text="{POModel>Meins}" /> -->
+                            </cells>
+                        </ColumnListItem>
+                    </items>
+
+                </Table>
+
+            </VBox>
+        </content>
+
+        <!-- Footer Buttons -->
+        <buttons>
+
+            <Button
+                text="Cancel"
+                press="onClosePODialog"
+                type="Transparent"
+            />
+
+            <Button
+                text="Download Blank Template"
+                icon="sap-icon://download"
+                press="onDownloadTemplate"
+            />
+
+            <Button
+                text="Download with Selected Data"
+                icon="sap-icon://excel-attachment"
+                type="Emphasized"
+                press="onConfirmPOSelection"
+            />
+
+        </buttons>
+
+    </Dialog>
+
+</core:FragmentDefinition>

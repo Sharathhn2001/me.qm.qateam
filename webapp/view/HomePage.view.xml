@@ -391,7 +391,7 @@
                             text="Download Excel Template"
                             icon="sap-icon://excel-attachment"
                             type="Emphasized"
-                            press=".onDownloadTemplate"
+                            press=".onOpenPODialog"
                         />
                         <!--++EOC REQ0032717 - Download Excel Template Button End - Sharath-->
 
