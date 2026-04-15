@@ -2597,6 +2597,9 @@ sap.ui.define([
                 aSamples.forEach(function () {
                     aHeaderRow.push("Sample Type/Syrup Batch");
                 });
+                //++BOC | INC0277661 | OOS Limits Last Column Header | by PANKAJ MISHRA on 14/04/2026
+                aHeaderRow.push("OOS Limits");
+                //++EOC | INC0277661 | OOS Limits Last Column Header | PANKAJ MISHRA on 14/04/2026
                 var oOpHeaderRow = ws.addRow(aHeaderRow);
 
                 // Style header row
@@ -2611,12 +2614,15 @@ sap.ui.define([
                         };
                     }
                 });
-
+                
                 // Row: Operation text + sample codes
                 var aSampleRow = ["", sOperationText];
                 aSamples.forEach(function (sSample) {
                     aSampleRow.push(sSample);
                 });
+                //++BOC | INC0277661 | OOS Limits Sample Row Alignment | by PANKAJ MISHRA on 14/04/2026
+                aSampleRow.push("");
+                //++EOC | INC0277661 | OOS Limits Sample Row Alignment | PANKAJ MISHRA on 14/04/2026
                 ws.addRow(aSampleRow);
 
                 ws.addRow([]);
@@ -2634,10 +2640,12 @@ sap.ui.define([
 
                  //++BOC | INC0218645 | Color Code MIC Cells Based on Defect Type – by PANKAJ MISHRA on 09/03/2026
 
-                // For each MIC name create one row
+                // For each MIC name create one row with sample values and trailing OOS Limits.
                 aMicNames.forEach(function (sMicName) {
                     var aRow = ["", sMicName];
                     var aDefectTypes = [];
+                    //++BOC | INC0277661 | OOS Limits Column Formatting | by PANKAJ MISHRA on 14/04/2026
+                    var aOosLimits = [];
 
                     aInspectionPoints.forEach(function (ip) {
                         var aMicList = ip.MICs || ip.mics || ip.Mics || [];
@@ -2645,12 +2653,36 @@ sap.ui.define([
                             return (m["MIC Name"] || m.MICName || m.MicName) === sMicName;
                         });
                         aRow.push(oFound ? (oFound["MIC Value"] || oFound.MICValue || oFound.MicValue || "") : "");
-                       var sDefectType = oFound ? (oFound["Defect Type"] || oFound.DefectType || oFound.defectType || "") : "";
+                        var aIpOosLimits = ip["OOS Limits"] || [];
+                        var oMatchedOos = Array.isArray(aIpOosLimits) ? aIpOosLimits.find(function (oItem) {
+                            return (oItem["MIC Name"] || oItem.MICName || oItem.MicName) === sMicName;
+                        }) : null;
+                        var sOosLimit = oMatchedOos ? (oMatchedOos["OOS Limit"] || "") : "";
+                        if (sOosLimit) {
+                            aOosLimits.push(sOosLimit);
+                        }
+                        var sDefectType = oFound ? (oFound["Defect Type"] || oFound.DefectType || oFound.defectType || "") : "";
                         aDefectTypes.push(sDefectType);
                     });
 
+                    var aUniqueOosLimits = Array.from(new Set(aOosLimits));
+                    var sFormattedOosLimits = aUniqueOosLimits.join("#")
+                        .split("#")
+                        .map(function (sPart) {
+                            return sPart.replace(/\s*-\s*/g, "-").trim();
+                        })
+                        .filter(function (sPart) {
+                            return !!sPart;
+                        })
+                        .join("\n");
+                    aRow.push(sFormattedOosLimits);
+                    var iOosColNum = aRow.length;
+
                     var oMicRow = ws.addRow(aRow);
                     var iRowNum = oMicRow.number;
+                    var oOosCell = ws.getRow(iRowNum).getCell(iOosColNum);
+                    oOosCell.alignment = { wrapText: true, vertical: "top" };
+                    //++EOC | INC0277661 | OOS Limits Column Formatting | PANKAJ MISHRA on 14/04/2026
                     
                     // Apply colors to cells based on Defect Type
                     aDefectTypes.forEach(function (sDefectType, iIndex) {
@@ -2682,6 +2714,7 @@ sap.ui.define([
                             // If Defect Type is blank/null, no color is applied (default)
                         }
                     });
+
                 });
                  //++EOC | INC0218645 | Color Code MIC Cells Based on Defect Type – by PANKAJ MISHRA on 09/03/2026
             });
