@@ -2609,14 +2609,13 @@ sap.ui.define([
                     return ip["Sample Type/Syrup Batch"] || ip.SampleTypeSyrupBatch || ip.SampleType || "";
                 });
 
-                var aHeaderRow = ["", "Operation"];
+                //++BOC | OOS Limits Last Column Header | by PANKAJ MISHRA on 14/04/2026
+                var aHeaderRow = ["", "Operation", "Specifications"];
                 aSamples.forEach(function () {
                     aHeaderRow.push("Sample Type/Syrup Batch");
                 });
-                //++BOC | INC0277661 | OOS Limits Last Column Header | by PANKAJ MISHRA on 14/04/2026
-                aHeaderRow.push("OOS Limits");
-                //++EOC | INC0277661 | OOS Limits Last Column Header | PANKAJ MISHRA on 14/04/2026
                 var oOpHeaderRow = ws.addRow(aHeaderRow);
+                //++EOC | OOS Limits Last Column Header | PANKAJ MISHRA on 14/04/2026
 
                 // Style header row
                 oOpHeaderRow.font = { bold: true };
@@ -2630,16 +2629,15 @@ sap.ui.define([
                         };
                     }
                 });
-                
+
+                //++BOC | OOS Limits Sample Row Alignment | by PANKAJ MISHRA on 14/04/2026
                 // Row: Operation text + sample codes
-                var aSampleRow = ["", sOperationText];
+                var aSampleRow = ["", sOperationText, ""];
                 aSamples.forEach(function (sSample) {
                     aSampleRow.push(sSample);
                 });
-                //++BOC | INC0277661 | OOS Limits Sample Row Alignment | by PANKAJ MISHRA on 14/04/2026
-                aSampleRow.push("");
-                //++EOC | INC0277661 | OOS Limits Sample Row Alignment | PANKAJ MISHRA on 14/04/2026
                 ws.addRow(aSampleRow);
+                //++EOC | OOS Limits Sample Row Alignment | PANKAJ MISHRA on 14/04/2026
 
                 ws.addRow([]);
 
@@ -2658,10 +2656,10 @@ sap.ui.define([
 
                 // For each MIC name create one row with sample values and trailing OOS Limits.
                 aMicNames.forEach(function (sMicName) {
-                    var aRow = ["", sMicName];
+                    //++BOC | OOS Limits Column Formatting | by PANKAJ MISHRA on 14/04/2026
+                     var aRow = ["", sMicName, ""];
                     var aDefectTypes = [];
-                    //++BOC | INC0277661 | OOS Limits Column Formatting | by PANKAJ MISHRA on 14/04/2026
-                    var aOosLimits = [];
+                    var aSpecifications = [];
 
                     aInspectionPoints.forEach(function (ip) {
                         var aMicList = ip.MICs || ip.mics || ip.Mics || [];
@@ -2669,40 +2667,40 @@ sap.ui.define([
                             return (m["MIC Name"] || m.MICName || m.MicName) === sMicName;
                         });
                         aRow.push(oFound ? (oFound["MIC Value"] || oFound.MICValue || oFound.MicValue || "") : "");
-                        var aIpOosLimits = ip["OOS Limits"] || [];
-                        var oMatchedOos = Array.isArray(aIpOosLimits) ? aIpOosLimits.find(function (oItem) {
+                        var aIpSpecifications = ip.Specifications || [];
+                        var oMatchedSpecification = Array.isArray(aIpSpecifications) ? aIpSpecifications.find(function (oItem) {
                             return (oItem["MIC Name"] || oItem.MICName || oItem.MicName) === sMicName;
                         }) : null;
-                        var sOosLimit = oMatchedOos ? (oMatchedOos["OOS Limit"] || "") : "";
-                        if (sOosLimit) {
-                            aOosLimits.push(sOosLimit);
+                        var sSpecification = oMatchedSpecification ? (oMatchedSpecification["OOS Limit"] || "") : "";
+                        if (sSpecification) {
+                            aSpecifications.push(sSpecification);
                         }
+
                         var sDefectType = oFound ? (oFound["Defect Type"] || oFound.DefectType || oFound.defectType || "") : "";
                         aDefectTypes.push(sDefectType);
                     });
 
-                    var aUniqueOosLimits = Array.from(new Set(aOosLimits));
-                    var sFormattedOosLimits = aUniqueOosLimits.join("#")
+                    var aUniqueSpecifications = Array.from(new Set(aSpecifications));
+                    var sFormattedSpecifications = aUniqueSpecifications.join("#")
                         .split("#")
                         .map(function (sPart) {
-                            return sPart.replace(/\s*-\s*/g, "-").trim();
+                            return sPart.trim();
                         })
                         .filter(function (sPart) {
                             return !!sPart;
                         })
                         .join("\n");
-                    aRow.push(sFormattedOosLimits);
-                    var iOosColNum = aRow.length;
+                     aRow[2] = sFormattedSpecifications;
 
                     var oMicRow = ws.addRow(aRow);
                     var iRowNum = oMicRow.number;
-                    var oOosCell = ws.getRow(iRowNum).getCell(iOosColNum);
-                    oOosCell.alignment = { wrapText: true, vertical: "top" };
-                    //++EOC | INC0277661 | OOS Limits Column Formatting | PANKAJ MISHRA on 14/04/2026
+                    var oSpecificationCell = ws.getRow(iRowNum).getCell(3);
+                    oSpecificationCell.alignment = { wrapText: true, vertical: "top" };
                     
                     // Apply colors to cells based on Defect Type
                     aDefectTypes.forEach(function (sDefectType, iIndex) {
-                        var iColNum = 3 + iIndex; // Column 3, 4, 5, etc. (1-based)
+                        var iColNum = 4 + iIndex; // Column 4, 5, 6, etc. (1-based)
+                         //++EOC | OOS Limits Column Formatting | PANKAJ MISHRA on 14/04/2026
                         var oCell = ws.getRow(iRowNum).getCell(iColNum);
                         
                         
