@@ -387,19 +387,25 @@
                         <!--++EOC REQ0032717 - Mass Upload Button End - Sharath -->
 
                         <!--++BOC REQ0032717 - Download Excel Template Button Start - by Sharath on 05/12/2025-->
-   <!-- <Button
+                        <!--
+                      Commented by Sharath on 14-Apr-2026 for INC0277659
+                      Reason: Replaced with PO-based template download via dialog (onOpenPODialog)
+                        -->
+                       <!-- <Button
                             text="Download Excel Template"
                             icon="sap-icon://excel-attachment"
                             type="Emphasized"
                             press=".onDownloadTemplate"
                         /> -->
-<!-- ++Addded -->
+                        <!--++EOC REQ0032717 - Download Excel Template Button End - Sharath-->
+
+                      <!-- ++BOC Sharath | 13-Apr-2026 | INC0277659 – Open PO Selection Dialog for template download -->
                         <Button
                             text="Download Excel Template"
                             type="Emphasized"
                             press=".onOpenPODialog"
                         />
-                        <!--++EOC REQ0032717 - Download Excel Template Button End - Sharath-->
+                        <!-- ++EOC Sharath | 13-Apr-2026 | INC0277659 – Open PO Selection Dialog for template download -->
 
                         <!--++BOC REQ0032729 - Export to Excel Button Start - by PANKAJ MISHRA on 16/12/2025 -->
                         <Button

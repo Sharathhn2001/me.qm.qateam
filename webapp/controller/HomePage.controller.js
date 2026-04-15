@@ -104,6 +104,22 @@ Modification History:
    - Improved UI behavior by making formula field non-editable as it is system derived
 
    *-----------------------------------------------------------------------*
+
+7) Request#   : INC0277659
+   Developer  : Sharath H N
+   Date       : 14-Apr-2026
+   Incident   : INC0277659
+   CMS        : N/A
+
+   Description:Option to update of header section details for PO, Material, Formula while downloiading Mass Upload Template in BTP
+   - Introduced PO Selection Dialog (F4 Help) for template download
+   - Enabled multi-select functionality for selecting Purchase Orders
+   - Implemented live search on PO table (Ebeln, Ebelp, Matnr)
+   - Added option to download Excel template with selected PO data
+   - Integrated backend service (UploadTmpDataSet) for dynamic template generation
+   - Implemented Excel generation using ExcelJS with formatting and validations
+
+   *-----------------------------------------------------------------------*
 */
 
 sap.ui.define([
@@ -3659,7 +3675,7 @@ sap.ui.define([
         },
         //++EOC | REQ0032723 by Sharath on 05/12/2025
 
-        //Changes done by shartah on 14-04-2026 for INC0277659
+        //++BOC Change implemented by Sharath on 13-Apr-2026 for INC0277659 – Added PO dialog initialization and opening logic
         onOpenPODialog: function () {
             if (!this._oPODialog) {
                 this.loadPOList();
@@ -3677,31 +3693,41 @@ sap.ui.define([
                 this._oPODialog.open();
             }
         },
+        //++EOC Change implemented by Sharath on 13-Apr-2026 for INC0277659 – Added PO dialog initialization and opening logic
+
+        //++BOC Change implemented by Sharath on 13-Apr-2026 for INC0277659 – Handle closing of PO Selection dialog
         onClosePODialog: function () {
             if (this._oPODialog) {
                 this._oPODialog.close();
             }
         },
+        //++EOC Change implemented by Sharath on 13-Apr-2026 for INC0277659 – Handle closing of PO Selection dialog
 
+        //++BOC Enhancement by Sharath on 13-Apr-2026 for INC0277659 – Implement search/filter on PO table
         onSearchPO: function (oEvent) {
             const sValue = oEvent.getParameter("newValue");
             const oTable = this.byId("poTable");
-
             if (!oTable) return;
-
             const oBinding = oTable.getBinding("items");
-
             if (sValue) {
-
                 const aFilters = [
                     new sap.ui.model.Filter("Ebeln", sap.ui.model.FilterOperator.Contains, sValue),
                     new sap.ui.model.Filter("Ebelp", sap.ui.model.FilterOperator.Contains, sValue),
-                    new sap.ui.model.Filter("Matnr", sap.ui.model.FilterOperator.Contains, sValue)
+                    new sap.ui.model.Filter("Matnr", sap.ui.model.FilterOperator.Contains, sValue),
+                    new sap.ui.model.Filter("Charg", sap.ui.model.FilterOperator.Contains, sValue),
+                    new sap.ui.model.Filter("SuchFeld", sap.ui.model.FilterOperator.Contains, sValue),
+                    new sap.ui.model.Filter("Maktx", sap.ui.model.FilterOperator.Contains, sValue),
+                    new sap.ui.model.Filter("Matkl", sap.ui.model.FilterOperator.Contains, sValue),
+                    new sap.ui.model.Filter("Menge", sap.ui.model.FilterOperator.Contains, sValue),
+                    new sap.ui.model.Filter("Meins", sap.ui.model.FilterOperator.Contains, sValue),
+                    new sap.ui.model.Filter("Lifnr", sap.ui.model.FilterOperator.Contains, sValue),
+                    new sap.ui.model.Filter("LifnrName", sap.ui.model.FilterOperator.Contains, sValue),
+                    new sap.ui.model.Filter("Werks_Name", sap.ui.model.FilterOperator.Contains, sValue),
                 ];
 
                 const oFilter = new sap.ui.model.Filter({
                     filters: aFilters,
-                    and: false 
+                    and: false
                 });
 
                 oBinding.filter(oFilter);
@@ -3710,7 +3736,9 @@ sap.ui.define([
                 oBinding.filter([]);
             }
         },
+        //++EOC Enhancement by Sharath on 13-Apr-2026 for INC0277659 – Implement search/filter on PO table
 
+        //++BOC Enhancement by Sharath on 14-Apr-2026 for INC0277659 – Capture selected PO items and prepare payload for template creation
         onConfirmPOSelection: function () {
             const oTable = this.byId("poTable");
             const aSelectedItems = oTable.getSelectedItems();
@@ -3752,7 +3780,9 @@ sap.ui.define([
 
             this._createTemplate(oPayload);
         },
+        //++EOC Enhancement by Sharath on 14-Apr-2026 for INC0277659 – Capture selected PO items and prepare payload for template creation
 
+        //++BOC Enhancement by Sharath on 14-Apr-2026 for INC0277659 – Trigger backend call and generate Excel template from response data
         _createTemplate: async function (oPayload) {
             const oModel = this.getView().getModel();
 
@@ -3826,14 +3856,14 @@ sap.ui.define([
                             }
 
                             if (sColor) {
-                               oSheet.getColumn(iCol).eachCell({ includeEmpty: true }, function (oCell, rowNumber) {
-                               if (rowNumber <= 4) {
-                                    oCell.fill = {
-                                        type: "pattern",
-                                        pattern: "solid",
-                                        fgColor: { argb: sColor }
-                                    };
-                                }
+                                oSheet.getColumn(iCol).eachCell({ includeEmpty: true }, function (oCell, rowNumber) {
+                                    if (rowNumber <= 4) {
+                                        oCell.fill = {
+                                            type: "pattern",
+                                            pattern: "solid",
+                                            fgColor: { argb: sColor }
+                                        };
+                                    }
                                 });
                             }
                         });
@@ -3901,5 +3931,6 @@ sap.ui.define([
                 }.bind(this)
             });
         }
+        //++EOC Enhancement by Sharath on 14-Apr-2026 for INC0277659 – Trigger backend call and generate Excel template from response data
     });
 });
