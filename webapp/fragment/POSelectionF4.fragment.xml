@@ -26,7 +26,7 @@
 
                 <SearchField
                     width="100%"
-                    placeholder="Search by PO, Material, Vendor..."
+                    placeholder="Search by PO, Material, Batch, Formula, Quantity, Vendor..."
                     liveChange="onSearchPO"
                     class="sapUiTinyMarginTop sapUiTinyMarginBottom"
                     showSearchButton="false"
@@ -133,12 +133,13 @@
             <Button
                 text="Cancel"
                 press="onClosePODialog"
-                type="Transparent"
+                type="Emphasized"
             />
 
             <Button
                 text="Download Blank Template"
                 icon="sap-icon://download"
+                type="Emphasized"
                 press="onDownloadTemplate"
             />
 
