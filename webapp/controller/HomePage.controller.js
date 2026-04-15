@@ -2609,13 +2609,13 @@ sap.ui.define([
                     return ip["Sample Type/Syrup Batch"] || ip.SampleTypeSyrupBatch || ip.SampleType || "";
                 });
 
-                //++BOC | OOS Limits Last Column Header | by PANKAJ MISHRA on 14/04/2026
+                //++BOC | INC0277661 | OOS Limits Last Column Header | by PANKAJ MISHRA on 14/04/2026
                 var aHeaderRow = ["", "Operation", "Specifications"];
                 aSamples.forEach(function () {
                     aHeaderRow.push("Sample Type/Syrup Batch");
                 });
                 var oOpHeaderRow = ws.addRow(aHeaderRow);
-                //++EOC | OOS Limits Last Column Header | PANKAJ MISHRA on 14/04/2026
+                //++EOC | INC0277661 | OOS Limits Last Column Header | PANKAJ MISHRA on 14/04/2026
 
                 // Style header row
                 oOpHeaderRow.font = { bold: true };
@@ -2630,14 +2630,14 @@ sap.ui.define([
                     }
                 });
 
-                //++BOC | OOS Limits Sample Row Alignment | by PANKAJ MISHRA on 14/04/2026
+                //++BOC | INC0277661 | OOS Limits Sample Row Alignment | by PANKAJ MISHRA on 14/04/2026
                 // Row: Operation text + sample codes
                 var aSampleRow = ["", sOperationText, ""];
                 aSamples.forEach(function (sSample) {
                     aSampleRow.push(sSample);
                 });
                 ws.addRow(aSampleRow);
-                //++EOC | OOS Limits Sample Row Alignment | PANKAJ MISHRA on 14/04/2026
+                //++EOC | INC0277661 | OOS Limits Sample Row Alignment | PANKAJ MISHRA on 14/04/2026
 
                 ws.addRow([]);
 
@@ -2656,7 +2656,7 @@ sap.ui.define([
 
                 // For each MIC name create one row with sample values and trailing OOS Limits.
                 aMicNames.forEach(function (sMicName) {
-                    //++BOC | OOS Limits Column Formatting | by PANKAJ MISHRA on 14/04/2026
+                    //++BOC | INC0277661 | OOS Limits Column Formatting | by PANKAJ MISHRA on 14/04/2026
                      var aRow = ["", sMicName, ""];
                     var aDefectTypes = [];
                     var aSpecifications = [];
@@ -2694,13 +2694,17 @@ sap.ui.define([
 
                     var oMicRow = ws.addRow(aRow);
                     var iRowNum = oMicRow.number;
+                    //++BOC | INC0277661 | OOS Limits Column Formatting | by PANKAJ MISHRA on 14/04/2026
+                    var oMicNameCell = ws.getRow(iRowNum).getCell(2);
+                    oMicNameCell.alignment = { vertical: "middle" };
+                     //++EOC | INC0277661 | OOS Limits Column Formatting | PANKAJ MISHRA on 14/04/2026
                     var oSpecificationCell = ws.getRow(iRowNum).getCell(3);
                     oSpecificationCell.alignment = { wrapText: true, vertical: "top" };
                     
                     // Apply colors to cells based on Defect Type
                     aDefectTypes.forEach(function (sDefectType, iIndex) {
                         var iColNum = 4 + iIndex; // Column 4, 5, 6, etc. (1-based)
-                         //++EOC | OOS Limits Column Formatting | PANKAJ MISHRA on 14/04/2026
+                         //++EOC | INC0277661 | OOS Limits Column Formatting | PANKAJ MISHRA on 14/04/2026
                         var oCell = ws.getRow(iRowNum).getCell(iColNum);
                         
                         
@@ -2744,6 +2748,9 @@ sap.ui.define([
                 });
                 col.width = maxLength + 2;
             });
+            if (ws.getColumn(3)) {
+                ws.getColumn(3).width = Math.min(ws.getColumn(3).width || 10, 45);
+            }
         },
         //++EOC | REQ0032729 | Create Excel Sheet from Response Data – PANKAJ MISHRA on 16/12/2025
 
