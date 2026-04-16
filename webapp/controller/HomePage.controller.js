@@ -2704,8 +2704,9 @@ sap.ui.define([
                     // Apply colors to cells based on Defect Type
                     aDefectTypes.forEach(function (sDefectType, iIndex) {
                         var iColNum = 4 + iIndex; // Column 4, 5, 6, etc. (1-based)
-                         //++EOC | INC0277661 | OOS Limits Column Formatting | PANKAJ MISHRA on 14/04/2026
                         var oCell = ws.getRow(iRowNum).getCell(iColNum);
+                        oCell.alignment = { horizontal: "center", vertical: "middle" };
+                        //++EOC | INC0277661 | OOS Limits Column Formatting | PANKAJ MISHRA on 14/04/2026
                         
                         
                         if (sDefectType) {
