@@ -3748,8 +3748,9 @@ sap.ui.define([
             const oTable = this.byId("poTable");
             const aSelectedItems = oTable.getSelectedItems();
 
+            const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
             if (!aSelectedItems.length) {
-                sap.m.MessageToast.show("No PO selected");
+                sap.m.MessageToast.show(oResourceBundle.getText("noPOSelected"));
                 return;
             }
 
@@ -3790,6 +3791,7 @@ sap.ui.define([
         //++BOC Enhancement by Sharath on 14-Apr-2026 for INC0277659 – Trigger backend call and generate Excel template from response data
         _createTemplate: async function (oPayload) {
             const oModel = this.getView().getModel();
+            const oResourceBundle = this.getView().getModel("i18n").getResourceBundle();
 
             this.getView().setBusy(true);
             oModel.setUseBatch(false);
@@ -3800,16 +3802,16 @@ sap.ui.define([
 
                     try {
                         const sJson = oData?.JSONRes;
-
+                    
                         if (!sJson) {
-                            sap.m.MessageToast.show("No template data found");
+                            sap.m.MessageToast.show(oResourceBundle.getText("noTemplateData"));
                             return;
                         }
 
                         const aRows = JSON.parse(sJson);
 
                         if (!Array.isArray(aRows) || !aRows.length) {
-                            sap.m.MessageBox.error("No valid data");
+                            sap.m.MessageBox.error(oResourceBundle.getText("noValidData"));
                             return;
                         }
 
@@ -3901,13 +3903,12 @@ sap.ui.define([
 
                         const oLink = document.createElement("a");
                         oLink.href = URL.createObjectURL(oBlob);
-                        oLink.download = "MassUpload_Template.xlsx";
+                        oLink.download = oResourceBundle.getText("excelFileName");
                         oLink.click();
 
-                        sap.m.MessageToast.show("Excel downloaded successfully");
-
+                        sap.m.MessageToast.show(oResourceBundle.getText("excelDownloadSuccess"));
                     } catch (e) {
-                        sap.m.MessageBox.error("Excel generation failed");
+                       sap.m.MessageBox.error(oResourceBundle.getText("excelGenerationFailed"));
                     }
 
                 }.bind(this),
@@ -3915,8 +3916,7 @@ sap.ui.define([
                 error: function (oError) {
                     this.getView().setBusy(false);
 
-                    let sMessage = "Backend call failed";
-
+                  let sMessage = oResourceBundle.getText("backendCallFailed");
                     try {
                         if (oError?.responseText) {
                             const oResponse = JSON.parse(oError.responseText);
@@ -3929,7 +3929,7 @@ sap.ui.define([
                             sMessage = oError.message;
                         }
                     } catch (e) {
-                        sMessage = "Backend error occurred";
+                       sMessage = oResourceBundle.getText("backendErrorOccurred");
                     }
 
                     sap.m.MessageBox.error(sMessage);

@@ -401,7 +401,7 @@
 
                       <!-- ++BOC Sharath | 13-Apr-2026 | INC0277659 – Open PO Selection Dialog for template download -->
                         <Button
-                            text="Download Excel Template"
+                            text="{i18n>downloadExcelTemplate}"
                             type="Emphasized"
                             press=".onOpenPODialog"
                         />
