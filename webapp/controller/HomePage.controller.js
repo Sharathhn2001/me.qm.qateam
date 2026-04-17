@@ -3694,6 +3694,15 @@ sap.ui.define([
 
                 this.getView().addDependent(this._oPODialog);
             }
+            // ++BOC INC0277659 |Sharath | 16-Apr-2026 | Fix – Clear previous selections on dialog reopen
+            const oTable = sap.ui.getCore().byId(
+                this.getView().getId() + "--poTable"
+            );
+
+            if (oTable) {
+                oTable.removeSelections(true);
+            }
+            // ++EOC INC0277659 |Sharath | 16-Apr-2026 | Fix – Clear previous selections on dialog reopen
 
             if (this._oPODialog && this._oPODialog.open) {
                 this._oPODialog.open();
